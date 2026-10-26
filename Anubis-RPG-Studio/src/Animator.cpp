@@ -1,0 +1,129 @@
+#include "Animator.hpp"
+#include "Time.hpp"
+
+Animator::Animator(std::weak_ptr<Animations> animations) {
+	_animations = animations;
+	_animation = 0;
+	_frame = 0;
+	_timer = 0.0f;
+	_isPlaying = false;
+}
+
+Animator::~Animator() {
+
+}
+
+void Animator::setAnimation(int animation) {
+
+	if(_animations.expired())
+		return;
+
+	if (animation < 0 || animation >= _animations.lock()->_animationsCount)
+		return;
+
+	_animation = animation;
+	_frame = 0;
+	_timer = 0.0f;
+}
+
+void Animator::setFrame(int frame) {
+
+	if (frame < 0 || frame >= _animations.lock()->_framesCount) 
+		return;
+
+	_frame = frame;
+	_timer = 0.0f;
+}
+
+void Animator::prevAnimation() {
+	_animation--;
+	if (_animation < 0)
+		_animation = _animations.lock()->_animationsCount - 1;
+}
+
+void Animator::nextAnimation() {
+	_animation++;
+	if (_animation >= _animations.lock()->_animationsCount)
+		_animation = 0;
+}
+
+void Animator::firstFrame() {
+	_frame = 0;
+	_timer = 0.0f;
+}
+
+void Animator::prevFrame() {
+	_frame--;
+	if (_frame < 0)
+		_frame = _animations.lock()->_framesCount - 1;
+}
+
+void Animator::nextFrame() {
+
+	if (_animations.expired())
+		return;
+
+	_frame++;
+	if (_frame >= _animations.lock()->_framesCount)
+		_frame = 0;
+}
+
+void Animator::lastFrame() {
+	_frame = _animations.lock()->_framesCount - 1;
+	_timer = 0.0f;
+}
+
+void Animator::setRandTime() {
+	if (_animations.expired())
+		return;
+
+	_timer = float(rand()%5+3) /  5.f * _animations.lock()->_interval;
+}
+
+void Animator::setRandFrame() {
+
+	if (_animations.expired()) {
+		_frame = 0;
+		_timer = 0.0f;
+		return;
+	}
+		
+	_frame = rand() % (4 * _animations.lock()->_framesCount) / 4;
+	_timer = 0.0f;
+}
+
+void Animator::play() {
+	_isPlaying = true;
+}
+
+void Animator::pause() {
+	_isPlaying = false;
+}
+
+void Animator::stop() {
+	_isPlaying = false;
+	_animation = 0;
+	_frame = 0;
+	_timer = 0.0f;
+}
+
+void Animator::update() {
+	if (!_isPlaying) return;
+	if (_animations.expired()) return;
+
+	_timer += deltaTime.asSeconds();
+
+	if (_timer >= _animations.lock()->_interval) {
+
+		_timer -= _animations.lock()->_interval;
+		_frame++;
+
+		if (_frame >= _animations.lock()->_framesCount) {
+			_frame = 0;
+		}
+	}
+}
+
+std::weak_ptr<Animations> Animator::getAnimations() {
+	return _animations;
+}

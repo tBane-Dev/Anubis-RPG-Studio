@@ -1,0 +1,52 @@
+﻿#pragma once
+#include <SFML/Graphics.hpp>
+#include "Editors/MapEditor/Map/Tile.hpp"
+#include "Objects/PlacedGameObject.hpp"
+
+namespace MapEditor {
+	class Chunk : public std::enable_shared_from_this<Chunk> {
+	public:
+		const static int tilesCols = 16;
+		const static int tilesRows = 16;
+		sf::Vector2i _coords;
+		std::vector<std::shared_ptr<Tile>> _tiles;
+		sf::VertexBuffer _vertexBuffer;
+		
+		bool _isVisible;
+		std::unique_ptr<sf::Text> _coordsText;
+
+		std::vector<std::shared_ptr<PlacedGameObject>> _gameObjectsOnMap;
+		sf::IntRect _gameObjectsOnMapRect;
+
+		Chunk(int x, int y);
+		~Chunk();
+
+		bool operator<(const Chunk& other) const;
+		std::shared_ptr<Tile> getTileByTileGlobalCoords(int x, int y);
+		std::shared_ptr<Tile> getTileByGlobalPosition();
+
+		void generateVertexBuffer(
+			std::shared_ptr<Chunk> leftTopChunk,
+			std::shared_ptr<Chunk> topChunk,
+			std::shared_ptr<Chunk> rightTopChunk,
+			std::shared_ptr<Chunk> leftChunk,
+			std::shared_ptr<Chunk> rightChunk,
+			std::shared_ptr<Chunk> leftBottomChunk,
+			std::shared_ptr<Chunk> bottomChunk,
+			std::shared_ptr<Chunk> rightBottomChunk
+		);
+
+		sf::IntRect getRect();
+		void calculatePlacedGameObjectRect();
+		sf::IntRect getPlacedGameObjectsRect();
+
+		void addPlacedGameObject(std::shared_ptr<PlacedGameObject> placedGameObject);
+		void removePlacedGameObject(std::shared_ptr<PlacedGameObject> placedGameObject);
+
+		void setVisible();
+
+		void drawCoords();
+		void draw();
+	};
+
+}

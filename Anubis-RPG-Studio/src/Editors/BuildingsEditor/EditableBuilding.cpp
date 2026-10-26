@@ -1,0 +1,453 @@
+﻿#include "Editors/BuildingsEditor/EditableBuilding.hpp"
+#include "Editors/BuildingsEditor/Editor.hpp"
+#include "Cursor.hpp"
+#include "DebugLog.hpp"
+#include "Wallset.hpp"
+
+namespace BuildingsEditor {
+
+	EditableBuilding::EditableBuilding() {
+		_state = EditableBuildingStates::Idle;
+		_building = nullptr;
+	}
+
+	EditableBuilding::~EditableBuilding() {
+
+	}
+
+	void EditableBuilding::create(std::shared_ptr<BuildingPrefab> prefab) {
+
+		_building = std::make_shared<Building>(prefab);
+		_building->generate();
+
+		sf::Vector2i panelSize = BuildingsEditor::editor->_building_panel->getSize();
+		sf::Vector2i panelPosition = BuildingsEditor::editor->_building_panel->getPosition();
+		
+		ResizableShape::resize(sf::Vector2i(8 * 32, 6 * 32));
+
+		setPosition(sf::Vector2i(
+			panelPosition.x + (panelSize.x - getSize().x) / 2,
+			panelPosition.y + (panelSize.y - getSize().y) / 2
+		));
+
+		setColor(sf::Color(79, 79, 79));
+		setOutlineColor(sf::Color(47, 47, 47));
+
+		setStep(32);
+		setMinSize(sf::Vector2i(8 * 32, 6 * 32));
+		setMaxSize(sf::Vector2i(24 * 32, 24 * 32));
+
+		if (!prefab) return;
+		
+		sf::Vector2i buildingSize = sf::Vector2i(prefab->_walls[0].size() * 32, prefab->_walls.size() * 32);
+
+		ResizableShape::resize(buildingSize);
+
+		setPosition(sf::Vector2i(
+			panelPosition.x + (panelSize.x - getSize().x) / 2,
+			panelPosition.y + (panelSize.y - getSize().y) / 2
+		));
+
+		// setPosition generuje podłogę i obiekty ścian.
+		_building->setPosition(getPosition());
+	}
+
+	void EditableBuilding::resizeFloor(int offsetX, int offsetY) {
+
+		std::shared_ptr<BuildingPrefab> bp = std::dynamic_pointer_cast<BuildingPrefab>(_building->_prefab.lock());
+		if (!bp) return;
+
+		int newWidth = _rect.size.x / 16;
+		int newHeight = _rect.size.y / 16;
+
+		std::vector<std::vector<int>> newFloor(newHeight, std::vector<int>(newWidth, 0));
+
+		for (int y = 0; y < newHeight; ++y) {
+			for (int x = 0; x < newWidth; ++x) {
+				int oldX = x - offsetX;
+				int oldY = y - offsetY;
+
+				if (oldX >= 0 && oldX < bp->_floor[0].size() &&
+					oldY >= 0 && oldY < bp->_floor.size()) {
+
+					newFloor[y][x] = bp->_floor[oldY][oldX];
+				}
+			}
+		}
+
+		bp->_floor = newFloor;
+
+		bp->generateFloorVertexArray(_scale);
+	}
+
+	void EditableBuilding::resizeWalls(int offsetX, int offsetY) {
+
+		std::shared_ptr<BuildingPrefab> bp = std::dynamic_pointer_cast<BuildingPrefab>(_building->_prefab.lock());
+		if (!bp) return;
+
+		int newWidth = _rect.size.x / 32;
+		int newHeight = _rect.size.y / 32;
+
+		std::vector<std::vector<int>> newWalls(newHeight, std::vector<int>(newWidth, -1));
+
+		for (int y = 0; y < newHeight; y++) {
+			for (int x = 0; x < newWidth; x++) {
+				int oldX = x - offsetX;	
+				int oldY = y - offsetY;
+
+				if (oldX >= 0 && oldX < bp->_walls[0].size() &&
+					oldY >= 0 && oldY < bp->_walls.size()) {
+
+					newWalls[y][x] = bp->_walls[oldY][oldX];
+				}
+			}
+		}
+
+		bp->_walls = newWalls;
+
+		bp->generateWalls(_building->_position, _scale, _building);
+	}
+
+	void EditableBuilding::resizeDoors(int offsetX, int offsetY) {
+
+		std::shared_ptr<BuildingPrefab> bp = std::dynamic_pointer_cast<BuildingPrefab>(_building->_prefab.lock());
+		if (!bp) return;
+
+		for (auto& door : bp->_doors) {
+			door->setPosition(door->getPosition() + sf::Vector2i(offsetX * 32, offsetY * 32));
+		}
+	}
+	void EditableBuilding::resizeWindows(int offsetX, int offsetY) {
+
+		std::shared_ptr<BuildingPrefab> bp = std::dynamic_pointer_cast<BuildingPrefab>(_building->_prefab.lock());
+		if (!bp) return;
+
+		for (auto& window : bp->_windows) {
+			window->setPosition(window->getPosition() + sf::Vector2i(offsetX * 32, offsetY * 32));
+		}
+	}
+
+
+	void EditableBuilding::resizeRoof() {
+
+		std::shared_ptr<BuildingPrefab> bp = std::dynamic_pointer_cast<BuildingPrefab>(_building->_prefab.lock());
+		if (!bp) return;
+
+		bp->generateRoofs(_building->_position, _scale);
+	}
+
+	void EditableBuilding::resize(std::shared_ptr<EdgePoint> edgePoint) {
+
+		if (!edgePoint || _scale <= 0.f)
+			return;
+		 
+		sf::Vector2i oldPosition = _rect.position;
+		sf::Vector2i oldSize = _rect.size;
+
+		bool resizeLeft =
+			edgePoint == _point_left_top ||
+			edgePoint == _point_left ||
+			edgePoint == _point_left_bottom;
+
+		bool resizeRight =
+			edgePoint == _point_right_top ||
+			edgePoint == _point_right ||
+			edgePoint == _point_right_bottom;
+
+		bool resizeTop =
+			edgePoint == _point_left_top ||
+			edgePoint == _point_top ||
+			edgePoint == _point_right_top;
+
+		bool resizeBottom =
+			edgePoint == _point_left_bottom ||
+			edgePoint == _point_bottom ||
+			edgePoint == _point_right_bottom;
+
+		sf::Vector2i screenDelta = Cursors::cursor->_position - edgePoint->getPosition();
+
+		auto screenToLogicalStep = [this](int screenDelta) {
+			int logicalDelta = int(std::round(float(screenDelta) / _scale));
+			return logicalDelta / _step * _step;
+		};
+
+		sf::Vector2i logicalDelta(screenToLogicalStep(screenDelta.x), screenToLogicalStep(screenDelta.y));
+
+		sf::Vector2i newPosition = oldPosition;
+		sf::Vector2i newSize = oldSize;
+
+		if (resizeLeft) {
+			newSize.x = std::clamp(oldSize.x - logicalDelta.x, _minSize.x, _maxSize.x);
+			int appliedLogicalDelta = oldSize.x - newSize.x;
+			newPosition.x += int(std::round(appliedLogicalDelta * _scale));
+		}
+		else if (resizeRight) {
+			newSize.x = std::clamp(oldSize.x + logicalDelta.x, _minSize.x, _maxSize.x);
+		}
+
+		if (resizeTop) {
+			newSize.y = std::clamp(oldSize.y - logicalDelta.y, _minSize.y, _maxSize.y);
+			int appliedLogicalDelta = oldSize.y - newSize.y;
+			newPosition.y += int(std::round(appliedLogicalDelta * _scale));
+		}
+		else if (resizeBottom) {
+			newSize.y = std::clamp(oldSize.y + logicalDelta.y, _minSize.y, _maxSize.y);
+		}
+
+		if (newPosition == oldPosition && newSize == oldSize)
+			return;
+
+		_rect.position = newPosition;
+		_rect.size = newSize;
+
+		int offsetX = 0;
+		int offsetY = 0;
+
+		if (resizeLeft)
+			offsetX = (newSize.x - oldSize.x) / 16;
+
+		if (resizeTop)
+			offsetY = (newSize.y - oldSize.y) / 16;
+
+		resizeFloor(offsetX, offsetY);
+		resizeWalls(offsetX/2, offsetY/2);
+		resizeDoors(offsetX/2, offsetY/2);
+		resizeWindows(offsetX/2, offsetY/2);
+		resizeRoof();
+		std::shared_ptr<BuildingPrefab> bp = std::dynamic_pointer_cast<BuildingPrefab>(_building->_prefab.lock());
+		bp->generateCollider(_scale);
+		setPosition(_rect.position);
+		_building->setPosition(_rect.position);
+	}
+
+	sf::Vector2i EditableBuilding::clampPosition(sf::Vector2i position) {
+		int clampOffset = 256;
+		int x = std::min(getSize().x / 2, clampOffset);
+		int y = std::min(getSize().y / 2, clampOffset);
+
+		sf::IntRect rect = BuildingsEditor::editor->_building_panel->_rect;
+
+		sf::Vector2i p;
+		p.x = std::clamp(position.x, rect.position.x - getSize().x + x, rect.position.x + rect.size.x - x);
+		p.y = std::clamp(position.y, rect.position.y - getSize().y + y, rect.position.y + rect.size.y - y);
+		return p;
+	}
+
+	void EditableBuilding::cursorHover() {
+		if (BuildingsEditor::editor->_building_panel->_buildingPrefab != nullptr) {
+			sf::IntRect rect = sf::IntRect(BuildingsEditor::editor->_building_panel->getPosition(), BuildingsEditor::editor->_building_panel->getSize());
+			if (rect.contains(BuildingsEditor::editor->_building_panel->_cursorOnBuilding->_globalPosition)) {
+				ResizableShape::cursorHover();
+			}
+		}
+		
+
+		if(_building)
+			_building->cursorHover();
+		
+	}
+
+	void EditableBuilding::handleEvent(const sf::Event& event) {
+
+		sf::IntRect rect = sf::IntRect(BuildingsEditor::editor->_building_panel->getPosition(), BuildingsEditor::editor->_building_panel->getSize());
+
+		if (!(BuildingsEditor::editor->_building_panel->_building.get() == this && rect.contains(BuildingsEditor::editor->_building_panel->_cursorOnBuilding->_globalPosition)) && GUI_manager->Element_pressed == nullptr)
+			return;
+
+		if (_state == EditableBuildingStates::Resizing) {
+			_state = EditableBuildingStates::Idle;
+		}
+
+		for (auto& point : _edgePoints) {
+			point->handleEvent(event);
+
+			if (point == GUI_manager->Element_pressed) {
+				_state = EditableBuildingStates::Resizing;
+				return;
+			}
+		}
+
+		if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Left) {
+
+			if (GUI_manager->Element_hovered.get() == this) {
+				GUI_manager->Element_pressed = shared_from_this();
+
+				//if (_editState == EditableBuildingEditStates::Floor) {
+				//	editTileUnderCursor();
+				//	return;
+				//}
+				//if (_editState == EditableBuildingEditStates::GameObject) {
+				//	addWallUnderCursor();
+				//	return;
+				//}
+			}
+		}
+
+		if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Middle) {
+			if (GUI_manager->Element_hovered.get() == this) {
+				_state = EditableBuildingStates::Moving;
+				_offset = Cursors::cursor->_position - getPosition();
+				GUI_manager->Element_pressed = nullptr;
+			}
+		}
+
+		if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Right) {
+			GUI_manager->Element_pressed = ResizableShape::shared_from_this();
+
+			//if(_editState == EditableBuildingEditStates::Floor) {
+			//	BuildingsEditor::editor->_palette->_slots->selectSlot(-1);
+			//	return;
+			//}
+			//
+			//if(_editState == EditableBuildingEditStates::GameObject) {
+			//	BuildingsEditor::editor->_palette->_slots->selectSlot(-1);
+			//	return;
+			//}
+			//
+			//if (_editState == EditableBuildingEditStates::None) {
+			//	removeWallUnderCursor();
+			//	return;
+			//}
+		}
+
+		if (const auto* mm = event.getIf<sf::Event::MouseMoved>(); mm) {
+			if (GUI_manager->Element_pressed.get() == this) {
+				//if(sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+				//	if (_editState == EditableBuildingEditStates::Floor) {
+				//		editTileUnderCursor();
+				//		return;
+				//	}
+				//
+				//	if (_editState == EditableBuildingEditStates::GameObject) {
+				//		addWallUnderCursor();
+				//		return;
+				//	}
+				//}
+				//
+				//if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right)) {
+				//	if (_editState == EditableBuildingEditStates::None) {
+				//		removeWallUnderCursor();
+				//		return;	
+				//	}
+				//}
+			}
+
+		}
+
+		if (const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Left) {
+			if (GUI_manager->Element_pressed.get() == this)
+				GUI_manager->Element_pressed = nullptr;
+		}
+
+		if (const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Middle) {
+			_state = EditableBuildingStates::Idle;
+			_offset = sf::Vector2i(0, 0);
+			if (GUI_manager->Element_pressed.get() == this)
+				GUI_manager->Element_pressed = nullptr;
+		}
+
+		if(const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Right) {
+			if (GUI_manager->Element_pressed.get() == this)
+				GUI_manager->Element_pressed = nullptr;
+
+			return;
+		}
+
+
+		if (const auto* mws = event.getIf<sf::Event::MouseWheelScrolled>(); mws) {
+			std::shared_ptr<BuildingPrefab> bp = std::dynamic_pointer_cast<BuildingPrefab>(_building->_prefab.lock());
+			
+			if (bp) {
+				float oldScale = _scale;
+				float newScale = std::clamp(_scale + mws->delta * 0.125f, 0.5f, 2.0f);
+				sf::Vector2f cursorPosition(Cursors::cursor->_position);
+				sf::Vector2f oldPosition(ResizableShape::getPosition());
+				float scaleFactor = newScale / oldScale;
+				sf::Vector2f newPosition = cursorPosition + (oldPosition - cursorPosition) * scaleFactor;
+				_scale = newScale;
+				setPosition(sf::Vector2i(newPosition));
+				_building->setPosition(sf::Vector2i(newPosition));
+
+				std::shared_ptr<BuildingPrefab> bp = std::dynamic_pointer_cast<BuildingPrefab>(_building->_prefab.lock());
+				bp->generate(_building->getPosition(), _scale, _building);
+				_building->generate();
+				BuildingsEditor::editor->_building_panel->_game_objects->_visiblePlacedGameObjects.clear();
+				BuildingsEditor::editor->_building_panel->_building->_building->addDoorsToVisibleGameObjects(BuildingsEditor::editor);
+				BuildingsEditor::editor->_building_panel->_building->_building->addWindowsToVisibleGameObjects(BuildingsEditor::editor);
+				BuildingsEditor::editor->_building_panel->_building->_building->addWallMountedToVisibleGameObjects(BuildingsEditor::editor);
+				BuildingsEditor::editor->_building_panel->_building->_building->addWallsToVisibleGameObjects(BuildingsEditor::editor);
+				BuildingsEditor::editor->_building_panel->_building->_building->addSkeletsToVisibleGameObjects(BuildingsEditor::editor);
+				BuildingsEditor::editor->_building_panel->_building->_building->addOutsideToVisibleGameObjects(BuildingsEditor::editor);
+				BuildingsEditor::editor->_building_panel->_game_objects->sort();
+			}
+
+			generateEdgePoints();
+		}
+	}
+
+	void EditableBuilding::update() {
+		if (_state == EditableBuildingStates::Moving) {
+
+			sf::Vector2i oldPosition = ResizableShape::getPosition();
+			sf::Vector2i newPosition = Cursors::cursor->_position - _offset;
+			
+			if (BuildingsEditor::editor->_building_panel->_building.get() == this) {
+				newPosition = clampPosition(newPosition);
+			}
+
+			sf::Vector2i delta = newPosition - oldPosition;
+
+			setPosition(newPosition);
+			_building->setPosition(newPosition);
+
+			std::shared_ptr<BuildingPrefab> bp = std::dynamic_pointer_cast<BuildingPrefab>(_building->_prefab.lock());
+			bp->generateFloorVertexArray(_scale);
+			bp->generateWalls(_building->_position, _scale, _building);
+			bp->generateSkelet(_building->_position, _scale, _building);
+			bp->generateRoofs(_building->_position, _scale);
+			bp->generateCollider(_scale);
+			return;
+		}
+		 
+		if (_state == EditableBuildingStates::Resizing) {
+			for (auto& point : _edgePoints) {
+				if(point == GUI_manager->Element_pressed) {
+					sf::IntRect oldRect = ResizableShape::_rect;
+					resize(point);
+					sf::IntRect newRect = ResizableShape::_rect;
+					if (oldRect != newRect) {
+						sf::Vector2i newPos = clampPosition(ResizableShape::getPosition());
+						ResizableShape::setPosition(newPos);
+
+						std::shared_ptr<BuildingPrefab> bp = std::dynamic_pointer_cast<BuildingPrefab>(_building->_prefab.lock());
+						bp->generate(_building->getPosition(), _scale, _building);
+						_building->generate();
+						BuildingsEditor::editor->_building_panel->_game_objects->_visiblePlacedGameObjects.clear();
+						BuildingsEditor::editor->_building_panel->_building->_building->addDoorsToVisibleGameObjects(BuildingsEditor::editor);
+						BuildingsEditor::editor->_building_panel->_building->_building->addWindowsToVisibleGameObjects(BuildingsEditor::editor);
+						BuildingsEditor::editor->_building_panel->_building->_building->addWallMountedToVisibleGameObjects(BuildingsEditor::editor);
+						BuildingsEditor::editor->_building_panel->_building->_building->addWallsToVisibleGameObjects(BuildingsEditor::editor);
+						BuildingsEditor::editor->_building_panel->_building->_building->addSkeletsToVisibleGameObjects(BuildingsEditor::editor);
+						BuildingsEditor::editor->_building_panel->_building->_building->addOutsideToVisibleGameObjects(BuildingsEditor::editor);
+						BuildingsEditor::editor->_building_panel->_game_objects->sort();
+					}
+					
+					return;
+				}
+			}
+
+			for (auto& point : _edgePoints) {
+				point->update();
+			}
+
+			return;
+		}
+
+		if(_building)
+			_building->update();
+	}
+
+	void EditableBuilding::draw() {
+		ResizableShape::drawOnlyRect();
+	}
+}

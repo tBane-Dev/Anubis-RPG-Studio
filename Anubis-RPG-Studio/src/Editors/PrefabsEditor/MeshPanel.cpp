@@ -1,0 +1,171 @@
+#include "Editors/PrefabsEditor/MeshPanel.hpp"
+#include "Editors/PrefabsEditor/Editor.hpp"
+#include "ShadersManager.hpp"
+#include "Theme.hpp"
+#include "RenderWindow.hpp"
+#include <iostream>
+#include "WindowsManager.hpp"
+#include "Editors/PrefabsEditor/MeshEditor.hpp"
+namespace PrefabsEditor {
+	MeshPanel::MeshPanel(sf::Vector2i margin) : Panel(sf::Vector2i(420, 375), sf::Vector2i(840 + margin.x, PrefabsEditor::editor->_main_menu->getSize().y + margin.y + PrefabsEditor::editor->_collider_panel->getSize().y + 4)) {
+		_title = std::make_unique<sf::Text>(basicFont, L"Mesh", 20);
+		_title->setFillColor(basic_text_color);
+		_title->setPosition(sf::Vector2f(_rect.position.x + 16, _rect.position.y + 16));
+
+		_set_mesh = std::make_shared<ButtonWithTextAndSprite>(
+			L"Set Mesh",
+			textures_manager->getTexture(L"assets\\tex\\editors_ui\\bottomButton.png"),
+			textures_manager->getTexture(L"assets\\tex\\editors_ui\\bottomButton_hover.png"),
+			textures_manager->getTexture(L"assets\\tex\\editors_ui\\bottomButton_press.png"),
+			textures_manager->getTexture(L"assets\\tex\\editors_ui\\bottomButton_inactive.png"),
+			sf::Vector2i(_rect.position.x + _rect.size.x / 2 - 192 / 2, _rect.position.y + margin.y + 192 + 16)
+		);
+
+		_set_mesh->_onclick_func = [this]() {
+
+			std::shared_ptr<Main::Window> mesh_editor = std::make_shared<MeshEditor>();
+			Main::windows_manager->push_back(mesh_editor);
+			};
+
+		setButtonsActivity();
+
+		_mesh = std::make_shared<Mesh>(2.0f, 1.0f);
+		_mesh->addShape(std::make_shared<Shape>());
+
+		if (!PrefabsEditor::editor->_object.expired()) {
+			_mesh = std::make_shared<Mesh>(*PrefabsEditor::editor->_object.lock()->getMesh());
+
+			if (_mesh == nullptr) {
+				_mesh = std::make_shared<Mesh>(2.0f, 1.0f);
+				_mesh->addShape(std::make_shared<Shape>());
+			}
+		}
+	}
+
+	MeshPanel::~MeshPanel() {
+
+	}
+
+	void MeshPanel::setButtonsActivity() {
+
+		if (!editor || !editor->_animator || editor->_animator->_animations.expired()) {
+			_set_mesh->setActive(false);
+		}
+		else {
+			_set_mesh->setActive(true);
+		}
+
+	}
+
+	void MeshPanel::cursorHover() {
+		Components::Panel::cursorHover();
+
+		_set_mesh->cursorHover();
+	}
+
+	void MeshPanel::handleEvent(const sf::Event& event) {
+		Components::Panel::handleEvent(event);
+
+		_set_mesh->handleEvent(event);
+	}
+
+	void MeshPanel::update() {
+		Components::Panel::update();
+
+		_set_mesh->update();
+	}
+
+	void MeshPanel::draw() {
+		Components::Panel::draw();
+		Main::render_window->draw(*_title);
+
+		// animator and animations
+		std::shared_ptr<Animator>& animator = PrefabsEditor::editor->_animator;
+		std::shared_ptr<Animations> animations = (animator) ? animator->getAnimations().lock() : nullptr;
+
+		// canvas background
+		sf::IntRect canvasRect = sf::IntRect(sf::Vector2i(getPosition().x + (getSize().x - 192) / 2, getPosition().y + _title->getFont().getLineSpacing(20) + 24 + 16), sf::Vector2i(192, 192));
+		sf::RectangleShape canvasRectShape(sf::Vector2f(canvasRect.size));
+		canvasRectShape.setFillColor(sf::Color(47, 47, 47));
+		canvasRectShape.setPosition(sf::Vector2f(canvasRect.position));
+		Main::render_window->draw(canvasRectShape);
+
+		// sprite
+		if (animator && animations) {
+
+			float spriteScale = std::min((float)canvasRect.size.x / (float)animations->getFrameRect(0, 0).size.x, (float)canvasRect.size.y / (float)animations->getFrameRect(0, 0).size.y);;
+
+			// draw checkerboard
+			sf::IntRect spriteRect = (animator && animations) ? animations->getFrameRect(animator->_animation, animator->_frame) : sf::IntRect(sf::Vector2i(0, 0), sf::Vector2i(192, 192));
+			spriteRect.position = sf::Vector2i(canvasRect.position.x + (canvasRect.size.x - (float)spriteRect.size.x * spriteScale) / 2, canvasRect.position.y + (canvasRect.size.y - (float)spriteRect.size.y * spriteScale) / 2);
+			sf::RectangleShape rect(sf::Vector2f((float)spriteRect.size.x * spriteScale, (float)spriteRect.size.y * spriteScale));
+			rect.setFillColor(sf::Color::Red);
+			rect.setPosition(sf::Vector2f(spriteRect.position));
+
+			sf::RenderStates states;
+			states.shader = &*checkerboard_shader;
+			checkerboard_shader->setUniform("rectPos", sf::Vector2f(spriteRect.position));
+			Main::render_window->draw(rect, states);
+
+			std::shared_ptr<Mesh>& mesh = PrefabsEditor::editor->_mesh;
+			if (mesh) {
+				mesh->drawConvexShapes(sf::Vector2i(canvasRect.position + sf::Vector2i((canvasRect.size.x - animations->getFrameRect(0, 0).size.x * spriteScale) / 2, (canvasRect.size.y - animations->getFrameRect(0, 0).size.y * spriteScale) / 2)), spriteScale, sf::Color(255, 0, 0));
+			}
+
+			sf::Sprite sprite(*animations->getTexture()->_texture);
+			sprite.setTextureRect(animations->getFrameRect(0, 0));
+			sprite.setScale(sf::Vector2f(spriteScale, spriteScale));
+			sprite.setPosition(sf::Vector2f(canvasRect.position + sf::Vector2i((canvasRect.size.x - animations->getFrameRect(0, 0).size.x * spriteScale) / 2, (canvasRect.size.y - animations->getFrameRect(0, 0).size.y * spriteScale) / 2)));
+			Main::render_window->draw(sprite);
+		}
+		else {
+			// draw checkerboard
+			sf::IntRect spriteRect = (animator && animations) ? animations->getFrameRect(animator->_animation, animator->_frame) : sf::IntRect(sf::Vector2i(0, 0), sf::Vector2i(192, 192));
+			spriteRect.position = sf::Vector2i(canvasRect.position.x + (canvasRect.size.x - spriteRect.size.x) / 2, canvasRect.position.y + (canvasRect.size.y - spriteRect.size.y) / 2);
+			sf::RectangleShape rect(sf::Vector2f(spriteRect.size));
+			rect.setFillColor(sf::Color::Red);
+			rect.setPosition(sf::Vector2f(spriteRect.position));
+
+			sf::RenderStates states;
+			states.shader = &*checkerboard_shader;
+			checkerboard_shader->setUniform("rectPos", sf::Vector2f(spriteRect.position));
+			Main::render_window->draw(rect, states);
+		}
+
+
+		//// draw checkerboard
+		//sf::RectangleShape rect(sf::Vector2f(sf::Vector2f(192, 192)));
+		//rect.setFillColor(sf::Color::Red);
+		//rect.setPosition(sf::Vector2f(getPosition().x + (getSize().x - 192) / 2, getPosition().y + _title->getFont().getLineSpacing(20) + 24 + 16));
+		//
+		//sf::RenderStates states;
+		//states.shader = &*checkerboard_shader;
+		//checkerboard_shader->setUniform("rectPos", rect.getPosition());
+		//Main::render_window->draw(rect, states);
+		//
+		//// draw animation
+		//std::shared_ptr<Animator>& animator = PrefabsEditor::editor->_animator;
+		//std::shared_ptr<Animations> animations = (animator)? animator->getAnimations().lock() : nullptr;
+		//if (animator && animations) {
+		//	
+		//	sf::IntRect frameRect = animations->getFrameRect(0, 0);
+		//	float scale = std::min(rect.getSize().x / (float)frameRect.size.x, rect.getSize().y / (float)frameRect.size.y);
+		//	sf::Sprite sprite(*animations->getTexture()->_texture);
+		//	sprite.setTextureRect(frameRect);
+		//	sprite.setScale(sf::Vector2f(scale, scale));
+		//	sf::Vector2f canvasPosition = sf::Vector2f(rect.getPosition().x + (rect.getSize().x - frameRect.size.x * scale) / 2, rect.getPosition().y + (rect.getSize().y - frameRect.size.y * scale) / 2);
+		//	sprite.setPosition(canvasPosition);
+		//
+		//	Main::render_window->draw(sprite);
+		//
+		//	std::shared_ptr<Mesh>& mesh = PrefabsEditor::editor->_mesh;
+		//	if (mesh) {
+		//		mesh->drawConvexShapes(sf::Vector2i(canvasPosition), scale, sf::Color(255, 0, 0));
+		//	}
+		//}
+
+		
+
+		_set_mesh->draw();
+	}
+}

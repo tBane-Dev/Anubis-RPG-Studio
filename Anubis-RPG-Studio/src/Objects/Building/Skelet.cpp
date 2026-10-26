@@ -1,0 +1,141 @@
+﻿#pragma once
+#include "Objects/Building/Skelet.hpp"
+#include "RenderWindow.hpp"
+#include "DebugLog.hpp"
+#include "EditorsManager.hpp"
+#include "Editors/MapEditor/Editor.hpp"
+#include "Editors/BuildingsEditor/Editor.hpp"
+#include "Objects/Building/Building.hpp"
+#include "Objects/Building/Roof2.hpp"
+
+SkeletPrefab::SkeletPrefab(std::wstring name, std::weak_ptr<Animations> animations, sf::Vector2i origin, std::shared_ptr<Collider> collider, std::shared_ptr<Mesh> mesh, int id) : GameObject(name, animations, origin, collider, mesh) {
+	_type = ObjectType::Skelet;
+	_id = id;
+
+	// create texture from skeletset.png
+	sf::Texture skeletTexture = *textures_manager->getTexture(L"assets\\tex\\buildings\\skeletset.png")->_texture;
+	sf::RenderTexture rtex;
+	rtex.resize(sf::Vector2u(16, 16));
+	rtex.clear(sf::Color::Transparent);
+	sf::Sprite spr(skeletTexture);
+	spr.setTextureRect(sf::IntRect(sf::Vector2i(16 * _id, 0), sf::Vector2i(16, 16)));
+	rtex.draw(spr);
+	rtex.display();
+
+	_texture = rtex.getTexture();
+
+}
+
+SkeletPrefab::~SkeletPrefab() {
+
+}
+
+SkeletSet::SkeletSet() {
+
+	sf::Vector2i origin = sf::Vector2i(8, 8);
+	int w = 16;
+	int h = 16;
+
+	_skelets.clear();
+	_skelets.push_back(std::make_shared<SkeletPrefab>(L"empty", std::weak_ptr<Animations>(), origin, std::make_shared<RectangularCollider>(0, 0, w, h), nullptr, 0));
+	_skelets.push_back(std::make_shared<SkeletPrefab>(L"skelet1", std::weak_ptr<Animations>(), origin, std::make_shared<RectangularCollider>(0, 0, w, h), nullptr, 1));
+	_skelets.push_back(std::make_shared<SkeletPrefab>(L"skelet2", std::weak_ptr<Animations>(), origin, std::make_shared<RectangularCollider>(0, 0, w, h), nullptr, 2));
+	_skelets.push_back(std::make_shared<SkeletPrefab>(L"skelet3", std::weak_ptr<Animations>(), origin, std::make_shared<RectangularCollider>(0, 0, w, h), nullptr, 3));
+	_skelets.push_back(std::make_shared<SkeletPrefab>(L"skelet4", std::weak_ptr<Animations>(), origin, std::make_shared<RectangularCollider>(0, 0, w, h), nullptr, 4));
+}
+
+SkeletSet::~SkeletSet() {
+
+}
+
+std::shared_ptr<SkeletPrefab> SkeletSet::getSkelet(int id) {
+	for (auto& skelet : _skelets) {
+		if (skelet->_id == id)
+			return skelet;
+	}
+	return nullptr;
+}
+
+std::shared_ptr<SkeletSet> skeletset = nullptr;
+
+Skelet::Skelet(std::weak_ptr<GameObject> prefab, sf::IntRect rect, std::weak_ptr<Building> building) : PlacedGameObject(prefab) {
+	_type = ObjectType::Skelet;
+	_rect = rect;
+	_building = building;
+}
+
+
+Skelet::~Skelet() {
+
+}
+
+void Skelet::setPosition(sf::Vector2i position) {
+	PlacedGameObject::setPosition(position);
+}
+
+sf::Vector2i Skelet::getSortPosition() {
+	
+	sf::Vector2i position = _position;
+	std::shared_ptr<RectangularCollider> collider = std::dynamic_pointer_cast<RectangularCollider>(_prefab.lock()->getCollider());
+	position.x += collider->_rect.position.x + collider->_rect.size.x / 2;
+	position.y += collider->_rect.position.y;
+	return position;
+}
+
+void Skelet::draw(sf::RenderTarget& target, float scale, int drawType) {
+	if (_prefab.expired())
+		return;
+
+	std::shared_ptr<SkeletPrefab> skeletPrefab = std::dynamic_pointer_cast<SkeletPrefab>(_prefab.lock());
+
+	if (!skeletPrefab)
+		return;
+
+	float leftX = (float)_position.x + (float)(_rect.position.x) * scale;
+	float rightX = leftX + (float)(_rect.size.x - 16) * scale;
+	float bottomY = (float)_position.y + (float)(_rect.position.y) * scale;
+
+	int maxI = 0;
+	if (drawType == 1) maxI = 2;
+	if (drawType == 2) maxI = _rect.size.y / 16;
+	
+
+	for (int i = 0; i < maxI; ++i) {
+		float y = bottomY - i * 16.f * scale;
+
+		sf::Sprite left(skeletPrefab->_texture);
+		left.setOrigin(sf::Vector2f(0.f, 16.f));
+		left.setPosition(sf::Vector2f(leftX, y));
+		left.setScale(sf::Vector2f(scale, scale));
+		target.draw(left);
+
+		sf::Sprite right(skeletPrefab->_texture);
+		right.setOrigin(sf::Vector2f(0.f, 16.f));
+		right.setPosition(sf::Vector2f(rightX, y));
+		right.setScale(sf::Vector2f(scale, scale));
+		target.draw(right);
+	}
+}
+
+void Skelet::draw() {
+
+	if (_building.expired()) {
+		return;
+	}
+
+	if (_building.lock()->_renderOutsideLook)
+		return;
+
+	if (Main::editor_manager->get_back() == BuildingsEditor::editor) {
+		draw(
+			*Main::render_window,
+			BuildingsEditor::editor->_building_panel->_building->_scale,
+			BuildingsEditor::editor->_main_menu->_render_walls_look->_checkbox->_value
+		);
+	}
+
+	if (Main::editor_manager->get_back() == MapEditor::editor) {
+		draw(*Main::render_window, 1.f, 1);
+	}
+	
+}

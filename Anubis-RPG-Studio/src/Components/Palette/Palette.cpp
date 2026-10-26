@@ -1,0 +1,445 @@
+﻿#include "Components/Palette/Palette.hpp"
+#include "Editors/MapEditor/Editor.hpp"
+#include "Objects/Monster.hpp"
+#include "PrefabsManager.hpp"
+#include "RenderWindow.hpp"
+#include "Cursor.hpp"
+#include "Editors/MapEditor/Map/CursorOnMap.hpp"
+#include "DebugLog.hpp"
+#include "Editors/BuildingsEditor/Editor.hpp"
+#include "Wallset.hpp"
+#include <queue>
+#include "Objects/Building/Roof1.hpp"
+#include "Objects/Building/Roof2.hpp"
+
+
+
+namespace Components {
+
+	std::vector<std::shared_ptr<Terrain>> Palette::terrains;
+	std::vector<std::shared_ptr<Floor>> Palette::floors;
+	std::vector<std::shared_ptr<Wall>> Palette::walls;
+	std::vector<std::shared_ptr<BuildingPrefab>> Palette::buildings;
+
+	Palette::Palette() : Element() {
+
+
+		if (Palette::terrains.empty()) {
+			for (int i = 0; i < tileset->groups.size(); i++){
+				Palette::terrains.emplace_back(std::make_shared<Terrain>(i, sf::IntRect(sf::Vector2i(15 * 64, i * 64), sf::Vector2i(16, 16))));
+			}
+		}
+
+		if (Palette::floors.empty()) {
+			for (int i = 0; i < textures_manager->getTexture(L"assets\\tex\\buildings\\floorset.png")->_texture->getSize().x / 64; i += 1) {
+				Palette::floors.emplace_back(std::make_shared<Floor>(i, sf::IntRect(sf::Vector2i(i * 64, 0), sf::Vector2i(64, 64))));
+			}
+		}
+
+		if(Palette::walls.empty()) {
+			for (int i = 0; i < wallset->_groups.size(); i += 1) {
+				Palette::walls.emplace_back(std::make_shared<Wall>(wallset->getPrefab(i)));
+			}
+		}
+
+		if(Palette::buildings.empty()) {
+			createBuildingsPrefabs(1, 0, 3, 0, 0, 0, 0);
+		}
+
+		sf::Vector2i size;
+		size.x = 600;
+		size.y = Main::render_window->getSize().y - MapEditor::editor->_main_menu->getSize().y;
+		_rect = sf::IntRect(sf::Vector2i(Main::render_window->getSize().x - size.x, MapEditor::editor->_main_menu->getSize().y), size);
+
+		_categories = std::make_shared<Categories>();
+		_tools = std::make_shared<ToolsTerrain>();
+		_slots = std::make_shared<Slots>();
+
+		_minBrushSize = 0;
+		_maxBrushSize = 5;
+		_brushSize = 2;
+
+		_categories->addCategory(
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category.png"),
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_hover.png"),
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_press.png"),
+			nullptr,
+			ObjectType::None,
+			[this]() {
+				loadAll(ObjectType::None);
+			}
+		);
+
+		_categories->addCategory(
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category.png"),
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_hover.png"),
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_press.png"),
+			nullptr, 
+			ObjectType::None,
+			[this]() {
+				loadAll(ObjectType::None);
+			}
+		);
+
+		_categories->addCategory(
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category.png"),
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_hover.png"),
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_press.png"),
+			nullptr, 
+			ObjectType::None,
+			[this]() {
+				loadAll(ObjectType::None);
+			}
+		);
+
+		_categories->addCategory(
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category.png"),
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_hover.png"),
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_press.png"),
+			nullptr, 
+			ObjectType::None,
+			[this]() {
+				loadAll(ObjectType::None);
+			}
+		);
+
+		_categories->addCategory(
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category.png"),
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_hover.png"),
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_press.png"),
+			nullptr,
+			ObjectType::None,
+			[this]() {
+				loadAll(ObjectType::None);
+			}
+		);
+
+		// set the active group
+		loadAll(ObjectType::None);
+
+		if (auto tools = std::dynamic_pointer_cast<ToolsTerrain>(_tools)) {
+			tools->setTool(nullptr, ToolTerrainType::None);
+		}
+	}
+
+	Palette::~Palette() {
+
+	}
+
+	void Palette::createBuildingsPrefabs(int floor, int wall, int height, int roof, int type, int wallRoof, int skeleton) {
+
+		auto generateFloor = [](std::vector<std::vector<int>> walls, int tile) {
+			if (walls.empty() || walls[0].empty())
+				return std::vector<std::vector<int>>();
+
+			int wallsW = (int)walls[0].size();
+			int wallsH = (int)walls.size();
+
+			// floor jest 2x większy od walls
+			int w = wallsW * 2;
+			int h = wallsH * 2;
+
+			// -1 = brak floor
+			std::vector<std::vector<int>> floor(h, std::vector<int>(w, -1));
+
+			// Maska ścian już w rozdzielczości floor
+			std::vector<std::vector<bool>> solid(h, std::vector<bool>(w, false));
+
+			for (int y = 0; y < wallsH; y++) {
+				for (int x = 0; x < wallsW; x++) {
+
+					if (walls[y][x] >= 0) {
+
+						int fx = x * 2;
+						int fy = y * 2;
+
+						solid[fy][fx] = true;
+						solid[fy][fx + 1] = true;
+						solid[fy + 1][fx] = true;
+						solid[fy + 1][fx + 1] = true;
+					}
+				}
+			}
+
+			int fw = w + 2;
+			int fh = h + 2;
+
+			std::vector<std::vector<bool>> outside(
+				fh,
+				std::vector<bool>(fw, false)
+			);
+
+			std::queue<sf::Vector2i> q;
+
+			q.push(sf::Vector2i(0, 0));
+			outside[0][0] = true;
+
+			const int dx[4] = { 1, -1, 0, 0 };
+			const int dy[4] = { 0, 0, 1, -1 };
+
+			while (!q.empty()) {
+
+				sf::Vector2i p = q.front();
+				q.pop();
+
+				for (int dir = 0; dir < 4; dir++) {
+
+					int nx = p.x + dx[dir];
+					int ny = p.y + dy[dir];
+
+					if (nx < 0 || ny < 0 || nx >= fw || ny >= fh) continue;
+
+					if (outside[ny][nx]) continue;
+
+					int ox = nx - 1;
+					int oy = ny - 1;
+
+					bool blocked = false;
+
+					if (ox >= 0 && oy >= 0 && ox < w && oy < h)
+						blocked = solid[oy][ox];
+
+					if (blocked) continue;
+
+					outside[ny][nx] = true;
+					q.push(sf::Vector2i(nx, ny));
+				}
+			}
+
+			for (int y = 0; y < h; y++) {
+				for (int x = 0; x < w; x++) {
+					bool isOutside = outside[y + 1][x + 1];
+					if (!isOutside)
+						floor[y][x] = tile;
+				}
+			}
+
+			return floor;
+			};
+
+		auto addBuildingPrefab = [generateFloor](std::wstring name, std::vector<std::vector<int>>walls, int floor, int height, int roof, int type, int wallRoof, int skeleton) {
+			std::shared_ptr<BuildingPrefab> buildingPrefab = std::make_shared<BuildingPrefab>(name, sf::Vector2i(walls[0].size(), walls.size()));
+
+			buildingPrefab->_walls = walls;
+			buildingPrefab->_floor = generateFloor(buildingPrefab->_walls, floor);
+			buildingPrefab->_wallHeight = height;
+			buildingPrefab->_skeletType = skeleton;
+
+			if (roof == 0) {
+				buildingPrefab->_roof = std::make_shared<Roof1>(type, buildingPrefab->_wallHeight, wallRoof);
+			}
+			else if (roof == 1) {
+				buildingPrefab->_roof = std::make_shared<Roof2>(type, buildingPrefab->_wallHeight, wallRoof);
+			}
+			else {
+				buildingPrefab->_roof = std::make_shared<Roof1>(type, buildingPrefab->_wallHeight, wallRoof);
+			}
+
+			buildingPrefab->generate(sf::Vector2i(0, 0));
+			Palette::buildings.emplace_back(buildingPrefab);
+		};
+
+		///////////////////////////
+
+		buildings.clear();
+
+		int X = wall;
+		int O = -1;
+
+		addBuildingPrefab(
+			L"New Building1", {
+			{ X, X, X, X, X, X, X, X },
+			{ X, O, O, O, O, O, O, X },
+			{ X, O, O, O, O, O, O, X },
+			{ X, O, O, O, O, O, O, X },
+			{ X, O, O, O, O, O, O, X },
+			{ X, X, X, X, X, X, X, X }
+			}, floor, height, roof, type, wallRoof, skeleton);
+
+		addBuildingPrefab(
+			L"New Building1", {
+			{ X, X, X, X, X, X},
+			{ X, O, O, O, O, X},
+			{ X, O, O, O, O, X},
+			{ X, O, O, O, O, X},
+			{ X, O, O, O, O, X},
+			{ X, O, O, O, O, X},
+			{ X, O, O, O, O, X},
+			{ X, O, O, O, O, X},
+			{ X, O, O, O, O, X},
+			{ X, O, O, O, O, X},
+			{ X, O, O, O, O, X},
+			{ X, X, X, X, X, X}
+			}, floor, height, roof, type, wallRoof, skeleton);
+
+		addBuildingPrefab(
+			L"New Building2", {
+			{ X, X, X, X, X, X, X, X, X, X, X, X},
+			{ X, O, O, O, O, O, O, O, O, O, O, X},
+			{ X, O, O, O, O, O, O, O, O, O, O, X},
+			{ X, O, O, O, O, O, O, O, O, O, O, X},
+			{ X, O, O, O, O, O, O, O, O, O, O, X},
+			{ X, O, O, O, O, O, O, O, O, O, O, X},
+			{ X, O, O, O, O, O, O, O, O, O, O, X},
+			{ X, X, X, X, X, X, X, X, X, X, X, X}
+			}, floor, height, roof, type, wallRoof, skeleton);
+
+		addBuildingPrefab(
+			L"New Building3", {
+			{ X, X, X, X, X, X, X, X, X, X},
+			{ X, O, O, O, O, O, O, O, O, X},
+			{ X, O, O, O, O, O, O, O, O, X},
+			{ X, O, O, O, O, O, O, O, O, X},
+			{ X, O, O, O, O, X, X, X, X, X},
+			{ X, O, O, O, O, X, O, O, O, O},
+			{ X, O, O, O, O, X, O, O, O, O},
+			{ X, X, X, X, X, X, O, O, O, O}
+			}, floor, height, roof, type, wallRoof, skeleton);
+
+		addBuildingPrefab(
+			L"New Building4", {
+			{ X, X, X, X, X, X, X, X, X, X},
+			{ X, O, O, O, O, O, O, O, O, X},
+			{ X, O, O, O, O, O, O, O, O, X},
+			{ X, O, O, O, O, O, O, O, O, X},
+			{ X, X, X, X, X, O, O, O, O, X},
+			{ O, O, O, O, X, O, O, O, O, X},
+			{ O, O, O, O, X, O, O, O, O, X},
+			{ O, O, O, O, X, X, X, X, X, X}
+			}, floor, height, roof, type, wallRoof, skeleton);
+
+		addBuildingPrefab(
+			L"New Building5", {
+			{ X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X },
+			{ X, O, O, O, O, O, O, O, O, O, O, O, O, O, O, X },
+			{ X, O, O, O, O, O, O, O, O, O, O, O, O, O, O, X },
+			{ X, O, O, O, O, O, O, O, O, O, O, O, O, O, O, X },
+			{ X, X, X, X, X, X, O, O, O, O, X, X, X, X, X, X },
+			{ O, O, O, O, O, X, O, O, O, O, X, O, O, O, O, O },
+			{ O, O, O, O, O, X, O, O, O, O, X, O, O, O, O, O },
+			{ O, O, O, O, O, X, X, X, X, X, X, O, O, O, O, O }
+			}, floor, height, roof, type, wallRoof, skeleton);
+
+		addBuildingPrefab(
+			L"New Building6", {
+			{ X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X },
+			{ X, O, O, O, O, O, O, O, O, O, O, O, O, O, O, X },
+			{ X, O, O, O, O, O, O, O, O, O, O, O, O, O, O, X },
+			{ X, O, O, O, O, O, O, O, O, O, O, O, O, O, O, X },
+			{ X, O, O, O, O, X, X, X, X, X, X, O, O, O, O, X },
+			{ X, O, O, O, O, X, O, O, O, O, X, O, O, O, O, X },
+			{ X, O, O, O, O, X, O, O, O, O, X, O, O, O, O, X },
+			{ X, X, X, X, X, X, O, O, O, O, X, X, X, X, X, X }
+			}, floor, height, roof, type, wallRoof, skeleton);
+	}
+	
+
+	sf::Vector2i Palette::getPosition() {
+		return _rect.position;
+	}
+
+	sf::Vector2i Palette::getSize() {
+		return _rect.size;
+	}
+
+	void Palette::addTools() {
+		_tools = nullptr;
+	}
+
+	void Palette::loadAll(ObjectType type) {
+		_categories->setCategory(type);
+		addTools();
+		
+
+		_slots->setCategory(type);
+		
+		setPosition(getPosition());
+	}
+
+	void Palette::setPosition(sf::Vector2i position) {
+
+		_rect.position = position;
+
+		int margin = 16;
+
+		// Categories
+		_categories->setPosition(position);
+
+		// Tools + Slots
+		if (_tools) {
+			_tools->setPosition(position + sf::Vector2i(0, _categories->getSize().y + margin));
+			_slots->setPosition(position + sf::Vector2i(0, _categories->getSize().y + margin + _tools->getSize().y + margin));
+		}
+		else {
+			_slots->setPosition(position + sf::Vector2i(0, _categories->getSize().y + margin));
+		}
+	}
+
+	void Palette::cursorHover() {
+		
+		if (_rect.contains(Cursors::cursor->_position)) {
+			GUI_manager->Element_hovered = shared_from_this();
+		}
+
+		_categories->cursorHover();
+
+		if (_tools != nullptr)
+			_tools->cursorHover();
+
+		_slots->cursorHover();
+
+	}
+
+	void Palette::handleEvent(const sf::Event& event) {
+
+		if (GUI_manager->Element_hovered.get() == this) {
+			if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Left) {
+				GUI_manager->Element_pressed = shared_from_this();
+			}
+		}
+
+		if (GUI_manager->Element_pressed.get() == this) {
+			if (const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Left) {
+				GUI_manager->Element_pressed = nullptr;
+			}
+		}
+
+		_categories->handleEvent(event);
+
+		if (_tools != nullptr)
+			_tools->handleEvent(event);
+
+		_slots->handleEvent(event);
+
+	}
+
+	void Palette::update() {
+
+		_categories->update();
+
+		if (_tools != nullptr)
+			_tools->update();
+
+		_slots->update();
+
+	}
+
+	void Palette::draw() {
+
+		GUI_manager->setView();
+
+		sf::RectangleShape rect(sf::Vector2f(_rect.size));
+		rect.setFillColor(sf::Color(31, 31, 31));
+		rect.setPosition(sf::Vector2f(_rect.position));
+		Main::render_window->draw(rect);
+
+		_categories->draw();
+		if (_tools != nullptr)
+			_tools->draw();
+		_slots->draw();
+
+		GUI_manager->setView();
+
+	}
+
+}
