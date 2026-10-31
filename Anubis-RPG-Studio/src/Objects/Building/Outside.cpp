@@ -63,7 +63,7 @@ void Outside::draw() {
 			sf::Sprite sprite(_texture);
 			sprite.setPosition(position);
 			sprite.setScale(sf::Vector2f(scale, scale));
-			Main::render_window->draw(sprite);
+			Anubis::render_window->draw(sprite);
 		}
 
 		if (Main::editor_manager->get_back() == MapEditor::editor) {
@@ -72,11 +72,11 @@ void Outside::draw() {
 			//sf::Sprite sprite(_texture);
 			//sf::Vector2f position = sf::Vector2f(_position.x - roofOverhangSize.x, _position.y - roofOverhangSize.y - (int)(_texture.getSize().y));
 			//sprite.setPosition(position);
-			//Main::render_window->draw(sprite);
+			//Anubis::render_window->draw(sprite);
 		
-			const sf::View& view = Main::render_window->getView();
+			const sf::View& view = Anubis::render_window->getView();
 			sf::Vector2f size = view.getSize();
-			sf::IntRect viewport = Main::render_window->getViewport(view);
+			sf::IntRect viewport = Anubis::render_window->getViewport(view);
 			const float aspect = (float)(viewport.size.x) / (float)(viewport.size.y);
 			float pi = 3.14159265f;
 			float fov = 60.0f;
@@ -100,7 +100,7 @@ void Outside::draw() {
 			sf::RenderStates states;
 			states.shader = &*sprite25D_shader;
 
-			Main::render_window->draw(sprite, states);
+			Anubis::render_window->draw(sprite, states);
 		}
 
 		

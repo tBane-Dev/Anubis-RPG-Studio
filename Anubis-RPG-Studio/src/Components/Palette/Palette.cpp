@@ -48,8 +48,8 @@ namespace Components {
 
 		sf::Vector2i size;
 		size.x = 600;
-		size.y = Main::render_window->getSize().y - MapEditor::editor->_main_menu->getSize().y;
-		_rect = sf::IntRect(sf::Vector2i(Main::render_window->getSize().x - size.x, MapEditor::editor->_main_menu->getSize().y), size);
+		size.y = Anubis::render_window->getSize().y - MapEditor::editor->_main_menu->getSize().y;
+		_rect = sf::IntRect(sf::Vector2i(Anubis::render_window->getSize().x - size.x, MapEditor::editor->_main_menu->getSize().y), size);
 
 		_categories = std::make_shared<Categories>();
 		_tools = std::make_shared<ToolsTerrain>();
@@ -431,7 +431,7 @@ namespace Components {
 		sf::RectangleShape rect(sf::Vector2f(_rect.size));
 		rect.setFillColor(sf::Color(31, 31, 31));
 		rect.setPosition(sf::Vector2f(_rect.position));
-		Main::render_window->draw(rect);
+		Anubis::render_window->draw(rect);
 
 		_categories->draw();
 		if (_tools != nullptr)

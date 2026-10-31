@@ -226,7 +226,7 @@ void NumberInput::handleEvent(const sf::Event& event) {
 		if (_rect.contains(Cursors::cursor->_position)) {
 
 			if (_editState == NumberInputEditState::TextEntered) {
-				if ((currentTime - _lastCLickTime).asSeconds() < 0.2f) {
+				if ((Anubis::currentTime - _lastCLickTime).asSeconds() < 0.2f) {
 					// double click
 					_selectionStart = 0;
 					_selectionEnd = (int)_textStr.length();
@@ -242,7 +242,7 @@ void NumberInput::handleEvent(const sf::Event& event) {
 			}
 			else {
 
-				if ((currentTime - _lastCLickTime).asSeconds() < 0.2f) {
+				if ((Anubis::currentTime - _lastCLickTime).asSeconds() < 0.2f) {
 					// double click
 					_selectionStart = 0;
 					_selectionEnd = (int)_textStr.length();
@@ -267,7 +267,7 @@ void NumberInput::handleEvent(const sf::Event& event) {
 			_editState = NumberInputEditState::None;
 			_selectionStart = -1;
 			_selectionEnd = -1;
-			_lastCLickTime = currentTime;
+			_lastCLickTime = Anubis::currentTime;
 
 			setValidatedText(_textStr);
 			_cursorPosition = std::min(_cursorPosition, (int)_textStr.length());
@@ -275,7 +275,7 @@ void NumberInput::handleEvent(const sf::Event& event) {
 			if(GUI_manager->Element_pressed.get() == this)
 				GUI_manager->Element_pressed = nullptr;
 		}
-		_lastCLickTime = currentTime;
+		_lastCLickTime = Anubis::currentTime;
 		return;
 	}
 
@@ -572,7 +572,7 @@ void NumberInput::draw() {
 	rectPosition.y = (float)(_rect.position.y + _border);
 	rect.setPosition(rectPosition);
 
-	Main::render_window->draw(rect);
+	Anubis::render_window->draw(rect);
 
 	if (!(_selectionStart == -1 && _selectionEnd == -1) && _selectionStart != _selectionEnd) {
 
@@ -594,24 +594,24 @@ void NumberInput::draw() {
 		selectionRect.setPosition(selectionRectPosition);
 		selectionRect.setFillColor(sf::Color(31, 31, 127, 255));
 
-		Main::render_window->draw(selectionRect);
+		Anubis::render_window->draw(selectionRect);
 
 	}
 
 	// draw text
 	if(_textStr.empty() && _editState != NumberInputEditState::TextEntered) {
-		Main::render_window->draw(*_defaultText);
+		Anubis::render_window->draw(*_defaultText);
 	}
 	else {
-		Main::render_window->draw(*_text);
+		Anubis::render_window->draw(*_text);
 	}
 	
 	// draw cursor
-	if (_editState != NumberInputEditState::None && int(currentTime.asSeconds() * 3) % 2 == 0) {
+	if (_editState != NumberInputEditState::None && int(Anubis::currentTime.asSeconds() * 3) % 2 == 0) {
 		sf::RectangleShape cursor(sf::Vector2f(2, basicFont.getLineSpacing(_characterSize)));
 		cursor.setFillColor(sf::Color::Red);
 		cursor.setPosition(_text->findCharacterPos(_cursorPosition));
-		Main::render_window->draw(cursor);
+		Anubis::render_window->draw(cursor);
 	}
 		
 

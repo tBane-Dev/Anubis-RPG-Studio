@@ -90,13 +90,13 @@ namespace BuildingsEditor {
 		);
 
 		view.setViewport(vp);
-		Main::render_window->setView(view);
+		Anubis::render_window->setView(view);
 
 		// draw building
 		_building->draw(); // draw only rect
 		std::shared_ptr<BuildingPrefab> prefab = std::dynamic_pointer_cast<BuildingPrefab>(_building->_building->_prefab.lock());
 		if(prefab)
-			prefab->drawOnlyFloor(*Main::render_window, _building->_building->getPosition());
+			prefab->drawOnlyFloor(*Anubis::render_window, _building->_building->getPosition());
 
 		for (auto& object : _game_objects->_visiblePlacedGameObjects) {
 			object->draw();
@@ -120,7 +120,7 @@ namespace BuildingsEditor {
 			sf::RectangleShape gridRect(sf::Vector2f(_building->getSize()));
 			gridRect.setPosition(sf::Vector2f(_building->getPosition()));
 			gridRect.setFillColor(sf::Color(127, 47, 47, 127));
-			Main::render_window->draw(gridRect, rs);
+			Anubis::render_window->draw(gridRect, rs);
 		}
 		
 		// draw cursor on building

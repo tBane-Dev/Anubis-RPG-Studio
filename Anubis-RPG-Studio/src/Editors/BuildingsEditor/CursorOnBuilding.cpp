@@ -675,7 +675,7 @@ namespace BuildingsEditor {
                     sf::RectangleShape rect(sf::Vector2f(64.0f * scale, 64.0f * scale));
                     rect.setPosition(sf::Vector2f(position.x, position.y - 48.f * scale));
                     rect.setFillColor(sf::Color(255, 47, 47, 127));
-                    Main::render_window->draw(rect);
+                    Anubis::render_window->draw(rect);
                 }
                 return;
             }
@@ -687,7 +687,7 @@ namespace BuildingsEditor {
 				sprite.setScale(sf::Vector2f(scale, scale));
                 sprite.setPosition(sf::Vector2f(position));
                 sprite.setOrigin(sf::Vector2f(0, 48));
-                Main::render_window->draw(sprite);
+                Anubis::render_window->draw(sprite);
                 return;
             }
         }
@@ -731,7 +731,7 @@ namespace BuildingsEditor {
                     sf::RectangleShape rect(sf::Vector2f(32.f * scale, 32.f * scale));
                     rect.setPosition(sf::Vector2f(position));
                     rect.setFillColor(sf::Color(255, 47, 47, 127));
-                    Main::render_window->draw(rect);
+                    Anubis::render_window->draw(rect);
                 }
                 
                 return;
@@ -742,7 +742,7 @@ namespace BuildingsEditor {
                 sprite.setTextureRect(frameRect);
                 sprite.setScale(sf::Vector2f(scale, scale));
                 sprite.setPosition(sf::Vector2f(position));
-                Main::render_window->draw(sprite);
+                Anubis::render_window->draw(sprite);
                 return;
             }
         }
@@ -786,7 +786,7 @@ namespace BuildingsEditor {
                     sf::RectangleShape rect(sf::Vector2f(32.f * scale, 32.f * scale));
                     rect.setPosition(sf::Vector2f(position));
                     rect.setFillColor(sf::Color(255, 47, 47, 127));
-                    Main::render_window->draw(rect);
+                    Anubis::render_window->draw(rect);
                 }
 
                 return;
@@ -797,7 +797,7 @@ namespace BuildingsEditor {
                 sprite.setTextureRect(frameRect);
                 sprite.setScale(sf::Vector2f(scale, scale));
                 sprite.setPosition(sf::Vector2f(position));
-                Main::render_window->draw(sprite);
+                Anubis::render_window->draw(sprite);
                 return;
             }
         }
@@ -836,7 +836,7 @@ namespace BuildingsEditor {
                             sf::RectangleShape rect(sf::Vector2f(tileRect.size));
                             rect.setPosition(sf::Vector2f(tileRect.position));
                             rect.setFillColor(sf::Color(255, 47, 47, 127));
-                            Main::render_window->draw(rect);
+                            Anubis::render_window->draw(rect);
                         }
 
 

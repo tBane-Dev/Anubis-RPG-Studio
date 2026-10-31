@@ -249,7 +249,7 @@ namespace BuildingsEditor {
 	void ActionsPanel::draw() {
 		Components::Panel::draw();
 
-		Main::render_window->draw(*_title);
+		Anubis::render_window->draw(*_title);
 
 		_saveBtn->draw();
 		_addBtn->draw();

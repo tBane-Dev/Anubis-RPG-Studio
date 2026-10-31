@@ -1,6 +1,9 @@
 #include "BinaryWriter.hpp"
 #include "DebugLog.hpp"
 
+// TO-DO - add namespace Anubis
+
+
 BinaryWriter::BinaryWriter(std::ostream& os) : os(os) { }
 
 void BinaryWriter::write_wstring(const std::wstring& str) {

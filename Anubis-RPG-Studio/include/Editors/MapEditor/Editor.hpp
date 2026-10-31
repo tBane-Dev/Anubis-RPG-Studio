@@ -7,6 +7,7 @@
 #include "Editors/MapEditor/Map/PlacedGameObjects.hpp"
 #include "Editors/MapEditor/MainMenu.hpp"
 #include "Editors/MapEditor/Palette.hpp"
+#include "3D/Scene.hpp"
 
 namespace MapEditor {
 	class Editor : public Main::Editor {
@@ -22,6 +23,7 @@ namespace MapEditor {
 		Editor();
 		~Editor();
 
+		void createScene();
 		void createMap(int width, int height);
 		void createGameObjects();
 		void createCamera();

@@ -53,7 +53,7 @@ void BuildingSlot::draw() {
 		sprite.setScale(sf::Vector2f(scale, scale));
 		sprite.setPosition(sf::Vector2f(_rect.position.x + (240.f - size.x * scale) / 2.f, _rect.position.y + (240.f - size.y * scale) / 2.f));
 
-		Main::render_window->draw(sprite);
+		Anubis::render_window->draw(sprite);
 	}
 	
 }

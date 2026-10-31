@@ -127,7 +127,7 @@ namespace Main {
 		if (element.lock() == _element.lock()) return;
 		
 		_element = element;
-		_timer = currentTime;
+		_timer = Anubis::currentTime;
 
 		_title = L"";
 		_description = L"";
@@ -178,7 +178,7 @@ namespace Main {
 
 		if (_element.expired()) return;
 
-		if ((currentTime - _timer).asSeconds() > 0.5f && (_title != L"" || _description != L"")) {
+		if ((Anubis::currentTime - _timer).asSeconds() > 0.5f && (_title != L"" || _description != L"")) {
 
 			int padding = 4;
 
@@ -203,15 +203,15 @@ namespace Main {
 			}
 
 			int screenPadding = 16;
-			pos.x = std::clamp(pos.x, screenPadding, int(Main::render_window->getSize().x - rectSize.x - screenPadding));
-			pos.y = std::clamp(pos.y, screenPadding, int(Main::render_window->getSize().y - rectSize.y - screenPadding));
+			pos.x = std::clamp(pos.x, screenPadding, int(Anubis::render_window->getSize().x - rectSize.x - screenPadding));
+			pos.y = std::clamp(pos.y, screenPadding, int(Anubis::render_window->getSize().y - rectSize.y - screenPadding));
 
 			sf::RectangleShape outerRectShape(sf::Vector2f(rectSize.x, rectSize.y));
 			outerRectShape.setPosition(sf::Vector2f(pos.x, pos.y));
 			outerRectShape.setFillColor(sf::Color(47, 47, 47));
 			outerRectShape.setOutlineThickness(2.0f);
 			outerRectShape.setOutlineColor(sf::Color(63, 63, 63));
-			Main::render_window->draw(outerRectShape);
+			Anubis::render_window->draw(outerRectShape);
 
 
 			if (_title != L"") {
@@ -219,7 +219,7 @@ namespace Main {
 				titlePos.x = pos.x + padding;
 				titlePos.y = pos.y + padding;
 				_title_text->setPosition(sf::Vector2f(titlePos));
-				Main::render_window->draw(*_title_text);
+				Anubis::render_window->draw(*_title_text);
 			}
 
 			if (_description != L"") {
@@ -228,7 +228,7 @@ namespace Main {
 				descriptionPos.y = pos.y + padding;
 				if (_title != L"") descriptionPos.y += (int)(basicFont.getLineSpacing(small_text_size)) + padding;
 				_description_text->setPosition(sf::Vector2f(descriptionPos));
-				Main::render_window->draw(*_description_text);
+				Anubis::render_window->draw(*_description_text);
 			}
 		}
 	}

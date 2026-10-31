@@ -157,13 +157,13 @@ void MeshEditor::draw() {
 	innerRectShape.setFillColor(sf::Color(31, 31, 31));
 	innerRectShape.setOutlineThickness(1.0f);
 	innerRectShape.setOutlineColor(sf::Color(63, 63, 63));
-	Main::render_window->draw(innerRectShape);
+	Anubis::render_window->draw(innerRectShape);
 
 	// canvas background
 	sf::RectangleShape canvasRectShape(sf::Vector2f(_canvasRect.size));
 	canvasRectShape.setFillColor(sf::Color(47, 47, 47));
 	canvasRectShape.setPosition(sf::Vector2f(_canvasRect.position));
-	Main::render_window->draw(canvasRectShape);
+	Anubis::render_window->draw(canvasRectShape);
 
 
 	// draw checkerboard
@@ -174,14 +174,14 @@ void MeshEditor::draw() {
 	sf::RenderStates states;
 	states.shader = &*checkerboard_shader;
 	checkerboard_shader->setUniform("rectPos", sf::Vector2f(_spriteRect.position));
-	Main::render_window->draw(rect, states);
+	Anubis::render_window->draw(rect, states);
 
 	// sprite
 	sf::Sprite sprite(*_animations->getTexture()->_texture);
 	sprite.setTextureRect(_animations->getFrameRect(0, 0));
 	sprite.setScale(sf::Vector2f(_spriteScale, _spriteScale));
 	sprite.setPosition(sf::Vector2f(_canvasRect.position + sf::Vector2i((_canvasRect.size.x - _animations->getFrameRect(0,0).size.x * _spriteScale) / 2, (_canvasRect.size.y - _animations->getFrameRect(0,0).size.y * _spriteScale) / 2)));
-	Main::render_window->draw(sprite);
+	Anubis::render_window->draw(sprite);
 
 	// draw grid
 	float gridWidth = 2.0f;
@@ -200,7 +200,7 @@ void MeshEditor::draw() {
 	sf::RectangleShape gridRect(sf::Vector2f(_canvasRect.size));
 	gridRect.setPosition(sf::Vector2f(_canvasRect.position));
 	gridRect.setFillColor(sf::Color(127, 47, 47, 127));
-	Main::render_window->draw(gridRect, rs);
+	Anubis::render_window->draw(gridRect, rs);
 
 	// sprite outline 
 	sf::RectangleShape spriteOutline(sf::Vector2f(_spriteRect.size - sf::Vector2i(2 * (int)_spriteOutlineThickness - gridWidth, 2 * (int)_spriteOutlineThickness - gridWidth)));
@@ -208,7 +208,7 @@ void MeshEditor::draw() {
 	spriteOutline.setFillColor(sf::Color::Transparent);
 	spriteOutline.setOutlineThickness(_spriteOutlineThickness);
 	spriteOutline.setOutlineColor(sf::Color(23, 23, 23));
-	Main::render_window->draw(spriteOutline);
+	Anubis::render_window->draw(spriteOutline);
 
 	if (PrefabsEditor::editor->_mesh)
 		PrefabsEditor::editor->_mesh->draw(_spriteRect.position, _spriteScale, sf::Color(255, 0, 0), true, _activeShape.lock());
@@ -234,6 +234,6 @@ void MeshEditor::draw() {
 		if (centerPoint.y > _canvasRect.position.y + _canvasRect.size.y - 2) centerPoint.y = (float)_canvasRect.position.y + _canvasRect.size.y - 2;
 
 		point.setPosition(centerPoint);
-		Main::render_window->draw(point);
+		Anubis::render_window->draw(point);
 	}
 }

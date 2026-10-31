@@ -54,7 +54,7 @@ void ButtonWithText::draw() {
 	Button::draw();
 
 	if (_text) {
-		Main::render_window->draw(*_text);
+		Anubis::render_window->draw(*_text);
 	}
 
 }

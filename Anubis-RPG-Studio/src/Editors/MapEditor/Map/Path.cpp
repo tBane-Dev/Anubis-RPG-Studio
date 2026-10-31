@@ -137,7 +137,7 @@ namespace MapEditor {
 
 		for (auto& point : _pathPoints) {
 			pointShape.setPosition(sf::Vector2f(map_rect.position) + sf::Vector2f(point));
-			Main::render_window->draw(pointShape);
+			Anubis::render_window->draw(pointShape);
 		}
 
 		// edge points
@@ -146,9 +146,9 @@ namespace MapEditor {
 		edgePointShape.setFillColor(sf::Color::Blue);
 
 		edgePointShape.setPosition(sf::Vector2f(map_rect.position) + sf::Vector2f(_startPoint));
-		Main::render_window->draw(edgePointShape);
+		Anubis::render_window->draw(edgePointShape);
 
 		edgePointShape.setPosition(sf::Vector2f(map_rect.position) + sf::Vector2f(_endPoint));
-		Main::render_window->draw(edgePointShape);
+		Anubis::render_window->draw(edgePointShape);
 	}
 }

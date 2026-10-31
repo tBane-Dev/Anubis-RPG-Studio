@@ -1,8 +1,11 @@
 #include "Time.hpp"
 #include "SFML/Graphics.hpp"
 
-sf::Clock mainClock;
+namespace Anubis {
 
-sf::Time prevTime;
-sf::Time currentTime;
-sf::Time deltaTime;
+	sf::Clock mainClock;
+
+	sf::Time prevTime;
+	sf::Time currentTime;
+	sf::Time deltaTime;
+}

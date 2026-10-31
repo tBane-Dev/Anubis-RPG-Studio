@@ -33,7 +33,7 @@ Option::Option(std::wstring text, std::wstring shortcut, sf::Vector2i position) 
 
 	_hover_func = { };
 	_onclick_func = { };
-	_clickTime = currentTime;
+	_clickTime = Anubis::currentTime;
 
 }
 
@@ -79,6 +79,6 @@ void Option::draw() {
 	_text->setFillColor(textColor);
 	_shortcut_text->setFillColor(textColor);
 
-	Main::render_window->draw(*_text);
-	Main::render_window->draw(*_shortcut_text);
+	Anubis::render_window->draw(*_text);
+	Anubis::render_window->draw(*_shortcut_text);
 }

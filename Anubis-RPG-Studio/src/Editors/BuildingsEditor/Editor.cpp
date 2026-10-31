@@ -107,7 +107,7 @@ namespace BuildingsEditor {
 
 		GUI_manager->setView();
 
-		Main::render_window->draw(*_title);
+		Anubis::render_window->draw(*_title);
 
 		_building_panel->draw();
 		_name_panel->draw();

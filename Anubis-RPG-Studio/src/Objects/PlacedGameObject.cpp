@@ -110,31 +110,31 @@ void PlacedGameObject::drawFrame(sf::Color color) {
 	sf::RectangleShape topLeft(sf::Vector2f(gapStart, thickness));
 	topLeft.setPosition(sf::Vector2f(x, y));
 	topLeft.setFillColor(color);
-	Main::render_window->draw(topLeft);
+	Anubis::render_window->draw(topLeft);
 
 	if (gapEnd < w) {
 		sf::RectangleShape topRight(sf::Vector2f(w - gapEnd, thickness));
 		topRight.setPosition(sf::Vector2f(x + gapEnd, y));
 		topRight.setFillColor(color);
-		Main::render_window->draw(topRight);
+		Anubis::render_window->draw(topRight);
 	}
 
 	sf::RectangleShape left(sf::Vector2f(thickness, h));
 	left.setPosition(sf::Vector2f(x, y));
 	left.setFillColor(color);
-	Main::render_window->draw(left);
+	Anubis::render_window->draw(left);
 
 	sf::RectangleShape right(sf::Vector2f(thickness, h));
 	right.setPosition(sf::Vector2f(x + w - thickness, y));
 	right.setFillColor(color);
-	Main::render_window->draw(right);
+	Anubis::render_window->draw(right);
 
 	sf::RectangleShape bottom(sf::Vector2f(w, thickness));
 	bottom.setPosition(sf::Vector2f(x, y + h - thickness));
 	bottom.setFillColor(color);
-	Main::render_window->draw(bottom);
+	Anubis::render_window->draw(bottom);
 
-	Main::render_window->draw(*_text);
+	Anubis::render_window->draw(*_text);
 	
 	
 	
@@ -242,7 +242,7 @@ void PlacedGameObject::draw() {
 			sf::RenderStates states;
 			states.shader = &*sprite25D_shader;
 
-			Main::render_window->draw(*_sprite, states);
+			Anubis::render_window->draw(*_sprite, states);
 		}
 
 		

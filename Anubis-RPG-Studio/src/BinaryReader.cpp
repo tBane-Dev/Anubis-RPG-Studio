@@ -1,6 +1,8 @@
 ﻿#include "BinaryReader.hpp"
 #include "DebugLog.hpp"
 
+
+// TO-DO - add namespace Anubis
 BinaryReader::BinaryReader(std::ifstream& is) : is(is) { }
 
 std::wstring BinaryReader::read_wstring() {
@@ -11,6 +13,12 @@ std::wstring BinaryReader::read_wstring() {
     is.read(reinterpret_cast<char*>(str.data()), len * sizeof(wchar_t));
 
     return str;
+}
+
+uint32_t BinaryReader::read_uint32() {
+    uint32_t value;
+    is.read(reinterpret_cast<char*>(&value), sizeof(uint32_t));
+    return value;
 }
 
 int32_t BinaryReader::read_int32() {

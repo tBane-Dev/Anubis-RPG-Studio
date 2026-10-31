@@ -903,9 +903,9 @@ void Slots::draw() {
 	background.setFillColor(sf::Color(31, 31, 31));
 	background.setOutlineThickness(2);
 	background.setOutlineColor(sf::Color(63, 63, 63));
-	Main::render_window->draw(background);
+	Anubis::render_window->draw(background);
 
-	Main::render_window->draw(*_text);
+	Anubis::render_window->draw(*_text);
 
 	_scrollbar->draw();
 
@@ -925,11 +925,11 @@ void Slots::draw() {
 	);
 
 	view.setViewport(vp);
-	Main::render_window->setView(view);
+	Anubis::render_window->setView(view);
 
 	if (MapEditor::editor->_palette->_slots->_type == ObjectType::Terrain || MapEditor::editor->_palette->_slots->_type == ObjectType::Wall) {
-		terrain2D_shader->setUniform("resolution", sf::Vector2f(Main::render_window->getSize()));
-		terrain2D_shader->setUniform("time", currentTime.asSeconds());
+		terrain2D_shader->setUniform("resolution", sf::Vector2f(Anubis::render_window->getSize()));
+		terrain2D_shader->setUniform("time", Anubis::currentTime.asSeconds());
 	}
 
 	for (auto& slot : _slots) {

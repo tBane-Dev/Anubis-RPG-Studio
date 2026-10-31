@@ -55,7 +55,7 @@ void ButtonWithTextSpriteAndIcon::draw() {
 	ButtonWithSprite::draw();
 
 	if (_text) {
-		Main::render_window->draw(*_text);
+		Anubis::render_window->draw(*_text);
 	}
 
 	std::shared_ptr<Texture> icon_texture;
@@ -82,6 +82,6 @@ void ButtonWithTextSpriteAndIcon::draw() {
 	iconPos.x = _rect.position.x + size.x / 2;
 	iconPos.y = _rect.position.y + size.y / 2 + 2;
 	sprite.setPosition(sf::Vector2f(iconPos));
-	Main::render_window->draw(sprite);
+	Anubis::render_window->draw(sprite);
 
 }

@@ -3,6 +3,8 @@
 #include <fstream>
 #include <SFML/Graphics.hpp>
 
+// TO-DO - add namespace Anubis
+
 class BinaryReader {
     std::ifstream& is;
 
@@ -10,6 +12,7 @@ public:
     BinaryReader(std::ifstream& is);
 
     std::wstring read_wstring();
+    uint32_t read_uint32();
     int32_t read_int32();
     int16_t read_int16();
     int8_t read_int8();

@@ -139,7 +139,7 @@ namespace MapEditor {
 		if (MapEditor::editor->_camera) {
 			sf::View view = MapEditor::editor->_camera->_view;
 			sf::Vector2f cameraCenter = view.getCenter();
-			sf::Vector2u windowSize = Main::render_window->getSize();
+			sf::Vector2u windowSize = Anubis::render_window->getSize();
 
 			float zoom = MapEditor::editor->_camera->_zoom;
 
@@ -397,7 +397,7 @@ namespace MapEditor {
 		sf::RenderStates states;
 		states.shader = &*ghost_chunk_shader;
 
-		Main::render_window->draw(*_coordsText, states);
+		Anubis::render_window->draw(*_coordsText, states);
 	}
 
 	void Chunk::draw() {
@@ -408,7 +408,7 @@ namespace MapEditor {
 		if (!MapEditor::editor->_map)
 			return;
 
-		Main::render_window->draw(_vertexBuffer, MapEditor::editor->_map->_states);
+		Anubis::render_window->draw(_vertexBuffer, MapEditor::editor->_map->_states);
 
 	}
 

@@ -471,9 +471,9 @@ namespace MapEditor {
 
 		MapEditor::editor->_camera->setView();
 
-		const sf::View& view = Main::render_window->getView();
+		const sf::View& view = Anubis::render_window->getView();
 		sf::Vector2f size = view.getSize();
-		sf::IntRect viewport = Main::render_window->getViewport(view);
+		sf::IntRect viewport = Anubis::render_window->getViewport(view);
 		const float aspect = (float)(viewport.size.x) / (float)(viewport.size.y);
 		float pi = 3.14159265f;
 		float fov = 60.0f;
@@ -491,7 +491,7 @@ namespace MapEditor {
 				if (building) {
 					std::shared_ptr<BuildingPrefab> buildingPrefab = std::dynamic_pointer_cast<BuildingPrefab>(building->_prefab.lock());
 					if (buildingPrefab)
-						buildingPrefab->drawOnlyCollider(*Main::render_window, building->getPosition());
+						buildingPrefab->drawOnlyCollider(*Anubis::render_window, building->getPosition());
 
 					building->draw(); // draw selected frame
 				}
@@ -504,7 +504,7 @@ namespace MapEditor {
 				if (building) {
 					std::shared_ptr<BuildingPrefab> buildingPrefab = std::dynamic_pointer_cast<BuildingPrefab>(building->_prefab.lock());
 					if (buildingPrefab)
-						buildingPrefab->drawOnlyFloor(*Main::render_window, building->getPosition());
+						buildingPrefab->drawOnlyFloor(*Anubis::render_window, building->getPosition());
 				}
 			}
 		}

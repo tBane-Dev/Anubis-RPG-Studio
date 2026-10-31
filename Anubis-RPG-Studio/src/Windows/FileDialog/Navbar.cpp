@@ -99,11 +99,11 @@ void NavBarItem::draw() {
 	if(_path == std::filesystem::path()) {
 		sf::Sprite icon(*textures_manager->getTexture(L"assets\\tex\\windows\\file_dialog\\navbar_pc.png")->_texture);
 		icon.setPosition(sf::Vector2f(_rect.position - sf::Vector2i(32, 4)));
-		Main::render_window->draw(icon);
+		Anubis::render_window->draw(icon);
 	}
 
 	Button::draw();
-	Main::render_window->draw(*_text);
+	Anubis::render_window->draw(*_text);
 
 	_arrow->draw();
 
@@ -185,7 +185,7 @@ void NavBar::draw() {
 	sf::RectangleShape rect(sf::Vector2f(_rect.size - sf::Vector2i(border * 2, border * 2)));
 	rect.setPosition(sf::Vector2f(_rect.position + sf::Vector2i(border, border)));
 	rect.setFillColor(sf::Color(15,15,15));
-	Main::render_window->draw(rect);
+	Anubis::render_window->draw(rect);
 
 	for(auto& item : _items) {
 		item->draw();

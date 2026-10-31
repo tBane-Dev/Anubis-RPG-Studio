@@ -163,7 +163,7 @@ namespace Components {
 
 	void MenuButton::update() {
 		if (_state == ButtonState::Pressed) {
-			if ((currentTime - _clickTime).asSeconds() > 0.05f) {
+			if ((Anubis::currentTime - _clickTime).asSeconds() > 0.05f) {
 				if (_onclick_func) {
 					_onclick_func();
 				}
@@ -187,7 +187,7 @@ namespace Components {
 
 		Button::draw();
 
-		Main::render_window->draw(*_text);
+		Anubis::render_window->draw(*_text);
 
 
 	}

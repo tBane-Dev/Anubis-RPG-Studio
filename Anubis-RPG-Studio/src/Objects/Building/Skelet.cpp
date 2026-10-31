@@ -128,14 +128,14 @@ void Skelet::draw() {
 
 	if (Main::editor_manager->get_back() == BuildingsEditor::editor) {
 		draw(
-			*Main::render_window,
+			*Anubis::render_window,
 			BuildingsEditor::editor->_building_panel->_building->_scale,
 			BuildingsEditor::editor->_main_menu->_render_walls_look->_checkbox->_value
 		);
 	}
 
 	if (Main::editor_manager->get_back() == MapEditor::editor) {
-		draw(*Main::render_window, 1.f, 1);
+		draw(*Anubis::render_window, 1.f, 1);
 	}
 	
 }

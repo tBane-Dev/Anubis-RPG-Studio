@@ -336,7 +336,7 @@ namespace AnimationsEditor {
 	void PreviewPanel::draw() {
 		Components::Panel::draw();
 
-		Main::render_window->draw(*_title);
+		Anubis::render_window->draw(*_title);
 
 		// draw checkerboard
 		sf::RectangleShape rect(sf::Vector2f(sf::Vector2f(256, 256)));
@@ -346,7 +346,7 @@ namespace AnimationsEditor {
 		sf::RenderStates states;
 		states.shader = &*checkerboard_shader;
 		checkerboard_shader->setUniform("rectPos", rect.getPosition());
-		Main::render_window->draw(rect, states);
+		Anubis::render_window->draw(rect, states);
 
 		// draw animation
 		std::shared_ptr<Animator> animator = editor->_animator;
@@ -390,7 +390,7 @@ namespace AnimationsEditor {
 					sprite.setPosition(sf::Vector2f(
 						rect.getPosition().x + (rect.getSize().x - sprite.getGlobalBounds().size.x)/2, 
 						rect.getPosition().y + (rect.getSize().y - sprite.getGlobalBounds().size.y)/26));
-					Main::render_window->draw(sprite);
+					Anubis::render_window->draw(sprite);
 				}
 			}
 		}
@@ -412,21 +412,21 @@ namespace AnimationsEditor {
 		statsRectShape.setFillColor(sf::Color(24, 24, 24, 255));
 		statsRectShape.setOutlineThickness(m);
 		statsRectShape.setOutlineColor(sf::Color(0, 0, 0, 255));
-		Main::render_window->draw(statsRectShape);
+		Anubis::render_window->draw(statsRectShape);
 
 		// texts labels
-		Main::render_window->draw(*_animations_current_label);
-		Main::render_window->draw(*_animations_count_label);
-		Main::render_window->draw(*_frame_label);
-		Main::render_window->draw(*_frames_count_label);
-		Main::render_window->draw(*_frame_size_label);
+		Anubis::render_window->draw(*_animations_current_label);
+		Anubis::render_window->draw(*_animations_count_label);
+		Anubis::render_window->draw(*_frame_label);
+		Anubis::render_window->draw(*_frames_count_label);
+		Anubis::render_window->draw(*_frame_size_label);
 
 		// text inputs
-		Main::render_window->draw(*_animations_current);
-		Main::render_window->draw(*_animations_count);
-		Main::render_window->draw(*_frame);
-		Main::render_window->draw(*_frames_count);
-		Main::render_window->draw(*_frame_size);
+		Anubis::render_window->draw(*_animations_current);
+		Anubis::render_window->draw(*_animations_count);
+		Anubis::render_window->draw(*_frame);
+		Anubis::render_window->draw(*_frames_count);
+		Anubis::render_window->draw(*_frame_size);
 
 		
 	}

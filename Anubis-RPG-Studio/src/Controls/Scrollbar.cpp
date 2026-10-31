@@ -207,12 +207,12 @@ void Scrollbar::draw() {
 	sf::Sprite upArrow(*textures_manager->getTexture(L"assets\\tex\\controls\\scrollbar"+std::to_wstring(_textureSize)+L"\\up.png")->_texture);
 	upArrow.setPosition(sf::Vector2f(_rect.position.x, _rect.position.y));
 	upArrow.setScale(sf::Vector2f(scale, scale));
-	Main::render_window->draw(upArrow);
+	Anubis::render_window->draw(upArrow);
 
 	sf::Sprite downArrow(*textures_manager->getTexture(L"assets\\tex\\controls\\scrollbar"+std::to_wstring(_textureSize)+L"\\down.png")->_texture);
 	downArrow.setPosition(sf::Vector2f(_rect.position.x, _rect.position.y + _rect.size.y - _barSize));
 	downArrow.setScale(sf::Vector2f(scale, scale));
-	Main::render_window->draw(downArrow);
+	Anubis::render_window->draw(downArrow);
 
 	sf::Sprite center(*textures_manager->getTexture(L"assets\\tex\\controls\\scrollbar"+std::to_wstring(_textureSize)+L"\\center.png")->_texture);
 	center.setPosition(sf::Vector2f(_rect.position.x, _rect.position.y + _barSize));
@@ -220,12 +220,12 @@ void Scrollbar::draw() {
 		float(_rect.size.x) / float(_textureSize),
 		float(_rect.size.y - 2 * _barSize) / float(_textureSize)
 	));
-	Main::render_window->draw(center);
+	Anubis::render_window->draw(center);
 
 	sf::Sprite sliderTop(*textures_manager->getTexture(L"assets\\tex\\controls\\scrollbar"+std::to_wstring(_textureSize)+L"\\slider_top.png")->_texture);
 	sliderTop.setPosition(sf::Vector2f(_slider.position.x, _slider.position.y));
 	sliderTop.setScale(sf::Vector2f(scale, scale));
-	Main::render_window->draw(sliderTop);
+	Anubis::render_window->draw(sliderTop);
 
 	if(_slider.size.y > 2*_barSize) {
 		sf::Sprite sliderCenter(*textures_manager->getTexture(L"assets\\tex\\controls\\scrollbar" + std::to_wstring(_textureSize) + L"\\slider_center.png")->_texture);
@@ -234,12 +234,12 @@ void Scrollbar::draw() {
 			float(_slider.size.x) / float(_textureSize),
 			float(_slider.size.y - 2 * _barSize) / float(_textureSize)
 		));
-		Main::render_window->draw(sliderCenter);
+		Anubis::render_window->draw(sliderCenter);
 	}
 
 	sf::Sprite sliderBottom(*textures_manager->getTexture(L"assets\\tex\\controls\\scrollbar"+std::to_wstring(_textureSize)+L"\\slider_bottom.png")->_texture);
 	sliderBottom.setPosition(sf::Vector2f(_slider.position.x, _slider.position.y + _slider.size.y - _barSize));
 	sliderBottom.setScale(sf::Vector2f(scale, scale));
-	Main::render_window->draw(sliderBottom);
+	Anubis::render_window->draw(sliderBottom);
 
 }

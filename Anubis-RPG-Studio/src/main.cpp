@@ -14,6 +14,8 @@
 
 #include "Theme.hpp"
 
+#include "3D/OpenGLBuffers.hpp"
+
 #include "Tooltip.hpp" // to move
 
 #include "TexturesManager.hpp"
@@ -132,17 +134,43 @@ int main() {
 
     sf::ContextSettings settings;
     settings.depthBits = 24;
+    settings.stencilBits = 8;
+    settings.majorVersion = 3;
+    settings.minorVersion = 3;
 
-    Main::render_window = std::make_unique<sf::RenderWindow>(sf::VideoMode::getDesktopMode(), "Anubis-RPG-Studio", sf::State::Windowed, settings);
-    ShowWindow(Main::render_window->getNativeHandle(), SW_MAXIMIZE);
+    Anubis::render_window = std::make_unique<sf::RenderWindow>(sf::VideoMode(sf::Vector2u(1920, 1080), 32u), "Anubis-3D-Engine", sf::State::Windowed, settings);
+    
+    ShowWindow(Anubis::render_window->getNativeHandle(), SW_MAXIMIZE);
 
-    Main::render_window->clear(sf::Color::Black);
-    Main::render_window->display();
+    Anubis::render_window->setVerticalSyncEnabled(false);
+    Anubis::render_window->setFramerateLimit(0);
 
-    while (const std::optional event = Main::render_window->waitEvent()) {
+    auto* version = glGetString(GL_VERSION);
+    auto* renderer = glGetString(GL_RENDERER);
+
+    if (version) {
+        std::string text(reinterpret_cast<const char*>(version));
+        DebugStat(L"OpenGL: " + std::wstring(text.begin(), text.end()));
+    }
+
+    if (renderer) {
+        std::string text(reinterpret_cast<const char*>(renderer));
+        DebugStat(L"Renderer: " + std::wstring(text.begin(), text.end()));
+    }
+
+    DebugStat(L"");
+
+    // OpenGL Buffers initialize :-)
+    if (!Anubis::GL::initialize())
+        return EXIT_FAILURE;
+
+    Anubis::render_window->clear(sf::Color::Black);
+    Anubis::render_window->display();
+
+    while (const std::optional event = Anubis::render_window->waitEvent()) {
 
         if (event->is<sf::Event::Closed>()) {
-            Main::render_window->close();
+            Anubis::render_window->close();
             exit(0);
         }
 
@@ -167,6 +195,8 @@ int main() {
     loadShaders();
 
     Cursors::cursor = std::make_shared<Cursors::Cursor>();
+    Anubis::cursor = std::make_shared<Anubis::Cursor>();
+
     GUI_manager = std::make_shared<GUIManager>();
     Main::tooltip = std::make_shared<Main::Tooltip>();
 
@@ -184,6 +214,21 @@ int main() {
     MapEditor::editor = std::make_shared<MapEditor::Editor>();
     Main::editor_manager->push_back(MapEditor::editor);
 
+    Anubis::scene = std::make_shared<Anubis::Scene>();
+
+    auto size = Anubis::render_window->getSize();
+    if (!Anubis::scene->createPickingBuffer(size.x, size.y)) {
+        DebugError(L"Failed to create Picking Buffer");
+        exit(0);
+    }
+
+    if (!Anubis::scene->initializeModel3DShaders()) {
+        DebugError(L"Failed to Initialize Model3D Shaders");
+        exit(0);
+    }
+
+
+    MapEditor::editor->createScene();
     MapEditor::editor->createMap(5, 3);
     MapEditor::editor->createGameObjects();
     MapEditor::editor->createCamera();
@@ -227,14 +272,14 @@ int main() {
     int frames = 0;
     float elapsed = 0.0f;
 
-    while (Main::render_window->isOpen()) {
+    while (Anubis::render_window->isOpen()) {
 
-        prevTime = currentTime;
-        currentTime = mainClock.getElapsedTime();
-        deltaTime = currentTime - prevTime;
+        Anubis::prevTime = Anubis::currentTime;
+        Anubis::currentTime = Anubis::mainClock.getElapsedTime();
+        Anubis::deltaTime = Anubis::currentTime - Anubis::prevTime;
 
-        if(deltaTime.asSeconds() > 0.1f) {
-            deltaTime = sf::seconds(0.1f);
+        if(Anubis::deltaTime.asSeconds() > 0.1f) {
+            Anubis::deltaTime = sf::seconds(0.1f);
 		}
 
         Cursors::cursor->update();
@@ -250,7 +295,7 @@ int main() {
 
             std::ostringstream ss;
             ss << "Anubis-RPG-Studio - " << std::fixed << std::setprecision(2) << FPS << " FPS / " << std::setprecision(3) << ms << " ms";
-            Main::render_window->setTitle(ss.str());
+            Anubis::render_window->setTitle(ss.str());
             frames = 0;
             elapsed = 0.0f;
         }
@@ -260,15 +305,15 @@ int main() {
 		Main::windows_manager->cursorHover();
 
         // handle events
-        while (const std::optional event = Main::render_window->pollEvent()) {
+        while (const std::optional event = Anubis::render_window->pollEvent()) {
 
             if (event->is<sf::Event::Closed>()) {
-                Main::render_window->close();
+                Anubis::render_window->close();
             }
 
             if(event->is<sf::Event::Resized>()) {
 				sf::Vector2u newSize = event->getIf<sf::Event::Resized>()->size;
-                Main::render_window->setSize(newSize);
+                Anubis::render_window->setSize(newSize);
                 GUI_manager->resize(sf::Vector2i(newSize));
 			}
 
@@ -287,11 +332,11 @@ int main() {
         //DebugStat(L"I am The One ..");
 
         // draw
-        Main::render_window->clear(sf::Color(47, 47, 47));
+        Anubis::render_window->clear(sf::Color(47, 47, 47));
         Main::editor_manager->draw();
         Main::windows_manager->draw();
         Main::tooltip->draw();
-        Main::render_window->display();
+        Anubis::render_window->display();
 
         
     }

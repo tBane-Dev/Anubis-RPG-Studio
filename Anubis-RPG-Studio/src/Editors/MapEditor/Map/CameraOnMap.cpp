@@ -15,7 +15,7 @@ namespace MapEditor {
 	CameraOnMap::CameraOnMap() {
 
 		_view = sf::View();
-		_view.setSize(sf::Vector2f(Main::render_window->getSize()));
+		_view.setSize(sf::Vector2f(Anubis::render_window->getSize()));
 		_view.setCenter(sf::Vector2f(0, 0));
 
 		_isMoving = false;
@@ -56,7 +56,7 @@ namespace MapEditor {
 				_position = cursorPosition + (oldPosition - cursorPosition) * scaleFactor;
 
 				_isZooming = true;
-				_view.setSize(sf::Vector2f(Main::render_window->getSize()) / _zoom);
+				_view.setSize(sf::Vector2f(Anubis::render_window->getSize()) / _zoom);
 				_view.setCenter(sf::Vector2f(_position));
 			}
 		}
@@ -79,7 +79,7 @@ namespace MapEditor {
 	}
 
 	void CameraOnMap::setView() {
-		Main::render_window->setView(_view);
+		Anubis::render_window->setView(_view);
 	}
 
 	void CameraOnMap::update() {
@@ -94,22 +94,22 @@ namespace MapEditor {
 			return;
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)) {
-			_position.y -= moveSpeed * deltaTime.asSeconds() / _zoom;
+			_position.y -= moveSpeed * Anubis::deltaTime.asSeconds() / _zoom;
 			_isMoving = true;
 		}
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)) {
-			_position.y += moveSpeed * deltaTime.asSeconds() / _zoom;
+			_position.y += moveSpeed * Anubis::deltaTime.asSeconds() / _zoom;
 			_isMoving = true;
 		}
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)) {
-			_position.x -= moveSpeed * deltaTime.asSeconds() / _zoom;
+			_position.x -= moveSpeed * Anubis::deltaTime.asSeconds() / _zoom;
 			_isMoving = true;
 		}
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)) {
-			_position.x += moveSpeed * deltaTime.asSeconds() / _zoom;
+			_position.x += moveSpeed * Anubis::deltaTime.asSeconds() / _zoom;
 			_isMoving = true;
 
 		}
@@ -123,7 +123,7 @@ namespace MapEditor {
 			_isMoving = true;
 		}
 
-		_view.setSize(sf::Vector2f(Main::render_window->getSize()) / _zoom);
+		_view.setSize(sf::Vector2f(Anubis::render_window->getSize()) / _zoom);
 		_view.setCenter(sf::Vector2f(_position));
 	}
 }

@@ -196,10 +196,10 @@ void Wall::draw(sf::RenderTarget& target, float scale, int drawType,bool collide
 void Wall::draw() {
 	
 	if (Main::editor_manager->get_back() == BuildingsEditor::editor) {
-		draw(*Main::render_window, BuildingsEditor::editor->_building_panel->_building->_scale);
+		draw(*Anubis::render_window, BuildingsEditor::editor->_building_panel->_building->_scale);
 	}
 
 	if(Main::editor_manager->get_back() == MapEditor::editor) {
-		draw(*Main::render_window, 1.f);
+		draw(*Anubis::render_window, 1.f);
 	}
 }

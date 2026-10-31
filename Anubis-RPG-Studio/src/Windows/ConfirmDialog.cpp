@@ -129,10 +129,10 @@ void ConfirmDialog::update() {
 void ConfirmDialog::draw() {
 	Window::draw();
 
-	Main::render_window->draw(*_text);
+	Anubis::render_window->draw(*_text);
 
 	_confirmButton->draw();
 	_cancelButton->draw();
 
-	Main::render_window->draw(*_bottomComment);
+	Anubis::render_window->draw(*_bottomComment);
 }

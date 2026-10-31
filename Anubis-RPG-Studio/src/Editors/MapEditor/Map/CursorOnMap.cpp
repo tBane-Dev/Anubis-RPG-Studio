@@ -80,8 +80,8 @@ namespace MapEditor {
 
     void CursorOnMap::update() {
         Cursor::update();
-        Main::render_window->setView(MapEditor::editor->_camera->_view);
-        _globalPosition = sf::Vector2i(Main::render_window->mapPixelToCoords(_position));
+        Anubis::render_window->setView(MapEditor::editor->_camera->_view);
+        _globalPosition = sf::Vector2i(Anubis::render_window->mapPixelToCoords(_position));
 
         if (_isDragging || _isSelecting) {
             if (_isDragging) {
@@ -708,7 +708,7 @@ namespace MapEditor {
         if (MapEditor::editor->_main_menu->_state != Components::MainMenuStates::Closed)
             return;
 
-        Main::render_window->setView(MapEditor::editor->_camera->_view);
+        Anubis::render_window->setView(MapEditor::editor->_camera->_view);
 
         if (_selectionRect.size.x != 0 || _selectionRect.size.y != 0) {
             sf::RectangleShape selectionRectShape(sf::Vector2f(_selectionRect.size));
@@ -716,7 +716,7 @@ namespace MapEditor {
             selectionRectShape.setFillColor(sf::Color(0, 0, 255, 50));
             selectionRectShape.setOutlineThickness(1);
             selectionRectShape.setOutlineColor(sf::Color(0, 0, 255, 200));
-            Main::render_window->draw(selectionRectShape);
+            Anubis::render_window->draw(selectionRectShape);
 
             return;
         }
@@ -760,7 +760,7 @@ namespace MapEditor {
                         outlineRect.setFillColor(sf::Color(255, 47, 47, 127));
                         //outlineRect.setOutlineThickness(2);
                         //outlineRect.setOutlineColor(sf::Color::Green);
-                        Main::render_window->draw(outlineRect);
+                        Anubis::render_window->draw(outlineRect);
                     }
                 }
             }
@@ -814,14 +814,14 @@ namespace MapEditor {
             outlineRect.setFillColor(sf::Color::Transparent);
             outlineRect.setOutlineThickness(2);
             outlineRect.setOutlineColor(sf::Color::Green);
-            Main::render_window->draw(outlineRect);
+            Anubis::render_window->draw(outlineRect);
 
             if (animations) {
                 sf::Sprite sprite(*animations->getTexture()->_texture);
                 sprite.setTextureRect(frameRect);
 
                 sprite.setPosition(sf::Vector2f(position));
-                Main::render_window->draw(sprite);
+                Anubis::render_window->draw(sprite);
                 return;
             }
 
@@ -840,7 +840,7 @@ namespace MapEditor {
                 sf::Sprite sprite(*texture);
 
                 sprite.setPosition(sf::Vector2f(position));
-                Main::render_window->draw(sprite);
+                Anubis::render_window->draw(sprite);
 
                 return;
             }

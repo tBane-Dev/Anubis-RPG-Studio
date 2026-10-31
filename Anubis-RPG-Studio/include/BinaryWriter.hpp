@@ -3,6 +3,8 @@
 #include <fstream>
 #include <SFML/Graphics.hpp>
 
+// TO-DO - add namespace Anubis
+
 class BinaryWriter {
     std::ostream& os;
 public:

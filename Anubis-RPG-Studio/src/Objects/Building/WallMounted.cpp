@@ -55,12 +55,12 @@ void WallMounted::draw() {
 		return;
 
 	if (Main::editor_manager->get_back() == BuildingsEditor::editor) {
-		draw(*Main::render_window, BuildingsEditor::editor->_building_panel->_building->_scale);
+		draw(*Anubis::render_window, BuildingsEditor::editor->_building_panel->_building->_scale);
 		return;
 	}
 
 	if (Main::editor_manager->get_back() == MapEditor::editor) {
-		draw(*Main::render_window, 1.0f);
+		draw(*Anubis::render_window, 1.0f);
 		return;
 	}
 }

@@ -114,8 +114,8 @@ void FileItem::draw() {
 	if (icon) {
 		sf::Sprite sprite(*icon->_texture);
 		sprite.setPosition(sf::Vector2f(_rect.position));
-		Main::render_window->draw(sprite);
+		Anubis::render_window->draw(sprite);
 	}
 
-	Main::render_window->draw(*_text);
+	Anubis::render_window->draw(*_text);
 }

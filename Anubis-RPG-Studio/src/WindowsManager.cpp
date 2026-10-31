@@ -40,7 +40,7 @@ namespace Main {
 
 		// animation when clicking outside the window
 		_animationClickedOutside = false;
-		_animationStartTime = currentTime;
+		_animationStartTime = Anubis::currentTime;
 
 		if (!errorSound.openFromFile("C:\\Windows\\Media\\Windows Background.wav")) {
 			DebugError(L"Failed to load error sound");
@@ -113,7 +113,7 @@ namespace Main {
 
 		if ((event.getIf<sf::Event::MouseButtonReleased>() || event.getIf<sf::Event::MouseButtonPressed>()) && GUI_manager->Element_pressed == nullptr && !_rect.contains(Cursors::cursor->_position)) {
 			_animationClickedOutside = true;
-			_animationStartTime = currentTime;
+			_animationStartTime = Anubis::currentTime;
 			errorSound.play();
 			return;
 		}
@@ -154,7 +154,7 @@ namespace Main {
 		_closeButton->update();
 
 		if (_animationClickedOutside) {
-			if ((currentTime - _animationStartTime).asSeconds() > 0.4f) {
+			if ((Anubis::currentTime - _animationStartTime).asSeconds() > 0.4f) {
 				_animationClickedOutside = false;
 			}
 		}
@@ -165,14 +165,14 @@ namespace Main {
 		int shadow_margin = 8;
 		int shadow_border = 8;
 		int cycles = 2;
-		int animation = (_animationClickedOutside) ? (int)((std::sin((currentTime - _animationStartTime).asSeconds() * (float)cycles * 3.14159265f * 2.0f) * 0.5f + 0.5f) * 40.0f) : 0;
+		int animation = (_animationClickedOutside) ? (int)((std::sin((Anubis::currentTime - _animationStartTime).asSeconds() * (float)cycles * 3.14159265f * 2.0f) * 0.5f + 0.5f) * 40.0f) : 0;
 
 		sf::RectangleShape shadow_rect(sf::Vector2f(_rect.size) + sf::Vector2f(2 * shadow_margin, 2 * shadow_margin));
 		shadow_rect.setPosition(sf::Vector2f(_rect.position) - sf::Vector2f(shadow_margin, shadow_margin));
 		shadow_rect.setFillColor(sf::Color(0, 0, 0, 22 + animation));
 		shadow_rect.setOutlineThickness(shadow_border);
 		shadow_rect.setOutlineColor(sf::Color(0, 0, 0, 10 + animation));
-		Main::render_window->draw(shadow_rect);
+		Anubis::render_window->draw(shadow_rect);
 
 		sf::RectangleShape rect(sf::Vector2f(_rect.size - sf::Vector2i(2*border,2*border)));
 		rect.setOutlineThickness(border);
@@ -180,18 +180,18 @@ namespace Main {
 		rect.setPosition(sf::Vector2f(_rect.position + sf::Vector2i(border, border)));
 		//rect.setFillColor(sf::Color(23,23,23));
 		rect.setFillColor(sf::Color::Transparent);
-		Main::render_window->draw(rect);
+		Anubis::render_window->draw(rect);
 
 		// title rect
 		sf::RectangleShape title_rect(sf::Vector2f(_titleRect.size));
 		title_rect.setPosition(sf::Vector2f(_titleRect.position));
 		title_rect.setFillColor(sf::Color(31, 31, 31));
-		Main::render_window->draw(title_rect);
+		Anubis::render_window->draw(title_rect);
 
 		// title text
 		sf::Color title_text_color = basic_text_color - sf::Color(0,0,0, animation*3);
 		_titleText->setFillColor(title_text_color);
-		Main::render_window->draw(*_titleText);
+		Anubis::render_window->draw(*_titleText);
 
 		// close button
 		_closeButton->draw();
@@ -202,7 +202,7 @@ namespace Main {
 		content_rect.setOutlineColor(sf::Color(63, 63, 63));
 		content_rect.setPosition(sf::Vector2f(_contentRect.position));
 		content_rect.setFillColor(sf::Color(23, 23, 23));
-		Main::render_window->draw(content_rect);
+		Anubis::render_window->draw(content_rect);
 	}
 
 	WindowsManager::WindowsManager() {

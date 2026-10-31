@@ -108,7 +108,7 @@ namespace AnimationsEditor {
 
 		GUI_manager->setView();
 
-		Main::render_window->draw(*_title);
+		Anubis::render_window->draw(*_title);
 		_name_panel->draw();
 		_list_panel->draw();
 		_actions_panel->draw();

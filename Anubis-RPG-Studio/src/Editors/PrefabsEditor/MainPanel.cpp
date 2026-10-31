@@ -564,10 +564,10 @@ namespace PrefabsEditor {
 	void MainPanel::draw() {
 		Components::Panel::draw();
 
-		Main::render_window->draw(*_nameText);
+		Anubis::render_window->draw(*_nameText);
 		_name->draw();
 
-		Main::render_window->draw(*_typeText);
+		Anubis::render_window->draw(*_typeText);
 		_type->draw();
 
 		_save_prefab->draw();

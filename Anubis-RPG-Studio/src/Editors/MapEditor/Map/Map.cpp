@@ -211,7 +211,7 @@ namespace MapEditor {
 		_visibleChunks.clear();
 		MapEditor::editor->_game_objects->_visiblePlacedGameObjects.clear();
 
-		sf::View view = Main::render_window->getView();
+		sf::View view = Anubis::render_window->getView();
 		sf::FloatRect cameraRect(view.getCenter() - view.getSize() * 0.5f, view.getSize());
 
 		for (auto& chunk : _chunks) {
@@ -333,13 +333,13 @@ namespace MapEditor {
 		std::shared_ptr<CameraOnMap> camera = map_editor->_camera;
 		if (!camera) return;
 
-		Main::render_window->setView(camera->_view);
+		Anubis::render_window->setView(camera->_view);
 
 		// render chunks
 		{
-			const sf::View& view = Main::render_window->getView();
+			const sf::View& view = Anubis::render_window->getView();
 			sf::Vector2f size = view.getSize();
-			sf::Vector2u windowSize = Main::render_window->getSize();
+			sf::Vector2u windowSize = Anubis::render_window->getSize();
 			float aspect = (float)(windowSize.x) / windowSize.y;
 			float fov = 60.0f;
 			float distance = (size.y * 0.5f) / std::tan(fov * 0.5f * 3.14159265f / 180.0f);
@@ -347,16 +347,16 @@ namespace MapEditor {
 			terrain3D_shader->setUniform("cameraDistance", distance);
 			terrain3D_shader->setUniform("cameraAngle", MapEditor::editor->_camera->_angle);
 			terrain3D_shader->setUniform("aspect", aspect);
-			terrain3D_shader->setUniform("resolution", sf::Vector2f(Main::render_window->getSize()));
-			terrain3D_shader->setUniform("time", currentTime.asSeconds());
+			terrain3D_shader->setUniform("resolution", sf::Vector2f(Anubis::render_window->getSize()));
+			terrain3D_shader->setUniform("time", Anubis::currentTime.asSeconds());
 			terrain3D_shader->setUniform("startPos", sf::Vector2f(0, 0));
 		}
 
 
 		{
-			const sf::View& view = Main::render_window->getView();
+			const sf::View& view = Anubis::render_window->getView();
 			sf::Vector2f size = view.getSize();
-			sf::Vector2u windowSize = Main::render_window->getSize();
+			sf::Vector2u windowSize = Anubis::render_window->getSize();
 			float aspect = (float)(windowSize.x) / windowSize.y;
 			float fov = 60.0f;
 			float distance = (size.y * 0.5f) / std::tan(fov * 0.5f * 3.14159265f / 180.0f);
@@ -377,7 +377,7 @@ namespace MapEditor {
 		if (map_editor->_main_menu->_render_chunks_info->_checkbox->_value == 1) {
 
 			glClear(GL_DEPTH_BUFFER_BIT);
-			Main::render_window->resetGLStates();
+			Anubis::render_window->resetGLStates();
 
 			float gridWidth = 2.0f;
 			float zoom = MapEditor::editor->_camera->_zoom;
@@ -386,9 +386,9 @@ namespace MapEditor {
 			sf::Vector2f size_rect = sf::Vector2f(mapRect.size);
 			sf::Vector2f mapStart = sf::Vector2f(mapRect.position);
 
-			const sf::View& view = Main::render_window->getView();
+			const sf::View& view = Anubis::render_window->getView();
 			sf::Vector2f size = view.getSize();
-			sf::Vector2u windowSize = Main::render_window->getSize();
+			sf::Vector2u windowSize = Anubis::render_window->getSize();
 			float aspect = (float)(windowSize.x) / windowSize.y;
 			float fov = 60.0f;
 			float distance = (size.y * 0.5f) / std::tan(fov * 0.5f * 3.14159265f / 180.0f);
@@ -413,7 +413,7 @@ namespace MapEditor {
 			sf::RectangleShape rect(size_rect);
 			rect.setPosition(position_rect);
 			rect.setFillColor(sf::Color(127, 47, 47, 127));
-			Main::render_window->draw(rect, rs);
+			Anubis::render_window->draw(rect, rs);
 
 			for (auto& chunk : _visibleChunks) {
 				ghost_chunk_shader->setUniform("position", sf::Vector2f(chunk->getRect().position));

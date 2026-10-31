@@ -122,7 +122,7 @@ namespace PrefabsEditor {
 
 		GUI_manager->setView();
 
-		Main::render_window->draw(*_title);
+		Anubis::render_window->draw(*_title);
 
 		_main_panel->draw();
 		_animation_panel->draw();

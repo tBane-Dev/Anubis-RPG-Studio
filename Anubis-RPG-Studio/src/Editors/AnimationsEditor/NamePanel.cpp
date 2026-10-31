@@ -75,7 +75,7 @@ namespace AnimationsEditor {
 	void NamePanel::draw() {
 		Components::Panel::draw();
 
-		Main::render_window->draw(*_nameText);
+		Anubis::render_window->draw(*_nameText);
 		_name->draw();
 
 	}

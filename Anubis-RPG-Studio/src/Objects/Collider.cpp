@@ -67,7 +67,7 @@ void RectangularCollider::draw(sf::Vector2i position, sf::Vector2f scale) {
 	collider.setFillColor(sf::Color(255, 0, 0, 128));
 	collider.setPosition(colliderPosition);
 
-	Main::render_window->draw(collider);
+	Anubis::render_window->draw(collider);
 }
 
 CircularCollider::CircularCollider(int x, int y, int radiusX, int radiusY) : Collider() {
@@ -117,7 +117,7 @@ void CircularCollider::draw(sf::Vector2i position, sf::Vector2f scale) {
 
 	collider.setPosition(sf::Vector2f(position));
 
-	Main::render_window->draw(collider);
+	Anubis::render_window->draw(collider);
 }
 
 void saveCollider(std::shared_ptr<Collider> collider, std::ofstream& saver) {

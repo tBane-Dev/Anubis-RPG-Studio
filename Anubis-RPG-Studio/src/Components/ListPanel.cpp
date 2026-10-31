@@ -47,7 +47,7 @@ namespace Components {
 
 	void ListPanelItem::draw() {
 		Button::draw();
-		Main::render_window->draw(*_text);
+		Anubis::render_window->draw(*_text);
 	}
 
 	ListPanel::ListPanel(sf::Vector2i margin, sf::Vector2i size, sf::Vector2i position, int itemCount) : Panel(size, position) {
@@ -228,7 +228,7 @@ namespace Components {
 
 		Components::Panel::draw();
 
-		Main::render_window->draw(*_title);
+		Anubis::render_window->draw(*_title);
 
 		// Draw list background
 		int border = 2;
@@ -239,7 +239,7 @@ namespace Components {
 		list_bg.setFillColor(sf::Color(23,23,23));
 		list_bg.setOutlineThickness((float)border);
 		list_bg.setOutlineColor(sf::Color(0, 0, 0));
-		Main::render_window->draw(list_bg);
+		Anubis::render_window->draw(list_bg);
 
 		_scrollbar->draw();
 
@@ -259,7 +259,7 @@ namespace Components {
 		);
 
 		view.setViewport(vp);
-		Main::render_window->setView(view);
+		Anubis::render_window->setView(view);
 
 		for (auto& item : _items) {
 			item->draw();

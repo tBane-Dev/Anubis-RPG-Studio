@@ -56,5 +56,5 @@ void EdgePoint::draw() {
 	rect.setOrigin(sf::Vector2f(_rect.size/2));
 	rect.setFillColor((GUI_manager->Element_hovered.get() == this) ? sf::Color(0, 191, 0) : sf::Color(191, 0, 0));
 	rect.setPosition(sf::Vector2f(_rect.position));
-	Main::render_window->draw(rect);
+	Anubis::render_window->draw(rect);
 }

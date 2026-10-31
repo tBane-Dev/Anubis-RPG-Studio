@@ -111,7 +111,7 @@ void Animator::update() {
 	if (!_isPlaying) return;
 	if (_animations.expired()) return;
 
-	_timer += deltaTime.asSeconds();
+	_timer += Anubis::deltaTime.asSeconds();
 
 	if (_timer >= _animations.lock()->_interval) {
 

@@ -118,7 +118,7 @@ void Button::hover() {
 
 void Button::click() {
 	_state = ButtonState::Pressed;
-	_clickTime = currentTime;
+	_clickTime = Anubis::currentTime;
 }
 
 void Button::activateByEnter(bool activate) {
@@ -185,7 +185,7 @@ void Button::handleEvent(const sf::Event& event) {
 
 void Button::update() {
 	if (_state == ButtonState::Pressed) {
-		if ((currentTime - _clickTime).asSeconds() > 0.05f) {
+		if ((Anubis::currentTime - _clickTime).asSeconds() > 0.05f) {
 			if (_onclick_func) {
 				_onclick_func();
 			}
@@ -258,5 +258,5 @@ void Button::draw() {
 	rectPosition.x = float(_rect.position.x + _rectBorderWidth);
 	rectPosition.y = float(_rect.position.y + _rectBorderWidth);
 	rect.setPosition(rectPosition);
-	Main::render_window->draw(rect);
+	Anubis::render_window->draw(rect);
 }

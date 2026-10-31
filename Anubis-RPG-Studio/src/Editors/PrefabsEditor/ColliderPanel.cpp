@@ -115,7 +115,7 @@ namespace PrefabsEditor {
 
 	void ColliderPanel::draw() {
 		Components::Panel::draw();
-		Main::render_window->draw(*_title);
+		Anubis::render_window->draw(*_title);
 
 		// animator and animations
 		std::shared_ptr<Animator>& animator = PrefabsEditor::editor->_animator;
@@ -126,7 +126,7 @@ namespace PrefabsEditor {
 		sf::RectangleShape canvasRectShape(sf::Vector2f(canvasRect.size));
 		canvasRectShape.setFillColor(sf::Color(47, 47, 47));
 		canvasRectShape.setPosition(sf::Vector2f(canvasRect.position));
-		Main::render_window->draw(canvasRectShape);
+		Anubis::render_window->draw(canvasRectShape);
 
 		// sprite
 		if (animator && animations) {
@@ -143,7 +143,7 @@ namespace PrefabsEditor {
 			sf::RenderStates states;
 			states.shader = &*checkerboard_shader;
 			checkerboard_shader->setUniform("rectPos", sf::Vector2f(spriteRect.position));
-			Main::render_window->draw(rect, states);
+			Anubis::render_window->draw(rect, states);
 
 			if (canvasRect.contains(Cursors::cursor->_position)) {
 
@@ -151,7 +151,7 @@ namespace PrefabsEditor {
 				sprite.setTextureRect(animations->getFrameRect(0, 0));
 				sprite.setScale(sf::Vector2f(spriteScale, spriteScale));
 				sprite.setPosition(sf::Vector2f(canvasRect.position + sf::Vector2i((canvasRect.size.x - animations->getFrameRect(0, 0).size.x * spriteScale) / 2, (canvasRect.size.y - animations->getFrameRect(0, 0).size.y * spriteScale) / 2)));
-				Main::render_window->draw(sprite);
+				Anubis::render_window->draw(sprite);
 
 				if (_type->getText() == L"Rectangular") {
 
@@ -197,7 +197,7 @@ namespace PrefabsEditor {
 				sprite.setTextureRect(animations->getFrameRect(0, 0));
 				sprite.setScale(sf::Vector2f(spriteScale, spriteScale));
 				sprite.setPosition(sf::Vector2f(canvasRect.position + sf::Vector2i((canvasRect.size.x - animations->getFrameRect(0, 0).size.x * spriteScale) / 2, (canvasRect.size.y - animations->getFrameRect(0, 0).size.y * spriteScale) / 2)));
-				Main::render_window->draw(sprite);
+				Anubis::render_window->draw(sprite);
 			}
 		}
 		else {
@@ -211,7 +211,7 @@ namespace PrefabsEditor {
 			sf::RenderStates states;
 			states.shader = &*checkerboard_shader;
 			checkerboard_shader->setUniform("rectPos", sf::Vector2f(spriteRect.position));
-			Main::render_window->draw(rect, states);
+			Anubis::render_window->draw(rect, states);
 		}
 
 		//// draw checkerboard
@@ -224,7 +224,7 @@ namespace PrefabsEditor {
 		//
 		//checkerboard_shader->setUniform("rectPos", rect.getPosition());
 		//
-		//Main::render_window->draw(rect, states);
+		//Anubis::render_window->draw(rect, states);
 		//
 		//// draw animation
 		//std::shared_ptr<Animator>& animator = PrefabsEditor::editor->_animator;
@@ -260,15 +260,15 @@ namespace PrefabsEditor {
 		//	sprite.setTextureRect(frameRect);
 		//	sprite.setScale(sf::Vector2f(scale, scale));
 		//	sprite.setPosition(sf::Vector2f(rect.getPosition().x, rect.getPosition().y));
-		//	Main::render_window->draw(sprite);
+		//	Anubis::render_window->draw(sprite);
 		//}
 
 		// texts labels
-		Main::render_window->draw(*_typeLabel);
-		Main::render_window->draw(*_xLabel);
-		Main::render_window->draw(*_yLabel);
-		Main::render_window->draw(*_wLabel);
-		Main::render_window->draw(*_hLabel);
+		Anubis::render_window->draw(*_typeLabel);
+		Anubis::render_window->draw(*_xLabel);
+		Anubis::render_window->draw(*_yLabel);
+		Anubis::render_window->draw(*_wLabel);
+		Anubis::render_window->draw(*_hLabel);
 
 		// text inputs
 		_type->draw();

@@ -311,7 +311,7 @@ namespace AnimationsEditor {
 		Components::Panel::draw();
 		
 		// draw title
-		Main::render_window->draw(*_title);
+		Anubis::render_window->draw(*_title);
 
 		// draw load button
 		_loadBtn->draw();
@@ -323,7 +323,7 @@ namespace AnimationsEditor {
 		sf::RenderStates states;
 		states.shader = &*checkerboard_shader;
 		checkerboard_shader->setUniform("rectPos", rect.getPosition());
-		Main::render_window->draw(rect, states);
+		Anubis::render_window->draw(rect, states);
 
 		// draw sprite sheet
 		float scale = 1;
@@ -340,7 +340,7 @@ namespace AnimationsEditor {
 			sf::Sprite sprite(*editor->_tempAnimations->getTexture()->_texture);
 			sprite.setScale(sf::Vector2f(scale, scale));
 			sprite.setPosition(rect.getPosition());
-			Main::render_window->draw(sprite);
+			Anubis::render_window->draw(sprite);
 		}
 
 		// draw grid
@@ -382,7 +382,7 @@ namespace AnimationsEditor {
 		sf::RectangleShape gridRect(size_rect);
 		gridRect.setPosition(position_rect);
 		gridRect.setFillColor(sf::Color(127, 47, 47, 127));
-		Main::render_window->draw(gridRect, rs);
+		Anubis::render_window->draw(gridRect, rs);
 
 		// text inputs
 		_x->draw();
@@ -394,13 +394,13 @@ namespace AnimationsEditor {
 		_i->draw();
 
 		// text labels
-		Main::render_window->draw(*_xLabel);
-		Main::render_window->draw(*_yLabel);
-		Main::render_window->draw(*_wLabel);
-		Main::render_window->draw(*_hLabel);
-		Main::render_window->draw(*_aLabel);
-		Main::render_window->draw(*_fLabel);
-		Main::render_window->draw(*_iLabel);
+		Anubis::render_window->draw(*_xLabel);
+		Anubis::render_window->draw(*_yLabel);
+		Anubis::render_window->draw(*_wLabel);
+		Anubis::render_window->draw(*_hLabel);
+		Anubis::render_window->draw(*_aLabel);
+		Anubis::render_window->draw(*_fLabel);
+		Anubis::render_window->draw(*_iLabel);
 
 		
 	}

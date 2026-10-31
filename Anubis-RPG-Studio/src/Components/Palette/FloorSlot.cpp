@@ -44,5 +44,5 @@ void FloorSlot::draw() {
 	sprite.setPosition(sf::Vector2f(_rect.position) + offset);
 	sprite.setTextureRect(sf::IntRect(sf::Vector2i(_index * 64, 0), sf::Vector2i(64, 64)));
 
-	Main::render_window->draw(sprite);
+	Anubis::render_window->draw(sprite);
 }

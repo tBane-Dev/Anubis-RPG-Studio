@@ -71,6 +71,6 @@ void GameObjectSlot::draw() {
 		_objectSprite->setOrigin(sf::Vector2f(frameRect.size.x / 2.f, frameRect.size.y / 2.f));
 		_objectSprite->setPosition(sf::Vector2f(_rect.position) + sf::Vector2f(_rect.size) / 2.f);
 
-		Main::render_window->draw(*_objectSprite);
+		Anubis::render_window->draw(*_objectSprite);
 	}
 }

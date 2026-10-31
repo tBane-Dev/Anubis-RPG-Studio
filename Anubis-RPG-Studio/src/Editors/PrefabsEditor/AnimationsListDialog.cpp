@@ -53,9 +53,9 @@ void AnimationsListItem::cursorHover() {
 
 void AnimationsListItem::draw() {
 	Button::draw();
-	Main::render_window->draw(*_name);
-	Main::render_window->draw(*_animCount);
-	Main::render_window->draw(*_framesCount);
+	Anubis::render_window->draw(*_name);
+	Anubis::render_window->draw(*_animCount);
+	Anubis::render_window->draw(*_framesCount);
 }
 
 
@@ -360,24 +360,24 @@ void AnimationsListDialog::draw() {
 	sf::RectangleShape detailsRectShape(sf::Vector2f(_detailsRect.size));
 	detailsRectShape.setPosition(sf::Vector2f(_detailsRect.position));
 	detailsRectShape.setFillColor(sf::Color(23, 23, 23));
-	Main::render_window->draw(detailsRectShape);
+	Anubis::render_window->draw(detailsRectShape);
 
 	sf::RectangleShape itemsRectShape(sf::Vector2f(_itemsRect.size));
 	itemsRectShape.setPosition(sf::Vector2f(_itemsRect.position));
 	itemsRectShape.setFillColor(sf::Color(23, 23, 23));
-	Main::render_window->draw(itemsRectShape);
+	Anubis::render_window->draw(itemsRectShape);
 
 	sf::RectangleShape bottomRectShape(sf::Vector2f(_bottomRect.size));
 	bottomRectShape.setPosition(sf::Vector2f(_bottomRect.position));
 	bottomRectShape.setFillColor(sf::Color(23, 23, 23));
-	Main::render_window->draw(bottomRectShape);
+	Anubis::render_window->draw(bottomRectShape);
 
 	sf::RectangleShape detailsInnerRect(sf::Vector2f(_detailsInnerRect->size));
 	detailsInnerRect.setPosition(sf::Vector2f(_detailsInnerRect->position));
 	detailsInnerRect.setFillColor(sf::Color(47, 47, 47));
 	detailsInnerRect.setOutlineThickness(1.0f);
 	detailsInnerRect.setOutlineColor(sf::Color(63, 63, 63));
-	Main::render_window->draw(detailsInnerRect);
+	Anubis::render_window->draw(detailsInnerRect);
 
 	_name->draw();
 	_animCount->draw();
@@ -388,7 +388,7 @@ void AnimationsListDialog::draw() {
 	itemsInnerRect.setFillColor(sf::Color(47, 47, 47));
 	itemsInnerRect.setOutlineThickness(1.0f);
 	itemsInnerRect.setOutlineColor(sf::Color(63, 63, 63));
-	Main::render_window->draw(itemsInnerRect);
+	Anubis::render_window->draw(itemsInnerRect);
 
 	sf::FloatRect frect = getItemsRect();
 	sf::View view(frect);
@@ -406,7 +406,7 @@ void AnimationsListDialog::draw() {
 	);
 
 	view.setViewport(vp);
-	Main::render_window->setView(view);
+	Anubis::render_window->setView(view);
 
 	for(auto& item : _animationsItems) {
 		item->draw();
@@ -420,10 +420,10 @@ void AnimationsListDialog::draw() {
 	bottomInnerRect.setFillColor(sf::Color(23, 23, 23));
 	bottomInnerRect.setOutlineThickness(1.0f);
 	bottomInnerRect.setOutlineColor(sf::Color(63, 63, 63));
-	Main::render_window->draw(bottomInnerRect);
+	Anubis::render_window->draw(bottomInnerRect);
 
 	if (_fileNameText) {
-		Main::render_window->draw(*_fileNameText);
+		Anubis::render_window->draw(*_fileNameText);
 	}
 
 	if (_fileNameInput) {

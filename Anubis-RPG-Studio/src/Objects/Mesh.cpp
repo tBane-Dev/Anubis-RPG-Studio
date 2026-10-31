@@ -287,7 +287,7 @@ void Shape::drawConvexShape(sf::Vector2i position, float scale, sf::Color color)
 	else
 		convexShape.setOutlineThickness(1.f);
 
-	Main::render_window->draw(convexShape);
+	Anubis::render_window->draw(convexShape);
 }
 
 void Shape::draw(sf::Vector2i position, float scale, sf::Color colorOfPoints, bool renderIndexes, bool renderPoints) {
@@ -307,7 +307,7 @@ void Shape::draw(sf::Vector2i position, float scale, sf::Color colorOfPoints, bo
 			outlineCircle.setOutlineThickness(radius / 3.f);
 			outlineCircle.setOutlineColor(sf::Color(47, 47, 47));
 			outlineCircle.setPosition(sf::Vector2f(position + sf::Vector2i((float)point.x * scale, (float)point.y * scale)));
-			Main::render_window->draw(outlineCircle);
+			Anubis::render_window->draw(outlineCircle);
 
 			sf::CircleShape circle(radius);
 			circle.setOrigin(sf::Vector2f(radius, radius));
@@ -315,7 +315,7 @@ void Shape::draw(sf::Vector2i position, float scale, sf::Color colorOfPoints, bo
 			circle.setOutlineThickness(radius / 3.f);
 			circle.setOutlineColor(sf::Color(79, 79, 79));
 			circle.setPosition(sf::Vector2f(position + sf::Vector2i((float)point.x * scale, (float)point.y * scale)));
-			Main::render_window->draw(circle);
+			Anubis::render_window->draw(circle);
 		}
 	}
 
@@ -325,7 +325,7 @@ void Shape::draw(sf::Vector2i position, float scale, sf::Color colorOfPoints, bo
 			textPos.x = position.x + (float)_points[i].x * scale - _pointTexts[i]->getGlobalBounds().size.x + 16;
 			textPos.y = position.y + (float)_points[i].y * scale - _pointTexts[i]->getGlobalBounds().size.y - radius - 16.f;
 			_pointTexts[i]->setPosition(textPos);
-			Main::render_window->draw(*_pointTexts[i]);
+			Anubis::render_window->draw(*_pointTexts[i]);
 		}
 	}
 }

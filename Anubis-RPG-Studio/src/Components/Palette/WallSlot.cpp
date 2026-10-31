@@ -69,7 +69,7 @@ void WallSlot::draw() {
 			sf::Vector2i textureRectPos = wallset->_groups[std::dynamic_pointer_cast<WallPrefab>(wall->_prefab.lock())->_id]->walls[tileRects[y][x]].get();
 			sprite.setTextureRect(sf::IntRect(textureRectPos, sf::Vector2i(32, 32)));
 
-			Main::render_window->draw(sprite, states);
+			Anubis::render_window->draw(sprite, states);
 		}
 	}
 }

@@ -40,6 +40,6 @@ void OptionWithIcon::draw() {
 	if (texture) {
 		sf::Sprite sprite(*texture->_texture);
 		sprite.setPosition(sf::Vector2f(_rect.position));
-		Main::render_window->draw(sprite);
+		Anubis::render_window->draw(sprite);
 	}
 }

@@ -122,7 +122,7 @@ void LocationItem::draw() {
 		rect.setFillColor(sf::Color(71, 71, 71));
 	else
 		rect.setFillColor(sf::Color::Transparent);
-	Main::render_window->draw(rect);
+	Anubis::render_window->draw(rect);
 
 	if (_opener) {
 		_opener->draw();
@@ -183,8 +183,8 @@ void LocationItem::draw() {
 		sf::Vector2i pos = _rect.position + sf::Vector2i(32, 0);
 		if (_location) pos.x += 16 * _location->_depth;
 		sprite.setPosition(sf::Vector2f(pos));
-		Main::render_window->draw(sprite);
+		Anubis::render_window->draw(sprite);
 	}
 
-	Main::render_window->draw(*_text);
+	Anubis::render_window->draw(*_text);
 }

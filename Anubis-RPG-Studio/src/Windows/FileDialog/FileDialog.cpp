@@ -644,7 +644,7 @@ void FileDialog::drawFiles() {
 	);
 
 	view.setViewport(vp);
-	Main::render_window->setView(view);
+	Anubis::render_window->setView(view);
 
 	for (auto& file : _files) {
 		file->draw();
@@ -668,7 +668,7 @@ void FileDialog::drawVisibleLocations() {
 	);
 
 	view.setViewport(vp);
-	Main::render_window->setView(view);
+	Anubis::render_window->setView(view);
 
 	int scrollbarValue = _leftScrollbar ? _leftScrollbar->getValue() : 0;
 	int startIndex = scrollbarValue / basic_text_rect_height;
@@ -683,7 +683,7 @@ void FileDialog::drawVisibleLocations() {
 
 void FileDialog::drawBottom() {
 	if (_fileNameText) {
-		Main::render_window->draw(*_fileNameText);
+		Anubis::render_window->draw(*_fileNameText);
 	}
 
 	if (_fileNameInput) {
@@ -802,50 +802,50 @@ void FileDialog::draw() {
 	sf::RectangleShape topRectShape(sf::Vector2f(_topRect.size));
 	topRectShape.setPosition(sf::Vector2f(_topRect.position));
 	topRectShape.setFillColor(sf::Color(23, 23, 23));
-	Main::render_window->draw(topRectShape);
+	Anubis::render_window->draw(topRectShape);
 
 	sf::RectangleShape leftRectShape(sf::Vector2f(_leftRect.size));
 	leftRectShape.setPosition(sf::Vector2f(_leftRect.position));
 	leftRectShape.setFillColor(sf::Color(23, 23, 23));
-	Main::render_window->draw(leftRectShape);
+	Anubis::render_window->draw(leftRectShape);
 
 	sf::RectangleShape rightRectShape(sf::Vector2f(_rightRect.size));
 	rightRectShape.setPosition(sf::Vector2f(_rightRect.position));
 	rightRectShape.setFillColor(sf::Color(23, 23, 23));
-	Main::render_window->draw(rightRectShape);
+	Anubis::render_window->draw(rightRectShape);
 
 	sf::RectangleShape bottomRectShape(sf::Vector2f(_bottomRect.size));
 	bottomRectShape.setPosition(sf::Vector2f(_bottomRect.position));
 	bottomRectShape.setFillColor(sf::Color(23, 23, 23));
-	Main::render_window->draw(bottomRectShape);
+	Anubis::render_window->draw(bottomRectShape);
 
 	sf::RectangleShape topInnerRectShape(sf::Vector2f(_topInnerRect->size));
 	topInnerRectShape.setPosition(sf::Vector2f(_topInnerRect->position));
 	topInnerRectShape.setFillColor(sf::Color(47, 47, 47));
 	topInnerRectShape.setOutlineThickness(1.0f);
 	topInnerRectShape.setOutlineColor(sf::Color(63, 63, 63));
-	Main::render_window->draw(topInnerRectShape);
+	Anubis::render_window->draw(topInnerRectShape);
 
 	sf::RectangleShape leftInnerRectShape(sf::Vector2f(_leftInnerRect->size));
 	leftInnerRectShape.setPosition(sf::Vector2f(_leftInnerRect->position));
 	leftInnerRectShape.setFillColor(sf::Color(47, 47, 47));
 	leftInnerRectShape.setOutlineThickness(1.0f);
 	leftInnerRectShape.setOutlineColor(sf::Color(63, 63, 63));
-	Main::render_window->draw(leftInnerRectShape);
+	Anubis::render_window->draw(leftInnerRectShape);
 
 	sf::RectangleShape rightInnerRectShape(sf::Vector2f(_rightInnerRect->size));
 	rightInnerRectShape.setPosition(sf::Vector2f(_rightInnerRect->position));
 	rightInnerRectShape.setFillColor(sf::Color(47, 47, 47));
 	rightInnerRectShape.setOutlineThickness(1.0f);
 	rightInnerRectShape.setOutlineColor(sf::Color(63, 63, 63));
-	Main::render_window->draw(rightInnerRectShape);
+	Anubis::render_window->draw(rightInnerRectShape);
 
 	sf::RectangleShape bottomInnerRectShape(sf::Vector2f(_bottomInnerRect->size));
 	bottomInnerRectShape.setPosition(sf::Vector2f(_bottomInnerRect->position));
 	bottomInnerRectShape.setFillColor(sf::Color(23, 23, 23));
 	bottomInnerRectShape.setOutlineThickness(1.0f);
 	bottomInnerRectShape.setOutlineColor(sf::Color(63, 63, 63));
-	Main::render_window->draw(bottomInnerRectShape);
+	Anubis::render_window->draw(bottomInnerRectShape);
 
 	_navbar->draw();
 
@@ -853,7 +853,7 @@ void FileDialog::draw() {
 	drawFiles();
 	drawVisibleLocations();
 	
-	Main::render_window->setView(GUI_manager->_view);
+	Anubis::render_window->setView(GUI_manager->_view);
 
 	drawBottom();
 

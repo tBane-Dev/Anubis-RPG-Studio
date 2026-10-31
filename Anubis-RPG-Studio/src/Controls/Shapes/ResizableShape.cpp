@@ -240,7 +240,7 @@ void ResizableShape::drawOnlyRect() {
 	rect.setOutlineThickness(border);
 	rect.setOutlineColor(_outlineColor);
 	rect.setPosition(sf::Vector2f(getPosition().x + border, getPosition().y + border));
-	Main::render_window->draw(rect);
+	Anubis::render_window->draw(rect);
 } 
 
 void ResizableShape::draw() {
@@ -250,7 +250,7 @@ void ResizableShape::draw() {
 	rect.setOutlineThickness(border);
 	rect.setOutlineColor(_outlineColor);
 	rect.setPosition(sf::Vector2f(getPosition().x + border, getPosition().y + border));
-	Main::render_window->draw(rect);
+	Anubis::render_window->draw(rect);
 
 	for (auto& point : _edgePoints) {
 		point->draw();

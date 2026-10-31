@@ -67,7 +67,7 @@ void TerrainSlot::draw() {
 			sprite.setPosition(sf::Vector2f(_rect.position) + offset + sf::Vector2f(x * tileSize.x, y * tileSize.y));
 			sprite.setTextureRect(sf::IntRect(sf::Vector2i(tileRects[y][x].x * 64, terrain->_id * 64), sf::Vector2i(16, 16)));
 
-			Main::render_window->draw(sprite, states);
+			Anubis::render_window->draw(sprite, states);
 		}
 	}
 }

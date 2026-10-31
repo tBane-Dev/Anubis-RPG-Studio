@@ -4,6 +4,8 @@
 #include "TexturesManager.hpp"
 #include <functional>
 
+// TO-DO - add to namespace "Controls"
+
 enum class ButtonState { Idle, Hover, Pressed };
 
 class Button : public Element {

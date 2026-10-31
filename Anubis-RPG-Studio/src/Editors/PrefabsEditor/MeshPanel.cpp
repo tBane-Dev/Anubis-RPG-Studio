@@ -77,7 +77,7 @@ namespace PrefabsEditor {
 
 	void MeshPanel::draw() {
 		Components::Panel::draw();
-		Main::render_window->draw(*_title);
+		Anubis::render_window->draw(*_title);
 
 		// animator and animations
 		std::shared_ptr<Animator>& animator = PrefabsEditor::editor->_animator;
@@ -88,7 +88,7 @@ namespace PrefabsEditor {
 		sf::RectangleShape canvasRectShape(sf::Vector2f(canvasRect.size));
 		canvasRectShape.setFillColor(sf::Color(47, 47, 47));
 		canvasRectShape.setPosition(sf::Vector2f(canvasRect.position));
-		Main::render_window->draw(canvasRectShape);
+		Anubis::render_window->draw(canvasRectShape);
 
 		// sprite
 		if (animator && animations) {
@@ -105,7 +105,7 @@ namespace PrefabsEditor {
 			sf::RenderStates states;
 			states.shader = &*checkerboard_shader;
 			checkerboard_shader->setUniform("rectPos", sf::Vector2f(spriteRect.position));
-			Main::render_window->draw(rect, states);
+			Anubis::render_window->draw(rect, states);
 
 			std::shared_ptr<Mesh>& mesh = PrefabsEditor::editor->_mesh;
 			if (mesh) {
@@ -116,7 +116,7 @@ namespace PrefabsEditor {
 			sprite.setTextureRect(animations->getFrameRect(0, 0));
 			sprite.setScale(sf::Vector2f(spriteScale, spriteScale));
 			sprite.setPosition(sf::Vector2f(canvasRect.position + sf::Vector2i((canvasRect.size.x - animations->getFrameRect(0, 0).size.x * spriteScale) / 2, (canvasRect.size.y - animations->getFrameRect(0, 0).size.y * spriteScale) / 2)));
-			Main::render_window->draw(sprite);
+			Anubis::render_window->draw(sprite);
 		}
 		else {
 			// draw checkerboard
@@ -129,7 +129,7 @@ namespace PrefabsEditor {
 			sf::RenderStates states;
 			states.shader = &*checkerboard_shader;
 			checkerboard_shader->setUniform("rectPos", sf::Vector2f(spriteRect.position));
-			Main::render_window->draw(rect, states);
+			Anubis::render_window->draw(rect, states);
 		}
 
 
@@ -141,7 +141,7 @@ namespace PrefabsEditor {
 		//sf::RenderStates states;
 		//states.shader = &*checkerboard_shader;
 		//checkerboard_shader->setUniform("rectPos", rect.getPosition());
-		//Main::render_window->draw(rect, states);
+		//Anubis::render_window->draw(rect, states);
 		//
 		//// draw animation
 		//std::shared_ptr<Animator>& animator = PrefabsEditor::editor->_animator;
@@ -156,7 +156,7 @@ namespace PrefabsEditor {
 		//	sf::Vector2f canvasPosition = sf::Vector2f(rect.getPosition().x + (rect.getSize().x - frameRect.size.x * scale) / 2, rect.getPosition().y + (rect.getSize().y - frameRect.size.y * scale) / 2);
 		//	sprite.setPosition(canvasPosition);
 		//
-		//	Main::render_window->draw(sprite);
+		//	Anubis::render_window->draw(sprite);
 		//
 		//	std::shared_ptr<Mesh>& mesh = PrefabsEditor::editor->_mesh;
 		//	if (mesh) {

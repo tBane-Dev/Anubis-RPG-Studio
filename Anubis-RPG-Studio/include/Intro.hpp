@@ -23,13 +23,13 @@ namespace Anubis {
 		Intro(std::wstring logo_path, float scale) {
 			logo_texture = sf::Texture(logo_path);
 
-			sf::Vector2f screen_size = sf::Vector2f(Main::render_window->getSize().x, Main::render_window->getSize().y);
+			sf::Vector2f screen_size = sf::Vector2f(Anubis::render_window->getSize().x, Anubis::render_window->getSize().y);
 
-			if (Main::render_window->getSize().x < Main::render_window->getSize().y) {
-				logo_scale = ((float)Main::render_window->getSize().x * 0.4f) / float(logo_texture.getSize().x) * scale;
+			if (Anubis::render_window->getSize().x < Anubis::render_window->getSize().y) {
+				logo_scale = ((float)Anubis::render_window->getSize().x * 0.4f) / float(logo_texture.getSize().x) * scale;
 			}
 			else {
-				logo_scale = ((float)Main::render_window->getSize().y * 0.30f) / float(logo_texture.getSize().y) * scale;
+				logo_scale = ((float)Anubis::render_window->getSize().y * 0.30f) / float(logo_texture.getSize().y) * scale;
 			}
 		}
 
@@ -52,8 +52,8 @@ namespace Anubis {
 			start_time = clock.getElapsedTime();
 
 			// ustaw pozycje
-			float center_x = Main::render_window->getSize().x / 2.0f;
-			float center_y = Main::render_window->getSize().y / 2.0f;
+			float center_x = Anubis::render_window->getSize().x / 2.0f;
+			float center_y = Anubis::render_window->getSize().y / 2.0f;
 
 			sf::Sprite logo_sprite(logo_texture);
 			logo_sprite.setScale(sf::Vector2f(logo_scale, logo_scale));
@@ -72,18 +72,18 @@ namespace Anubis {
 				logo_text->setPosition(sf::Vector2f(center_x, center_y - total_h / 2 + logo_h + offset));
 			}
 
-			Main::render_window->clear(sf::Color::Black);
-			Main::render_window->display();
+			Anubis::render_window->clear(sf::Color::Black);
+			Anubis::render_window->display();
 
 
 			state = intro_states::logo_entry_anim;
 
 			while (state != intro_states::end) {
 
-				while (const std::optional event = Main::render_window->pollEvent()) {
+				while (const std::optional event = Anubis::render_window->pollEvent()) {
 
 					if (event->is<sf::Event::Closed>()) {
-						Main::render_window->close();
+						Anubis::render_window->close();
 						exit(0);
 					}
 				}
@@ -97,10 +97,10 @@ namespace Anubis {
 						logo_text->setFillColor(sf::Color(255.0f, 255.0f, 255.0f, col_alpha));
 					}
 
-					Main::render_window->clear(sf::Color::Black);
-					Main::render_window->draw(logo_sprite);
-					if (logo_text) Main::render_window->draw(*logo_text);
-					Main::render_window->display();
+					Anubis::render_window->clear(sf::Color::Black);
+					Anubis::render_window->draw(logo_sprite);
+					if (logo_text) Anubis::render_window->draw(*logo_text);
+					Anubis::render_window->display();
 
 					if (col_alpha > 255) {
 						state = intro_states::logo_hidding;
@@ -115,10 +115,10 @@ namespace Anubis {
 						logo_text->setFillColor(sf::Color(255.0f, 255.0f, 255.0f, col_alpha));
 					}
 
-					Main::render_window->clear(sf::Color::Black);
-					Main::render_window->draw(logo_sprite);
-					if (logo_text) Main::render_window->draw(*logo_text);
-					Main::render_window->display();
+					Anubis::render_window->clear(sf::Color::Black);
+					Anubis::render_window->draw(logo_sprite);
+					if (logo_text) Anubis::render_window->draw(*logo_text);
+					Anubis::render_window->display();
 
 					if (col_alpha <= 0) {
 						state = intro_states::end;

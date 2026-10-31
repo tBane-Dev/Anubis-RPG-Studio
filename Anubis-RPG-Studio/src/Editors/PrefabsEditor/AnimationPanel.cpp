@@ -389,7 +389,7 @@ namespace PrefabsEditor {
 	void AnimationPanel::draw() {
 		Components::Panel::draw();
 
-		Main::render_window->draw(*_title);
+		Anubis::render_window->draw(*_title);
 
 		// animator and animations
 		std::shared_ptr<Animator>& animator = PrefabsEditor::editor->_animator;
@@ -400,7 +400,7 @@ namespace PrefabsEditor {
 		sf::RectangleShape canvasRectShape(sf::Vector2f(canvasRect.size));
 		canvasRectShape.setFillColor(sf::Color(47, 47, 47));
 		canvasRectShape.setPosition(sf::Vector2f(canvasRect.position));
-		Main::render_window->draw(canvasRectShape);
+		Anubis::render_window->draw(canvasRectShape);
 
 		// sprite
 		if (animator && animations) {
@@ -417,13 +417,13 @@ namespace PrefabsEditor {
 			sf::RenderStates states;
 			states.shader = &*checkerboard_shader;
 			checkerboard_shader->setUniform("rectPos", sf::Vector2f(spriteRect.position));
-			Main::render_window->draw(rect, states);
+			Anubis::render_window->draw(rect, states);
 
 			sf::Sprite sprite(*animations->getTexture()->_texture);
 			sprite.setTextureRect(animations->getFrameRect(animator->_animation, animator->_frame));
 			sprite.setScale(sf::Vector2f(spriteScale, spriteScale));
 			sprite.setPosition(sf::Vector2f(canvasRect.position + sf::Vector2i((canvasRect.size.x - animations->getFrameRect(0, 0).size.x * spriteScale) / 2, (canvasRect.size.y - animations->getFrameRect(0, 0).size.y * spriteScale) / 2)));
-			Main::render_window->draw(sprite);
+			Anubis::render_window->draw(sprite);
 		}
 		else {
 			// draw checkerboard
@@ -436,7 +436,7 @@ namespace PrefabsEditor {
 			sf::RenderStates states;
 			states.shader = &*checkerboard_shader;
 			checkerboard_shader->setUniform("rectPos", sf::Vector2f(spriteRect.position));
-			Main::render_window->draw(rect, states);
+			Anubis::render_window->draw(rect, states);
 		}
 
 		// draw buttons
@@ -456,23 +456,23 @@ namespace PrefabsEditor {
 		statsRectShape.setFillColor(sf::Color(24, 24, 24, 255));
 		statsRectShape.setOutlineThickness(m);
 		statsRectShape.setOutlineColor(sf::Color(0, 0, 0, 255));
-		Main::render_window->draw(statsRectShape);
+		Anubis::render_window->draw(statsRectShape);
 
 		// texts labels
-		Main::render_window->draw(*_animations_name_label);
-		Main::render_window->draw(*_animations_current_label);
-		Main::render_window->draw(*_animations_count_label);
-		Main::render_window->draw(*_frame_label);
-		Main::render_window->draw(*_frames_count_label);
-		Main::render_window->draw(*_frame_size_label);
+		Anubis::render_window->draw(*_animations_name_label);
+		Anubis::render_window->draw(*_animations_current_label);
+		Anubis::render_window->draw(*_animations_count_label);
+		Anubis::render_window->draw(*_frame_label);
+		Anubis::render_window->draw(*_frames_count_label);
+		Anubis::render_window->draw(*_frame_size_label);
 
 		// text inputs
-		Main::render_window->draw(*_animations_name);
-		Main::render_window->draw(*_animations_current);
-		Main::render_window->draw(*_animations_count);
-		Main::render_window->draw(*_frame);
-		Main::render_window->draw(*_frames_count);
-		Main::render_window->draw(*_frame_size);
+		Anubis::render_window->draw(*_animations_name);
+		Anubis::render_window->draw(*_animations_current);
+		Anubis::render_window->draw(*_animations_count);
+		Anubis::render_window->draw(*_frame);
+		Anubis::render_window->draw(*_frames_count);
+		Anubis::render_window->draw(*_frame_size);
 
 		// set animation button
 		_set_animation->draw();

@@ -6,7 +6,8 @@
 #include "WindowsManager.hpp"
 #include "History.hpp"
 #include <SFML/OpenGL.hpp>
-
+#include "3D/Model3D.hpp"
+#include "3D/Mesh3D.hpp"
 namespace MapEditor {
 
 	Editor::Editor() {
@@ -15,6 +16,15 @@ namespace MapEditor {
 
 	Editor::~Editor() {
 
+	}
+
+	void Editor::createScene() {
+
+		Anubis::scene->_models.clear();
+
+		std::shared_ptr<Anubis::Model3D> golem = Anubis::openModel3DFromFile(L"assets\\mdl\\golem.glb");
+		golem->_y = 1.0f;
+		Anubis::scene->addModel(golem);
 	}
 
 	void Editor::createMap(int width, int height) {
@@ -134,6 +144,8 @@ namespace MapEditor {
 			return;
 
 		_camera->handleEvent(event);
+		Anubis::scene->handleEvent(event);
+
 		_map->handleEvent(event);
 		_cursor_on_map->handleEvent(event);
 		_palette->handleEvent(event);
@@ -152,13 +164,14 @@ namespace MapEditor {
 		_map->update();
 		_game_objects->update();
 
+		Anubis::scene->update();
 	}
 
 	void Editor::draw() {
 
 		_camera->setView();
 
-		Main::render_window->resetGLStates();
+		Anubis::render_window->resetGLStates();
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
@@ -167,6 +180,7 @@ namespace MapEditor {
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 		_map->draw();
+		Anubis::scene->draw();
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
@@ -178,7 +192,7 @@ namespace MapEditor {
 
 		//glDisable(GL_DEPTH_TEST); // now is faster :D
 
-		Main::render_window->resetGLStates();
+		Anubis::render_window->resetGLStates();
 
 		_cursor_on_map->draw();
 

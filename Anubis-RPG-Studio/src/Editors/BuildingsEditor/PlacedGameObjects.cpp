@@ -196,7 +196,7 @@ namespace BuildingsEditor {
 				if (building) {
 					std::shared_ptr<BuildingPrefab> buildingPrefab = std::dynamic_pointer_cast<BuildingPrefab>(building->_prefab.lock());
 					if (buildingPrefab)
-						buildingPrefab->drawOnlyCollider(*Main::render_window, building->getPosition());
+						buildingPrefab->drawOnlyCollider(*Anubis::render_window, building->getPosition());
 
 					building->draw(); // draw selected frame
 				}
@@ -209,7 +209,7 @@ namespace BuildingsEditor {
 				if (building) {
 					std::shared_ptr<BuildingPrefab> buildingPrefab = std::dynamic_pointer_cast<BuildingPrefab>(building->_prefab.lock());
 					if (buildingPrefab)
-						buildingPrefab->drawOnlyFloor(*Main::render_window, building->getPosition());
+						buildingPrefab->drawOnlyFloor(*Anubis::render_window, building->getPosition());
 				}
 			}
 		}

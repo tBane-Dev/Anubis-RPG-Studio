@@ -40,7 +40,7 @@ void Door::draw(sf::RenderTarget& target, float scale) {
 
 void Door::draw() {
 	if (Main::editor_manager->get_back() == BuildingsEditor::editor) {
-		draw(*Main::render_window, BuildingsEditor::editor->_building_panel->_building->_scale);
+		draw(*Anubis::render_window, BuildingsEditor::editor->_building_panel->_building->_scale);
 	}
 
 	if (Main::editor_manager->get_back() == MapEditor::editor) {
@@ -86,7 +86,7 @@ void Door::draw() {
 				sprite.setColor(sf::Color(255, 30 + 64, 45 + 64));
 			else
 				sprite.setColor(sf::Color::White);
-			Main::render_window->draw(sprite);
+			Anubis::render_window->draw(sprite);
 		}
 
 		if (MapEditor::editor->_main_menu->_render_meshes->_checkbox->_value == 1) {

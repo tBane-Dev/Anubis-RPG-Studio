@@ -36,7 +36,7 @@ namespace MapEditor {
 		sf::View view = camera->_view;
 		sf::Vector2f size = view.getSize();
 		sf::Vector2f center = view.getCenter();
-		sf::Vector2u windowSize = Main::render_window->getSize();
+		sf::Vector2u windowSize = Anubis::render_window->getSize();
 		sf::FloatRect viewport = view.getViewport();
 
 		if (windowSize.x == 0 || windowSize.y == 0 ||
@@ -51,7 +51,7 @@ namespace MapEditor {
 		if (viewportWidth <= 0.f || viewportHeight <= 0.f)
 			return;
 
-		sf::Vector2i mouse = sf::Mouse::getPosition(*Main::render_window);
+		sf::Vector2i mouse = sf::Mouse::getPosition(*Anubis::render_window);
 
 		float u = (mouse.x - viewportX) / viewportWidth;
 		float v = (mouse.y - viewportY) / viewportHeight;
@@ -121,9 +121,9 @@ namespace MapEditor {
 		}
 
 		sf::RenderStates states;
-		const sf::View& view = Main::render_window->getView();
+		const sf::View& view = Anubis::render_window->getView();
 		sf::Vector2f size = view.getSize();
-		sf::Vector2u windowSize = Main::render_window->getSize();
+		sf::Vector2u windowSize = Anubis::render_window->getSize();
 		float aspect = (float)(windowSize.x) / windowSize.y;
 		float fov = 60.0f;
 		float distance = (size.y * 0.5f) / std::tan(fov * 0.5f * 3.14159265f / 180.0f);
@@ -137,7 +137,7 @@ namespace MapEditor {
 		states.shader = &*ghost_chunk_shader;
 
 		sf::Sprite sprite(*texture->_texture);
-		Main::render_window->draw(sprite, states);
+		Anubis::render_window->draw(sprite, states);
 
 	}
 
@@ -177,13 +177,13 @@ namespace MapEditor {
 		sf::View view = camera->_view;
 		sf::Vector2f size = view.getSize();
 		sf::Vector2f center = view.getCenter();
-		sf::Vector2u windowSize = Main::render_window->getSize();
+		sf::Vector2u windowSize = Anubis::render_window->getSize();
 		sf::FloatRect viewport = view.getViewport();
 
 		if (windowSize.x == 0 || windowSize.y == 0 || size.x <= 0.f || size.y <= 0.f)
 			return;
 
-		sf::Vector2i mouse = sf::Mouse::getPosition(*Main::render_window);
+		sf::Vector2i mouse = sf::Mouse::getPosition(*Anubis::render_window);
 
 		sf::IntRect windowRect(sf::Vector2i(0, 0), sf::Vector2i(windowSize));
 
@@ -390,7 +390,7 @@ namespace MapEditor {
 		rect.setFillColor(sf::Color(63, 63, 63, 127));
 		rect.setOutlineThickness(borderWidth);
 		rect.setOutlineColor(sf::Color(31, 31, 31, 255));
-		Main::render_window->draw(rect, states);
+		Anubis::render_window->draw(rect, states);
 
 		_button->draw();
 	}

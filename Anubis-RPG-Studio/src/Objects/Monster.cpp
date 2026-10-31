@@ -58,7 +58,7 @@ sf::Vector2i Monster::getSortPosition() {
 void Monster::update() {
 	
 	if (_state == MonsterState::Moving) {
-		_animator->_timer += deltaTime.asSeconds();
+		_animator->_timer += Anubis::deltaTime.asSeconds();
 
 		if (_animator->_timer >= _animator->_animations.lock()->_interval) {
 			_animator->_timer = 0.0f;
@@ -175,7 +175,7 @@ void Monster::draw() {
 	sf::RenderStates states;
 	states.shader = &*sprite25D_shader;
 
-	Main::render_window->draw(sprite, states);
+	Anubis::render_window->draw(sprite, states);
 
 
 	if (MapEditor::editor->_main_menu->_render_meshes->_checkbox->_value == 1) {

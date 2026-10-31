@@ -60,7 +60,7 @@ void Checkbox::hover() {
 
 void Checkbox::click() {
 	_state = CheckboxState::Pressed;
-	_clickTime = currentTime;
+	_clickTime = Anubis::currentTime;
 }
 
 void Checkbox::cursorHover() {
@@ -93,7 +93,7 @@ void Checkbox::handleEvent(const sf::Event& event) {
 void Checkbox::update() {
 
 	if (_state == CheckboxState::Pressed) {
-		if ((currentTime - _clickTime).asSeconds() > 0.05f) {
+		if ((Anubis::currentTime - _clickTime).asSeconds() > 0.05f) {
 
 			_value += 1;
 			if (_value >= _textures.size())
@@ -122,6 +122,6 @@ void Checkbox::draw() {
 
 		sf::Sprite sprite(*tex->_texture);
 		sprite.setPosition(sf::Vector2f(_rect.position));
-		Main::render_window->draw(sprite);
+		Anubis::render_window->draw(sprite);
 	}
 }
