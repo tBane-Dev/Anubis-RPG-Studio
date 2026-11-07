@@ -1,0 +1,19 @@
+﻿#pragma once
+#include "Components/Palette/Palette.hpp"
+
+namespace MapEditor {
+	class Palette : public Components::Palette {
+	public:
+
+		Palette();
+		~Palette();
+
+		virtual void addTools();
+		virtual void loadAll(ObjectType type);
+
+		virtual void cursorHover();
+		virtual void handleEvent(const sf::Event& event);
+		virtual void draw();
+	};
+
+}
