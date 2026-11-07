@@ -1,0 +1,370 @@
+﻿// for std::wcout 
+#include <io.h>       // _setmode, _fileno
+#include <fcntl.h>   // _O_U16TEXT
+#include <stdio.h>   // stdout
+
+// includes :-) 
+#include "SFML/Window.hpp"
+#include <SFML/Graphics.hpp>
+#include "RenderWindow.hpp"
+#include "DebugLog.hpp"
+#include "Time.hpp"
+
+#include "Intro.hpp"
+
+#include "Theme.hpp"
+
+#include "3D/OpenGLBuffers.hpp"
+
+#include "Tooltip.hpp" // to move
+
+#include "Loader.hpp"
+
+#include "TexturesManager.hpp"
+#include "AnimationsManager.hpp"
+#include "ShadersManager.hpp"
+#include "Tileset.hpp"
+#include "Wallset.hpp"
+#include "PrefabsManager.hpp"
+
+
+#include "Cursor.hpp"
+#include "WindowsManager.hpp"
+
+#include "EditorsManager.hpp"
+#include "Editors/MapEditor/Editor.hpp"
+
+#include "Editors/MapEditor/Map/CameraOnMap.hpp"
+#include "Editors/MapEditor/Map/Map.hpp"
+
+#include "Objects/Object.hpp"
+#include "Objects/GameObject.hpp"
+#include "Objects/Monster.hpp"
+#include "Objects/PlacedGameObject.hpp"
+
+#include "History.hpp"
+
+#include <windows.h>
+#include <commdlg.h>
+#include <iostream>
+
+void converter(std::wstring mask, std::wstring dictionary) {
+
+    // TO-DO - test function - to delete
+
+    std::wcout << dictionary << L"\n";
+    std::vector<std::wstring> names = { L"wooden", L"red", L"stone", L"green", L"blue", L"sand" };
+
+    std::vector<sf::Image> images_light;
+    for (int i = 0; i < names.size(); i++) {
+        std::wstring name = dictionary + L"\\" + names[i] + L"_light.png";
+        std::wcout << name << "\n";
+        sf::Image img(name);
+        images_light.push_back(img);
+    }
+
+    std::vector<sf::Image> images_dark;
+    for (int i = 0; i < names.size(); i++) {
+        std::wstring name = dictionary + L"\\" + names[i] + L"_dark.png";
+        std::wcout << name << "\n";
+        sf::Image img(name);
+        images_dark.push_back(img);
+    }
+
+    sf::Image maskImage(mask);
+    
+    sf::Image resultImage;
+    resultImage.resize(sf::Vector2u(maskImage.getSize().x, maskImage.getSize().y * names.size()));
+    
+        for (int i = 0; i < names.size(); i += 1) {
+            for (int y = 0; y < maskImage.getSize().y; y += 1) {
+                for (int x = 0; x < maskImage.getSize().x; x += 1) {
+                    
+                    sf::Color maskColor = maskImage.getPixel(sf::Vector2u(x, y));
+
+                    sf::Color newColor = maskColor;
+                    int px = x % 32;
+                    int py = y % 32;
+                    
+                    if (maskColor == sf::Color(97, 0, 15)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    if (maskColor == sf::Color(98, 0, 15)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    if (maskColor == sf::Color(99, 0, 15)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    if (maskColor == sf::Color(100, 0, 15)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    if (maskColor == sf::Color(101, 0, 15)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    if (maskColor == sf::Color(102, 0, 15)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    if (maskColor == sf::Color(103, 0, 15)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    if (maskColor == sf::Color(104, 0, 15)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    
+                    if (maskColor == sf::Color(103, 0, 16)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    if (maskColor == sf::Color(104, 0, 16)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+
+                    if (maskColor == sf::Color(129, 0, 20)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    if (maskColor == sf::Color(130, 0, 20)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    if (maskColor == sf::Color(131, 0, 20)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+
+                    if (maskColor == sf::Color(129, 0, 21)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    if (maskColor == sf::Color(130, 0, 21)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    if (maskColor == sf::Color(131, 0, 21)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    if (maskColor == sf::Color(132, 0, 21)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    if (maskColor == sf::Color(133, 0, 21)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    if (maskColor == sf::Color(134, 0, 21)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    if (maskColor == sf::Color(135, 0, 21)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+                    if (maskColor == sf::Color(136, 0, 21)) newColor = images_light[i].getPixel(sf::Vector2u(px, py));
+
+                    if (maskColor == sf::Color(61, 0, 10)) newColor = images_dark[i].getPixel(sf::Vector2u(px, py));
+
+                    int xx = x;
+                    int yy = i * maskImage.getSize().y + y;
+
+                    resultImage.setPixel(sf::Vector2u(xx, yy), newColor);
+                }
+            }
+        }
+
+        resultImage.saveToFile(dictionary + L"\\result.png");
+}
+
+static void APIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
+    GLsizei length, const char* message, const void* userParam) {
+    constexpr GLenum debugTypeError = 0x824C;   // GL_DEBUG_TYPE_ERROR
+    if (type != debugTypeError)
+        return;                                 // tylko błędy, bez ostrzeżeń o wydajności
+
+    std::string text(message, length > 0 ? std::size_t(length) : std::strlen(message));
+    DebugError(L"GL DEBUG: " + std::wstring(text.begin(), text.end()));
+}
+
+int main() {
+    (void)_setmode(_fileno(stdout), _O_U16TEXT); // wide char UTF-16 output
+
+	// TO-DO - test function - to delete
+    //converter(L"C:\\Users\\tBane\\Desktop\\roofs\\0_mask.png", L"C:\\Users\\tBane\\Desktop\\roofs");
+    //if (checkCharactersSets() != 0)
+    //    exit(0);
+
+    sf::ContextSettings settings;
+    settings.depthBits = 32;
+    settings.stencilBits = 8;
+    settings.majorVersion = 3;
+    settings.minorVersion = 3;
+    settings.attributeFlags = sf::ContextSettings::Debug;
+
+    Anubis::render_window = std::make_unique<sf::RenderWindow>(sf::VideoMode(sf::Vector2u(1920, 1080), 32u), "Anubis-RPG-Studio", sf::State::Windowed, settings);
+    
+    ShowWindow(Anubis::render_window->getNativeHandle(), SW_MAXIMIZE);
+
+    Anubis::render_window->setVerticalSyncEnabled(false);
+    Anubis::render_window->setFramerateLimit(0);
+
+    auto* version = glGetString(GL_VERSION);
+    auto* renderer = glGetString(GL_RENDERER);
+
+    if (version) {
+        std::string text(reinterpret_cast<const char*>(version));
+        DebugStat(L"OpenGL: " + std::wstring(text.begin(), text.end()));
+    }
+
+    if (renderer) {
+        std::string text(reinterpret_cast<const char*>(renderer));
+        DebugStat(L"Renderer: " + std::wstring(text.begin(), text.end()));
+    }
+
+    DebugStat(L"");
+
+    // OpenGL Buffers initialize :-)
+    if (!Anubis::GL::initialize())
+        return EXIT_FAILURE;
+
+
+    using DebugProc = void (APIENTRY*)(GLenum, GLenum, GLuint, GLenum, GLsizei, const char*, const void*);
+    using DebugMessageCallbackFunction = void (APIENTRY*)(DebugProc, const void*);
+
+    auto debugMessageCallback = reinterpret_cast<DebugMessageCallbackFunction>(
+        sf::Context::getFunction("glDebugMessageCallback"));
+
+    if (debugMessageCallback) {
+        constexpr GLenum debugOutput = 0x92E0;             // GL_DEBUG_OUTPUT
+        constexpr GLenum debugOutputSynchronous = 0x8242;  // GL_DEBUG_OUTPUT_SYNCHRONOUS
+        glEnable(debugOutput);
+        glEnable(debugOutputSynchronous);
+        debugMessageCallback(glDebugCallback, nullptr);
+        DebugStat(L"OpenGL debug output enabled");
+    }
+    else {
+        DebugError(L"glDebugMessageCallback is unavailable");
+    }
+
+    Anubis::render_window->clear(sf::Color::Black);
+    Anubis::render_window->display();
+
+    while (const std::optional event = Anubis::render_window->waitEvent()) {
+
+        if (event->is<sf::Event::Closed>()) {
+            Anubis::render_window->close();
+            exit(0);
+        }
+
+        if (const auto* kp = event->getIf<sf::Event::KeyPressed>(); kp && kp->code == sf::Keyboard::Key::Space) {
+            break;
+        }
+    }
+
+    loadTheme(); // TO-DO - must be a shared_ptr
+    
+    textures_manager = std::make_shared<TexturesManager>();
+    animations_manager = std::make_shared<AnimationsManager>();
+    prefabs_manager = std::make_shared<PrefabsManager>();
+    Anubis::prefabs_manager = std::make_shared<Anubis::PrefabsManager>();
+
+    loadShaders(); // TO-DO - must be a shared_ptr
+
+    Cursors::cursor = std::make_shared<Cursors::Cursor>();
+    
+    GUI_manager = std::make_shared<GUIManager>();
+    Main::tooltip = std::make_shared<Main::Tooltip>();
+
+    Main::windows_manager = std::make_shared<Main::WindowsManager>();
+    Main::editor_manager = std::make_shared<Main::EditorsManager>();
+
+	tileset = std::make_shared<Tileset>();
+	wallset = std::make_shared<Wallset>();
+
+    Anubis::renderIntro();
+
+    MapEditor::editor = std::make_shared<MapEditor::Editor>();
+    Main::editor_manager->push_back(MapEditor::editor);
+
+    MapEditor::editor->createScene();
+    MapEditor::editor->createMap(5, 3);
+    MapEditor::editor->createGameObjects();
+    MapEditor::editor->createCamera();
+    MapEditor::editor->createCursorOnMap();
+    MapEditor::editor->createMainMenu();
+    MapEditor::editor->createPalette();
+    
+    // camera
+    sf::IntRect mapRect = MapEditor::editor->_map->getRect();
+    float centerX = (float)mapRect.position.x + (float)mapRect.size.x * 0.5f;
+    float centerZ = (float)mapRect.position.y + (float)mapRect.size.y * 0.5f;
+    float centerY = MapEditor::editor->_map->getHeight(centerX, centerZ);
+    MapEditor::editor->_scene->lookAt(sf::Vector3f(centerX, centerY, centerZ));
+    // map center in the middle of the free area, not under the palette
+    sf::Vector2f screenCenter((float)Anubis::render_window->getSize().x * 0.5f, (float)Anubis::render_window->getSize().y * 0.5f);
+    MapEditor::editor->_scene->panByPixels(screenCenter, sf::Vector2f(-(float)MapEditor::editor->_palette->getSize().x * 0.5f, 0.f));
+
+    // cursor
+    Anubis::cursor = std::make_shared<Anubis::Cursor>();
+    Anubis::cursor->setScene(MapEditor::editor->_scene);
+
+    // load the test-map
+    const std::filesystem::path path = L"..\\test_map.rpg2d";
+    if (std::filesystem::exists(path)) {
+        try {
+            std::ifstream file(path, std::ios::binary);
+            if (!file) {
+                DebugError(L"Cant Open File: " + path.wstring());
+            }
+            else {
+                file.exceptions(std::ios::failbit | std::ios::badbit);
+
+                std::shared_ptr<Loader> loader = std::make_shared<Loader>(file);
+                animations_manager->loadFromProject(file, loader);
+                prefabs_manager->loadFromProject(file, loader);
+                Anubis::prefabs_manager->load(file, loader);
+                MapEditor::editor->_map->loadFromProject(file, loader);
+                MapEditor::editor->_game_objects->loadFromProject(file, loader);
+                
+                loader->end();
+            }
+
+            
+        }
+        catch (const std::exception& e) {
+            std::string msg = e.what();
+            DebugError(L"Incorrect data: " + std::wstring(msg.begin(), msg.end()));
+        }
+    }
+    // load the test-map
+
+    MapEditor::editor->_palette->_slots->updateObjects();
+
+    history = std::make_shared<History>();
+
+    MapEditor::editor->setVisibleChunks();
+
+    // init FPS clock
+    sf::Clock FPSClock;
+    int frames = 0;
+    float elapsed = 0.0f;
+
+    while (Anubis::render_window->isOpen()) {
+
+        Anubis::prevTime = Anubis::currentTime;
+        Anubis::currentTime = Anubis::mainClock.getElapsedTime();
+        Anubis::deltaTime = Anubis::currentTime - Anubis::prevTime;
+
+        if(Anubis::deltaTime.asSeconds() > 0.1f) {
+            Anubis::deltaTime = sf::seconds(0.1f);
+		}
+
+        Cursors::cursor->update();
+
+        // FPS TIMER
+        float dtFPS = FPSClock.restart().asSeconds();
+        frames++;
+        elapsed += dtFPS;
+
+        if (elapsed >= 0.5f) {
+            float FPS = frames / elapsed;
+            float ms = 1000.0f / FPS;
+
+            std::ostringstream ss;
+            ss << "Anubis-RPG-Studio - " << std::fixed << std::setprecision(2) << FPS << " FPS / " << std::setprecision(3) << ms << " ms";
+            Anubis::render_window->setTitle(ss.str());
+            frames = 0;
+            elapsed = 0.0f;
+        }
+
+        GUI_manager->Element_hovered = nullptr;
+        Main::editor_manager->cursorHover();
+		Main::windows_manager->cursorHover();
+
+        // handle events
+        while (const std::optional event = Anubis::render_window->pollEvent()) {
+
+            if (event->is<sf::Event::Closed>()) {
+                Anubis::render_window->close();
+                exit(0);
+            }
+
+            if(event->is<sf::Event::Resized>()) {
+				sf::Vector2u newSize = event->getIf<sf::Event::Resized>()->size;
+                Anubis::render_window->setSize(newSize);
+                GUI_manager->resize(sf::Vector2i(newSize));
+
+			}
+
+            Main::editor_manager->handleEvent(*event);
+            Main::windows_manager->handleEvent(*event);
+
+        }
+
+        // update
+        Main::editor_manager->update();
+        Main::windows_manager->update();
+		Main::tooltip->update();
+
+        // TO-DO - to delete
+        // I Am The One! .. B-)
+        //DebugStat(L"I am The One ..");
+
+        // draw
+        Anubis::render_window->clear(sf::Color(47, 47, 47));
+        Main::editor_manager->draw();
+        Main::windows_manager->draw();
+        Main::tooltip->draw();
+        Anubis::render_window->display();
+
+        
+    }
+}
