@@ -2,7 +2,6 @@
 #include "EditorsManager.hpp"
 #include "Editors/AnimationsEditor/MainMenu.hpp"
 #include "Components/Panel.hpp"
-#include "AnimationsManager.hpp"
 #include "Editors/AnimationsEditor/NamePanel.hpp"
 #include "Editors/AnimationsEditor/AnimationsListPanel.hpp"
 #include "Editors/AnimationsEditor/ActionsPanel.hpp"

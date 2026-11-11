@@ -29,16 +29,13 @@ void GameObjectSlot::setObject(std::shared_ptr<Object> object) {
 	_scene->_models.clear();
 	_model = nullptr;
 
-	if (!prefab || !Anubis::prefabs_manager)
+	if (!prefab)
 		return;
 
-	// TO-DO - rewrite to the new prefabs manager
-	std::shared_ptr<Anubis::Prefab> modelPrefab = Anubis::prefabs_manager->getPrefab(prefab->getName());
-	if (!modelPrefab || !modelPrefab->_model)
+	if (prefab->_model.expired())
 		return;
 
-	std::shared_ptr<Anubis::Model3D> model = std::make_shared<Anubis::Model3D>(*modelPrefab->_model);
-	//
+	std::shared_ptr<Anubis::Model3D> model = std::make_shared<Anubis::Model3D>(*prefab->_model.lock());
 
 	sf::Vector3f boundsMin;
 	sf::Vector3f boundsMax;
@@ -146,7 +143,6 @@ void GameObjectSlot::draw() {
 
 	if (_model) {
 		drawModel(); 
-		return;
 	}
 
 }

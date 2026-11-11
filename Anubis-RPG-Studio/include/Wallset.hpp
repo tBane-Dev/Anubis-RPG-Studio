@@ -1,7 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "TexturesManager.hpp"
-#include "AnimationsManager.hpp"
 
 class Wallset {
 public:

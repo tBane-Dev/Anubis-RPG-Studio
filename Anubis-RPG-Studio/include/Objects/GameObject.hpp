@@ -1,6 +1,6 @@
 #pragma once
 #include "Objects/Object.hpp"
-#include "AnimationsManager.hpp"
+#include "ModelsManager.hpp"
 #include "Objects/Collider.hpp"
 #include "Objects/Mesh.hpp"
 #include "3D/Model3D.hpp"

@@ -1,7 +1,6 @@
 #pragma once
 #include "WindowsManager.hpp"
 #include "Controls/Button.hpp"
-#include "AnimationsManager.hpp"
 #include "Theme.hpp"
 #include "Controls/Scrollbar.hpp"
 #include "Controls/ButtonWithTextAndSprite.hpp"

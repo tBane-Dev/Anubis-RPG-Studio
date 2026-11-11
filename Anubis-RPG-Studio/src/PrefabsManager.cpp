@@ -5,7 +5,7 @@
 #include "BinaryWriter.hpp"
 #include "BinaryReader.hpp"
 #include "Objects/Collider.hpp"
-#include "AnimationsManager.hpp" // TO-DO - must be a model manager
+#include "ModelsManager.hpp" // TO-DO - must be a model manager
 
 PrefabsManager::PrefabsManager() {
 	_prefabs.clear();

@@ -1,6 +1,5 @@
 ﻿#include "Editors/AnimationsEditor/AnimationsListPanel.hpp"
 #include "Theme.hpp"
-#include "AnimationsManager.hpp"
 #include "Editors/AnimationsEditor/Editor.hpp"
 #include <iostream>
 

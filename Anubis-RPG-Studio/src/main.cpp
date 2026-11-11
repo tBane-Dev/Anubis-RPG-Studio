@@ -21,7 +21,7 @@
 #include "Loader.hpp"
 
 #include "TexturesManager.hpp"
-#include "AnimationsManager.hpp"
+#include "ModelsManager.hpp"
 #include "ShadersManager.hpp"
 #include "Tileset.hpp"
 #include "Wallset.hpp"
