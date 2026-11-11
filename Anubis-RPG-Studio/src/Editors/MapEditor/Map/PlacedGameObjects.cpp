@@ -152,12 +152,12 @@ namespace MapEditor {
 		if (!prefab || !Anubis::prefabs_manager)
 			return nullptr;
 
-		std::shared_ptr<Anubis::Prefab> modelPrefab = Anubis::prefabs_manager->getPrefab(prefab->_name);
+		std::weak_ptr<GameObject> p = prefabs_manager->getPrefab(prefab->_name);
 
-		if (!modelPrefab || !modelPrefab->_model)
+		if (p.expired() || p.lock()->_model.expired())
 			return nullptr;
 
-		std::shared_ptr<Anubis::Model3D> model = std::make_shared<Anubis::Model3D>(*modelPrefab->_model);
+		std::shared_ptr<Anubis::Model3D> model = std::make_shared<Anubis::Model3D>(*p.lock()->_model.lock());
 		model->_scale = getModelScale(prefab);
 		model->_windStrength = getModelWind(prefab);
 		return model;
