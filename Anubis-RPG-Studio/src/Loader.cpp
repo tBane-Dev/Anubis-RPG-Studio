@@ -20,12 +20,12 @@ namespace Anubis {
 
 		BinaryReader reader(file);
 
+		counts.modelsCount = 36; // TO-DO - to delete
 		counts.prefabsCount = reader.read_int32();
-		counts.modelsCount = models_manager->getModelsCount(); // TO-DO - to delete
 		counts.chunksCount = reader.read_int32();
 		counts.gameObjectsCount = reader.read_int32();
 
-		_total = counts.animationsCount + counts.prefabsCount + counts.modelsCount + counts.chunksCount + counts.gameObjectsCount; // TO-DO: + models
+		_total = counts.modelsCount + counts.prefabsCount + counts.chunksCount + counts.gameObjectsCount; // TO-DO: + models
 
 		draw();
 

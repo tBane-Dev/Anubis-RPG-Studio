@@ -267,7 +267,7 @@ int main() {
                 file.exceptions(std::ios::failbit | std::ios::badbit);
 
                 std::shared_ptr<Anubis::Loader> loader = std::make_shared<Anubis::Loader>(file);
-                Anubis::models_manager->load();
+                Anubis::models_manager->load(file, loader);
                 Anubis::prefabs_manager->loadFromProject(file, loader);
                 MapEditor::editor->_map->loadFromProject(file, loader);
                 MapEditor::editor->_game_objects->loadFromProject(file, loader);

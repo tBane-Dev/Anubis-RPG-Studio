@@ -25,7 +25,7 @@ namespace Anubis {
         void saveFromProject(std::ofstream& file);
         void loadFromProject(std::ifstream& file, std::shared_ptr<Loader>& loader);
 
-        void load();
+        void load(std::ifstream& file, std::shared_ptr<Loader>& loader);
     };
 
     extern std::shared_ptr<ModelsManager> models_manager;

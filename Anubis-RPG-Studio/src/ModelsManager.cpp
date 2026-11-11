@@ -109,9 +109,15 @@ namespace Anubis {
 		}
 	}
 
-	void ModelsManager::load() {
+	void ModelsManager::load(std::ifstream& file, std::shared_ptr<Loader>& loader) {
+
+		loader->setTitle(L"Loading Models ...");
+		BinaryReader reader(file);
 
 		_models.clear();
+		int modelsCount = loader->counts.modelsCount;
+
+		DebugLog(L"Loading Models:");
 
 		struct p {
 			std::wstring name;
@@ -161,6 +167,7 @@ namespace Anubis {
 
 
 		for (auto& p : pp) {
+			loader->nextStep(p.name);
 			addModel(p.name, openModel3DFromFile(p.path));
 		}
 
