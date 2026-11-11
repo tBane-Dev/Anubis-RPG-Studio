@@ -23,6 +23,7 @@ namespace Anubis {
 	public:
 		static int _nextID;
 		int _id;
+		std::wstring _name;
 		sf::Vector3f _position;
 		Quaternion _rotation;
 		float _scale;
@@ -45,7 +46,7 @@ namespace Anubis {
 		sf::Vector2f _lastRotationMouse;
 
 		Model3D();
-		Model3D(sf::Vector3f position, Quaternion rotation = Quaternion(1.0f, 0.0f, 0.0f, 0.0f), float scale = 1.0f);
+		Model3D(std::wstring name, sf::Vector3f position = sf::Vector3f(0.0f, 0.0f, 0.0f), Quaternion rotation = Quaternion(1.0f, 0.0f, 0.0f, 0.0f), float scale = 1.0f);
 		Model3D(const Model3D& other);
 		~Model3D();
 

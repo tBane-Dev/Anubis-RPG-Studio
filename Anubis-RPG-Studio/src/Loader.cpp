@@ -16,7 +16,6 @@ Loader::Loader(std::ifstream& file) {
 
 	BinaryReader reader(file);
 	
-	counts.animationsCount = reader.read_int32();
 	counts.prefabsCount = reader.read_int32();
 	counts.modelsCount = 33;
 	counts.chunksCount = reader.read_int32();

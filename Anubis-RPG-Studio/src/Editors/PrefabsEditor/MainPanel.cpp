@@ -112,7 +112,8 @@ namespace PrefabsEditor {
 					sf::Vector2i(PrefabsEditor::editor->_collider_panel->_x->getNumber(), PrefabsEditor::editor->_collider_panel->_y->getNumber()),
 					4,
 					collider,
-					mesh
+					mesh,
+					Anubis::models_manager->getModel(_name->getText())
 				);
 			}
 			else if (_type->getText() == L"Nature") {
@@ -121,7 +122,8 @@ namespace PrefabsEditor {
 					PrefabsEditor::editor->_animator->getAnimations(),
 					sf::Vector2i(PrefabsEditor::editor->_collider_panel->_x->getNumber(), PrefabsEditor::editor->_collider_panel->_y->getNumber()),
 					collider,
-					mesh
+					mesh,
+					Anubis::models_manager->getModel(_name->getText())
 				);
 			}
 			else {
@@ -180,7 +182,8 @@ namespace PrefabsEditor {
 					sf::Vector2i(PrefabsEditor::editor->_collider_panel->_x->getNumber(), PrefabsEditor::editor->_collider_panel->_y->getNumber()),
 					4,
 					collider,
-					mesh
+					mesh,
+					Anubis::models_manager->getModel(_name->getText())
 				);
 			}
 			else if (_type->getText() == L"Nature") {
@@ -189,7 +192,8 @@ namespace PrefabsEditor {
 					PrefabsEditor::editor->_animator->getAnimations(),
 					sf::Vector2i(PrefabsEditor::editor->_collider_panel->_x->getNumber(), PrefabsEditor::editor->_collider_panel->_y->getNumber()),
 					collider,
-					mesh
+					mesh,
+					Anubis::models_manager->getModel(_name->getText())
 				);
 			}
 			else {

@@ -367,9 +367,8 @@ namespace MapEditor {
 				std::shared_ptr<Nature> nature = std::make_shared<Nature>(prefab);
 				nature->setPosition(sf::Vector2f(reader.read_Vector2i()));
 				
-				std::shared_ptr<Anubis::Prefab> modelPrefab = Anubis::prefabs_manager->getPrefab(prefabName);
-				if (modelPrefab) {
-					nature->_model = std::make_shared<Anubis::Model3D>(*modelPrefab->_model);
+				if (prefab) {
+					nature->_model = std::make_shared<Anubis::Model3D>(*prefab->_model.lock());
 					nature->_model->_position.x = nature->getPosition().x;
 					nature->_model->_position.y = 0;
 					nature->_model->_position.z = nature->getPosition().y;
@@ -391,9 +390,8 @@ namespace MapEditor {
 				monster->_basePosition = sf::Vector2f(reader.read_Vector2i());
 				monster->setPosition(sf::Vector2f(reader.read_Vector2i()));
 
-				std::shared_ptr<Anubis::Prefab> modelPrefab = Anubis::prefabs_manager->getPrefab(prefabName);
-				if (modelPrefab) {
-					monster->_model = std::make_shared<Anubis::Model3D>(*modelPrefab->_model);
+				if (prefab) {
+					monster->_model = std::make_shared<Anubis::Model3D>(*prefab->_model.lock());
 					monster->_model->_position.x = monster->getPosition().x;
 					monster->_model->_position.y = 0;
 					monster->_model->_position.z = monster->getPosition().y;

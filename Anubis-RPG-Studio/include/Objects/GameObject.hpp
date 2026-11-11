@@ -3,6 +3,7 @@
 #include "AnimationsManager.hpp"
 #include "Objects/Collider.hpp"
 #include "Objects/Mesh.hpp"
+#include "3D/Model3D.hpp"
 
 class GameObject : public Object {
 public:
@@ -11,9 +12,9 @@ public:
 	std::weak_ptr<Animations> _animations;
 	std::shared_ptr<Collider> _collider;
 	std::shared_ptr<Mesh> _mesh;
+	std::weak_ptr<Anubis::Model3D> _model;
 
-
-	GameObject(std::wstring name, std::weak_ptr<Animations> animations, sf::Vector2i origin, std::shared_ptr<Collider> collider, std::shared_ptr<Mesh> mesh);
+	GameObject(std::wstring name, std::weak_ptr<Animations> animations, sf::Vector2i origin, std::shared_ptr<Collider> collider, std::shared_ptr<Mesh> mesh, std::weak_ptr<Anubis::Model3D> modelr);
 	GameObject(std::wstring name);
 	virtual ~GameObject();
 
@@ -22,4 +23,5 @@ public:
 	std::weak_ptr<Animations> getAnimations();
 	std::shared_ptr<Collider> getCollider();
 	std::shared_ptr<Mesh> getMesh();
+	std::shared_ptr<Anubis::Model3D> getModel();
 };

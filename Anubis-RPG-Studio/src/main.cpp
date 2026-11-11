@@ -213,6 +213,7 @@ int main() {
     
     textures_manager = std::make_shared<TexturesManager>();
     animations_manager = std::make_shared<AnimationsManager>();
+    Anubis::models_manager = std::make_shared<Anubis::ModelsManager>();
     prefabs_manager = std::make_shared<PrefabsManager>();
     Anubis::prefabs_manager = std::make_shared<Anubis::PrefabsManager>();
 
@@ -268,9 +269,7 @@ int main() {
                 file.exceptions(std::ios::failbit | std::ios::badbit);
 
                 std::shared_ptr<Loader> loader = std::make_shared<Loader>(file);
-                animations_manager->loadFromProject(file, loader);
                 prefabs_manager->loadFromProject(file, loader);
-                Anubis::prefabs_manager->load(file, loader);
                 MapEditor::editor->_map->loadFromProject(file, loader);
                 MapEditor::editor->_game_objects->loadFromProject(file, loader);
                 

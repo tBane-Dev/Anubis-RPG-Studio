@@ -5,6 +5,7 @@
 #include "BinaryWriter.hpp"
 #include "BinaryReader.hpp"
 #include "Objects/Collider.hpp"
+#include "AnimationsManager.hpp" // TO-DO - must be a model manager
 
 PrefabsManager::PrefabsManager() {
 	_prefabs.clear();
@@ -152,7 +153,7 @@ void PrefabsManager::loadFromProject(std::ifstream& file, std::shared_ptr<Loader
             int stepSize = reader.read_int32();
             std::wstring animationsPath = reader.read_wstring();
             std::shared_ptr<Animations> animations = animations_manager->getAnimations(animationsPath).lock();
-            std::shared_ptr<GameObject> prefab = std::make_shared<MonsterPrefab>(name, animations, origin, stepSize, collider, mesh);
+            std::shared_ptr<GameObject> prefab = std::make_shared<MonsterPrefab>(name, animations, origin, stepSize, collider, mesh, Anubis::models_manager->getModel(name));
             addPrefab(prefab);
 			DebugStat(name);
 		}
@@ -165,7 +166,7 @@ void PrefabsManager::loadFromProject(std::ifstream& file, std::shared_ptr<Loader
             sf::Vector2i origin = reader.read_Vector2i();
             std::wstring animationsPath = reader.read_wstring();
             std::shared_ptr<Animations> animations = animations_manager->getAnimations(animationsPath).lock();
-            std::shared_ptr<GameObject> prefab = std::make_shared<NaturePrefab>(name, animations, origin, collider, mesh);
+            std::shared_ptr<GameObject> prefab = std::make_shared<NaturePrefab>(name, animations, origin, collider, mesh, Anubis::models_manager->getModel(name));
             addPrefab(prefab);
             DebugStat(name);
 		}
@@ -224,62 +225,6 @@ namespace Anubis {
         }
 
         return nullptr;
-    }
-
-    void PrefabsManager::load(std::ifstream& file, std::shared_ptr<Loader> loader) {
-
-        loader->setTitle(L"Loading Models ...");
-
-        _prefabs.clear();
-
-        struct p { 
-            std::wstring name; 
-            std::wstring path; 
-        };
-
-        std::vector<p> pp(loader->counts.modelsCount);
-
-        pp.emplace_back(L"dziobak", L"assets\\mdl\\dziobak.glb");
-        pp.emplace_back(L"golem", L"assets\\mdl\\golem.glb");
-        pp.emplace_back(L"troll", L"assets\\mdl\\troll.glb");
-        pp.emplace_back(L"bies", L"assets\\mdl\\bies.glb");
-        pp.emplace_back(L"deer", L"assets\\mdl\\deer.glb");
-
-        pp.emplace_back(L"tree_1", L"assets\\mdl\\tree_1.glb");
-        pp.emplace_back(L"tree_2", L"assets\\mdl\\tree_2.glb");
-        pp.emplace_back(L"tree_3", L"assets\\mdl\\tree_3.glb");
-        pp.emplace_back(L"mushroom", L"assets\\mdl\\mushroom.glb");
-        pp.emplace_back(L"bush", L"assets\\mdl\\bush.glb");
-        pp.emplace_back(L"hunter_tent", L"assets\\mdl\\hunter_tent.glb");
-        pp.emplace_back(L"path_1", L"assets\\mdl\\path_1.glb");
-        pp.emplace_back(L"path_2", L"assets\\mdl\\path_2.glb");
-        pp.emplace_back(L"palisade_1", L"assets\\mdl\\palisade_1.glb");
-        pp.emplace_back(L"palisade_2", L"assets\\mdl\\palisade_2.glb");
-        pp.emplace_back(L"wooden_gate", L"assets\\mdl\\wooden_gate.glb");
-        pp.emplace_back(L"well", L"assets\\mdl\\well.glb");
-        pp.emplace_back(L"pile_of_wood_1", L"assets\\mdl\\pile_of_wood_1.glb");
-        pp.emplace_back(L"log_with_saw", L"assets\\mdl\\log_with_saw.glb");
-        pp.emplace_back(L"stone_platform", L"assets\\mdl\\stone_platform.glb");
-        pp.emplace_back(L"tile_grass", L"assets\\mdl\\tile_grass.glb");
-        pp.emplace_back(L"reed_1", L"assets\\mdl\\reed_1.glb");
-        pp.emplace_back(L"reed_2", L"assets\\mdl\\reed_2.glb");
-        pp.emplace_back(L"driftwood", L"assets\\mdl\\driftwood.glb");
-        pp.emplace_back(L"boulder_1", L"assets\\mdl\\boulder_1.glb");
-        pp.emplace_back(L"boulder_2", L"assets\\mdl\\boulder_2.glb");
-        pp.emplace_back(L"boulder_3", L"assets\\mdl\\boulder_3.glb");
-        pp.emplace_back(L"column_1", L"assets\\mdl\\column_1.glb");
-        pp.emplace_back(L"column_2", L"assets\\mdl\\column_2.glb");
-        pp.emplace_back(L"pile_of_wood_1", L"assets\\mdl\\pile_of_wood_1.glb");
-        pp.emplace_back(L"small_grass_1", L"assets\\mdl\\small_grass_1.glb");
-        pp.emplace_back(L"small_grass_2", L"assets\\mdl\\small_grass_2.glb"); 
-        pp.emplace_back(L"small_grass_3", L"assets\\mdl\\small_grass_3.glb");
-
-        
-        for (auto& p : pp) {
-            addPrefab(p.name, openModel3DFromFile(p.path));
-            loader->nextStep(p.name);
-        }
-
     }
 
     std::shared_ptr<PrefabsManager> prefabs_manager = nullptr;

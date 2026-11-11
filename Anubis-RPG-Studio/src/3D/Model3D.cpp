@@ -17,6 +17,7 @@ namespace Anubis {
 	Model3D::Model3D() {
 
 		_id = _nextID++;
+		_name = L"Model3D";
 
 		_position = sf::Vector3f(0, 0, 0);
 		_rotation = Quaternion{ 1.0f, 0, 0, 0 };
@@ -31,9 +32,10 @@ namespace Anubis {
 	}
 
 
-	Model3D::Model3D(sf::Vector3f position, Quaternion rotation, float scale) {
+	Model3D::Model3D(std::wstring name, sf::Vector3f position, Quaternion rotation, float scale) {
 
 		_id = _nextID++;
+		_name = name;
 
 		_position = position;
 		_rotation = rotation;
@@ -50,6 +52,7 @@ namespace Anubis {
 	Model3D::Model3D(const Model3D& other) {
 
 		_id = _nextID++;
+		_name = other._name;
 
 		_position = other._position;
 		_rotation = other._rotation;
