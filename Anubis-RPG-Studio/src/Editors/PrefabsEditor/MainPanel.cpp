@@ -132,10 +132,10 @@ namespace PrefabsEditor {
 			MapEditor::editor->_game_objects->replacePrefab(oldPrefab, prefab);
 			if (MapEditor::editor->_cursor_on_map->_object.lock() == oldPrefab) MapEditor::editor->_cursor_on_map->_object = prefab;
 
-			auto prefabs = prefabs_manager->getPrefabs(prefab->_type);
+			auto prefabs = Anubis::prefabs_manager->getPrefabs(prefab->_type);
 			int index = std::find(prefabs.begin(), prefabs.end(), oldPrefab) - prefabs.begin();
 			
-			prefabs_manager->replacePrefab(oldPrefab, prefab);
+			Anubis::prefabs_manager->replacePrefab(oldPrefab, prefab);
 
 			MapEditor::editor->_palette->loadAll(MapEditor::editor->_palette->_categories->_selectedType);
 
@@ -196,7 +196,7 @@ namespace PrefabsEditor {
 				return;
 			}
 
-			prefabs_manager->addPrefab(prefab);
+			Anubis::prefabs_manager->addPrefab(prefab);
 			PrefabsEditor::editor->_object = prefab;
 			PrefabsEditor::editor->_palette->loadAll(prefab->_type);
 			PrefabsEditor::editor->_palette->_slots->selectLastSlot();
@@ -224,14 +224,14 @@ namespace PrefabsEditor {
 					MapEditor::editor->_cursor_on_map->removeFromSelected(object);
 					MapEditor::editor->_map->removeGameObjectsFromChunksByPrefab(object);
 					MapEditor::editor->_game_objects->removeGameObjectsByPrefab(object);
-					prefabs_manager->removePrefab(object);
+					Anubis::prefabs_manager->removePrefab(object);
 
 					// reload Prefabs Editor Palette
 					PrefabsEditor::editor->_palette->loadAll(PrefabsEditor::editor->_palette->_categories->_selectedType);
 					int newID = objectID;
 					
-					if (newID >= prefabs_manager->getPrefabs(PrefabsEditor::editor->_palette->_categories->_selectedType).size())
-						newID = prefabs_manager->getPrefabs(PrefabsEditor::editor->_palette->_categories->_selectedType).size() - 1;
+					if (newID >= Anubis::prefabs_manager->getPrefabs(PrefabsEditor::editor->_palette->_categories->_selectedType).size())
+						newID = Anubis::prefabs_manager->getPrefabs(PrefabsEditor::editor->_palette->_categories->_selectedType).size() - 1;
 
 					PrefabsEditor::editor->_palette->_slots->selectSlot(newID);
 					PrefabsEditor::editor->_palette->_slots->updateObjects();

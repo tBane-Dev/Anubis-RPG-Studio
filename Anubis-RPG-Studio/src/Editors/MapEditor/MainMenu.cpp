@@ -22,7 +22,7 @@ namespace MapEditor {
 		BinaryWriter writer(file);
 
 		int32_t prefabsCount = 0;
-		for (auto& prefab : prefabs_manager->_prefabs) {
+		for (auto& prefab : Anubis::prefabs_manager->_prefabs) {
 			if (!prefab)
 				continue;
 			if (prefab->_type == ObjectType::Monster || prefab->_type == ObjectType::Nature) {
@@ -102,9 +102,9 @@ namespace MapEditor {
 
 						file.exceptions(std::ios::failbit | std::ios::badbit);
 
-						std::shared_ptr<Loader> loader = std::make_shared<Loader>(file);
+						std::shared_ptr<Anubis::Loader> loader = std::make_shared<Anubis::Loader>(file);
 						Anubis::models_manager->load();
-						prefabs_manager->loadFromProject(file, loader);
+						Anubis::prefabs_manager->loadFromProject(file, loader);
 						MapEditor::editor->_map->loadFromProject(file, loader);
 						MapEditor::editor->_game_objects->loadFromProject(file, loader);
 						loader->end();
@@ -137,7 +137,7 @@ namespace MapEditor {
 				std::ofstream file;
 				file.open(save_window->getPathFile(), std::ios::out | std::ios::trunc | std::ios::binary);
 				saveTheObjectsCount(file);
-				prefabs_manager->saveFromProject(file);
+				Anubis::prefabs_manager->saveFromProject(file);
 				MapEditor::editor->_map->saveFromProject(file);
 				MapEditor::editor->_game_objects->saveFromProject(file);
 				file.close();

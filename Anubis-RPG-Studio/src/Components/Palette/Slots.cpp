@@ -252,7 +252,7 @@ void Slots::loadObjects() {
 		return;
 	}
 
-	std::vector<std::shared_ptr<GameObject>> prefabs = prefabs_manager->getPrefabs(_type);
+	std::vector<std::shared_ptr<GameObject>> prefabs = Anubis::prefabs_manager->getPrefabs(_type);
 
 	for (int i = 0; i < (_slotsCount.x) * (_slotsCount.y+1); i++) {
 		if (i < prefabs.size()) {
@@ -293,7 +293,7 @@ void Slots::updateObjects() {
 		return;
 	}
 
-	std::vector<std::shared_ptr<GameObject>> prefabs = prefabs_manager->getPrefabs(_type);
+	std::vector<std::shared_ptr<GameObject>> prefabs = Anubis::prefabs_manager->getPrefabs(_type);
 	
 	for (int i = 0; i < (_slotsCount.x) * (_slotsCount.y+1); i++) {
 		if (i + startIndex < prefabs.size()) {
@@ -429,7 +429,7 @@ void Slots::selectSlot(int selectedSlotId) {
 
 void Slots::selectLastSlot() {
 
-	std::vector<std::shared_ptr<GameObject>> prefabs = prefabs_manager->getPrefabs(_type);
+	std::vector<std::shared_ptr<GameObject>> prefabs = Anubis::prefabs_manager->getPrefabs(_type);
 	_selectedSlotId = prefabs.size() - 1;
 	selectSlot(_selectedSlotId);
 }

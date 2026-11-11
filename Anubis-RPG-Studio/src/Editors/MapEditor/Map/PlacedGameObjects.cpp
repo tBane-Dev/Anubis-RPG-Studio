@@ -152,7 +152,7 @@ namespace MapEditor {
 		if (!prefab || !Anubis::prefabs_manager)
 			return nullptr;
 
-		std::weak_ptr<GameObject> p = prefabs_manager->getPrefab(prefab->_name);
+		std::weak_ptr<GameObject> p = Anubis::prefabs_manager->getPrefab(prefab->_name);
 
 		if (p.expired() || p.lock()->_model.expired())
 			return nullptr;
@@ -301,7 +301,7 @@ namespace MapEditor {
 
 	}
 
-	void PlacedGameObjects::loadFromProject(std::ifstream& file, std::shared_ptr<Loader>& loader) {
+	void PlacedGameObjects::loadFromProject(std::ifstream& file, std::shared_ptr<Anubis::Loader>& loader) {
 
 		loader->setTitle(L"Loading GameObjects ...");
 
@@ -325,7 +325,7 @@ namespace MapEditor {
 			if (type == ObjectType::Nature) {
 				std::wstring prefabName = reader.read_wstring();
 				loader->nextStep(prefabName);
-				std::shared_ptr<GameObject> prefab = prefabs_manager->getPrefab(prefabName);
+				std::shared_ptr<GameObject> prefab = Anubis::prefabs_manager->getPrefab(prefabName);
 				std::shared_ptr<Nature> nature = std::make_shared<Nature>(prefab);
 				nature->setPosition(sf::Vector2f(reader.read_Vector2i()));
 				
@@ -343,7 +343,7 @@ namespace MapEditor {
 			if (type == ObjectType::Monster) {
 				std::wstring prefabName = reader.read_wstring();
 				loader->nextStep(prefabName);
-				std::shared_ptr<GameObject> prefab = prefabs_manager->getPrefab(prefabName);
+				std::shared_ptr<GameObject> prefab = Anubis::prefabs_manager->getPrefab(prefabName);
 				std::shared_ptr<Monster> monster = std::make_shared<Monster>(prefab);
 				monster->_basePosition = sf::Vector2f(reader.read_Vector2i());
 				monster->setPosition(sf::Vector2f(reader.read_Vector2i()));

@@ -305,7 +305,7 @@ namespace MapEditor {
 		}
 	}
 
-	void Map::loadFromProject(std::ifstream& file, std::shared_ptr<Loader>& loader) {
+	void Map::loadFromProject(std::ifstream& file, std::shared_ptr<Anubis::Loader>& loader) {
 
 		loader->setTitle(L"Loading map ...");
 		

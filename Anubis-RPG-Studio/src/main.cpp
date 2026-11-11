@@ -213,7 +213,6 @@ int main() {
     
     textures_manager = std::make_shared<TexturesManager>();
     Anubis::models_manager = std::make_shared<Anubis::ModelsManager>();
-    prefabs_manager = std::make_shared<PrefabsManager>();
     Anubis::prefabs_manager = std::make_shared<Anubis::PrefabsManager>();
 
     loadShaders(); // TO-DO - must be a shared_ptr
@@ -267,8 +266,9 @@ int main() {
             else {
                 file.exceptions(std::ios::failbit | std::ios::badbit);
 
-                std::shared_ptr<Loader> loader = std::make_shared<Loader>(file);
-                prefabs_manager->loadFromProject(file, loader);
+                std::shared_ptr<Anubis::Loader> loader = std::make_shared<Anubis::Loader>(file);
+                Anubis::models_manager->load();
+                Anubis::prefabs_manager->loadFromProject(file, loader);
                 MapEditor::editor->_map->loadFromProject(file, loader);
                 MapEditor::editor->_game_objects->loadFromProject(file, loader);
                 

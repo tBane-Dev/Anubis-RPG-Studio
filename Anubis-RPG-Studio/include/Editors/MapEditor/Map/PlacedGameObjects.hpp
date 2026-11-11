@@ -31,7 +31,7 @@ namespace MapEditor {
         void replacePrefab(std::shared_ptr<GameObject> oldPrefab, std::shared_ptr<GameObject> newPrefab);
 
         void saveFromProject(std::ofstream& file);
-        void loadFromProject(std::ifstream& file, std::shared_ptr<Loader>& loader);
+        void loadFromProject(std::ifstream& file, std::shared_ptr<Anubis::Loader>& loader);
 
         virtual void cursorHover();
         virtual void update();

@@ -6,8 +6,6 @@
 namespace Anubis {
 	ModelsManager::ModelsManager() {
 		_models.clear();
-
-		load();
 	}
 
 	ModelsManager::~ModelsManager() {

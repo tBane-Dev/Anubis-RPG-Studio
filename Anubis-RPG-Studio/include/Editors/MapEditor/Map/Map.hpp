@@ -46,7 +46,7 @@ namespace MapEditor {
 		float getHeight(float x, float z);
 
 		void saveFromProject(std::ofstream& file);
-		void loadFromProject(std::ifstream& file, std::shared_ptr<Loader>& loader);
+		void loadFromProject(std::ifstream& file, std::shared_ptr<Anubis::Loader>& loader);
 
 		void cursorHover();
 		void handleEvent(const sf::Event& event);
