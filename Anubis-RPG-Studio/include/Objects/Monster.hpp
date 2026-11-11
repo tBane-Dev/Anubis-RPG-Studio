@@ -1,7 +1,6 @@
 #pragma once
 #include "Objects/PlacedGameObject.hpp"
 #include "Editors/MapEditor/Map/Path.hpp"
-#include "Animator.hpp"
 
 enum class MonsterState { Idle, Moving, Attacking };
 enum class Direction { Down, Left, Right, Up };
@@ -10,7 +9,7 @@ class MonsterPrefab : public GameObject {
 public:
 	int _stepSize;
 
-	MonsterPrefab(std::wstring name, std::weak_ptr<Animations> animations, sf::Vector2i origin, int stepSize, std::shared_ptr<Collider> collider, std::shared_ptr<Mesh> mesh, std::weak_ptr<Anubis::Model3D> model);
+	MonsterPrefab(std::wstring name, sf::Vector2i origin, int stepSize, std::shared_ptr<Collider> collider, std::shared_ptr<Mesh> mesh, std::weak_ptr<Anubis::Model3D> model);
 	~MonsterPrefab();
 };
 

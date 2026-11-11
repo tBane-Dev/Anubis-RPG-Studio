@@ -196,32 +196,6 @@ namespace MapEditor {
 			});
 	}
 
-	void PlacedGameObjects::removeGameObjectsByAnimations(int animationID)
-	{
-		std::shared_ptr<Animations> animation = animations_manager->getAnimations(animationID).lock();
-
-		if (!animation)
-			return;
-
-		std::erase_if(_visiblePlacedGameObjects,
-			[&](const std::weak_ptr<PlacedGameObject>& weakObject)
-			{
-				auto object = weakObject.lock();
-				if (!object)
-					return true;
-
-				auto prefab = object->_prefab.lock();
-				if (!prefab)
-					return true;
-
-				auto prefabAnimation = prefab->_animations.lock();
-				if (!prefabAnimation)
-					return true;
-
-				return prefabAnimation == animation;
-			});
-	}
-
 	void PlacedGameObjects::removeGameObjectsByPrefab(std::weak_ptr<GameObject> prefab)
 	{
 		auto prefabPtr = prefab.lock();
@@ -300,9 +274,6 @@ namespace MapEditor {
 				if (object->_type == ObjectType::None) {
 					writer.write_int8((int8_t)object->_type);
 					writer.write_Vector2i(sf::Vector2i(object->getPosition()));
-					writer.write_int8(object->_animator->_animation);
-					writer.write_int8(object->_animator->_frame);
-					writer.write_float(object->_animator->_timer);
 				}
 
 				else if (object->_type == ObjectType::Nature) {
@@ -311,9 +282,6 @@ namespace MapEditor {
 						writer.write_int8((int8_t)nature->_type);
 						writer.write_wstring((!nature->_prefab.expired()) ? nature->_prefab.lock()->_name : L"");
 						writer.write_Vector2i(sf::Vector2i(nature->getPosition()));
-						writer.write_int8(nature->_animator->_animation);
-						writer.write_int8(nature->_animator->_frame);
-						writer.write_float(nature->_animator->_timer);
 					}
 				}
 
@@ -326,9 +294,6 @@ namespace MapEditor {
 						writer.write_Vector2i(sf::Vector2i(monster->getPosition()));
 						writer.write_int8((int)monster->_direction);
 						writer.write_int8((int)monster->_state);
-						writer.write_int8(monster->_animator->_animation);
-						writer.write_int8(monster->_animator->_frame);
-						writer.write_float(monster->_animator->_timer);
 					}
 				}
 			}
@@ -353,9 +318,6 @@ namespace MapEditor {
 				std::shared_ptr<PlacedGameObject> object = std::make_shared<PlacedGameObject>(std::weak_ptr<GameObject>());
 				loader->nextStep(L"empty object");
 				object->setPosition(sf::Vector2f(reader.read_Vector2i()));
-				object->_animator->_animation = reader.read_int8();
-				object->_animator->_frame = reader.read_int8();
-				object->_animator->_timer = reader.read_float();
 				std::shared_ptr<Chunk> chunk = MapEditor::editor->_map->getChunkByGlobalPosition(sf::Vector2i(object->getPosition()));
 				if (chunk) chunk->addPlacedGameObject(object);
 			}
@@ -374,10 +336,6 @@ namespace MapEditor {
 					nature->_model->_position.z = nature->getPosition().y;
 				}
 
-				
-				nature->_animator->_animation = reader.read_int8();
-				nature->_animator->_frame = reader.read_int8();
-				nature->_animator->_timer = reader.read_float();
 				std::shared_ptr<Chunk> chunk = MapEditor::editor->_map->getChunkByGlobalPosition(sf::Vector2i(nature->getPosition()));
 				if (chunk) chunk->addPlacedGameObject(nature);
 			}
@@ -399,9 +357,6 @@ namespace MapEditor {
 
 				monster->_direction = (Direction)reader.read_int8();
 				monster->_state = (MonsterState)reader.read_int8();
-				monster->_animator->_animation = reader.read_int8();
-				monster->_animator->_frame = reader.read_int8();
-				monster->_animator->_timer = reader.read_float();
 				std::shared_ptr<Chunk> chunk = MapEditor::editor->_map->getChunkByGlobalPosition(sf::Vector2i(monster->_basePosition));
 				if (chunk) chunk->addPlacedGameObject(monster);
 			}

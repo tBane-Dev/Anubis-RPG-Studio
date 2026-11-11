@@ -212,7 +212,6 @@ int main() {
     loadTheme(); // TO-DO - must be a shared_ptr
     
     textures_manager = std::make_shared<TexturesManager>();
-    animations_manager = std::make_shared<AnimationsManager>();
     Anubis::models_manager = std::make_shared<Anubis::ModelsManager>();
     prefabs_manager = std::make_shared<PrefabsManager>();
     Anubis::prefabs_manager = std::make_shared<Anubis::PrefabsManager>();

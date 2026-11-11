@@ -11,7 +11,6 @@
 #include "PrefabsManager.hpp"
 #include "Editors/MapEditor/Map/PlacedGameObjects.hpp"
 #include <typeinfo>
-#include "Animator.hpp"
 #include "DebugLog.hpp"
 #include <set>
 #include "WindowsManager.hpp"
@@ -728,11 +727,6 @@ namespace MapEditor {
 			}
 		}
 
-		if (!_previewModel) {
-			drawPreviewSprite(prefab, position);
-			return;
-		}
-
 		_previewModel->_scale = PlacedGameObjects::getModelScale(prefab);
 		_previewModel->_position = anchor;
 
@@ -764,105 +758,6 @@ namespace MapEditor {
 			scene->drawModelFast(*_previewModel, tint, nullptr);
 			scene->endModelPass();
 		}
-
-		glMatrixMode(GL_MODELVIEW);
-		glPopMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-		glMatrixMode(previousMatrixMode);
-		glPopAttrib();
-	}
-
-	void CursorOnMap::drawPreviewSprite(std::shared_ptr<GameObject> prefab, sf::Vector2i position) {
-
-		// 2D prefab without a 3D model: billboard like PlacedGameObject::draw(), but translucent.
-		std::shared_ptr<Animations> animations = prefab->getAnimations().lock();
-
-		if (!animations)
-			return;
-
-		std::shared_ptr<Texture> texture = animations->getTexture();
-
-		if (!texture || !texture->_texture)
-			return;
-
-		std::shared_ptr<Anubis::Scene> scene = MapEditor::editor->_scene;
-		sf::IntRect frame = animations->getFrameRect(0, 0);
-
-		sf::Vector2f origin(prefab->getOrigin());
-		std::shared_ptr<Collider> collider = prefab->getCollider();
-
-		if (collider && collider->_type == ColliderType::Rectangular)
-			origin += sf::Vector2f(collider->getRect().size / 2);
-
-		sf::Vector2f anchor = sf::Vector2f(position) + origin;
-		float y = MapEditor::editor->_map->getHeight(anchor.x, anchor.y);
-
-		float width = (float)std::abs(frame.size.x);
-		float height = (float)std::abs(frame.size.y);
-		float left = (float)frame.position.x;
-		float top = (float)frame.position.y;
-		float right = float(frame.position.x + frame.size.x);
-		float bottom = float(frame.position.y + frame.size.y);
-
-		GLint previousMatrixMode = 0;
-		glGetIntegerv(GL_MATRIX_MODE, &previousMatrixMode);
-
-		glPushAttrib(GL_ALL_ATTRIB_BITS);
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-
-		scene->setViewport();
-		scene->setProjection();
-		scene->setCamera();
-
-		GLfloat view[16];
-		glGetFloatv(GL_MODELVIEW_MATRIX, view);
-
-		// Inverse of the camera rotation: the sprite always faces the camera.
-		GLfloat billboard[16] = {
-			view[0], view[4], view[8],  0.f,
-			view[1], view[5], view[9],  0.f,
-			view[2], view[6], view[10], 0.f,
-			0.f,     0.f,     0.f,      1.f
-		};
-
-		sf::Shader::bind(nullptr);
-
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LESS);
-		glDepthMask(GL_FALSE);
-		glDisable(GL_LIGHTING);
-		glDisable(GL_CULL_FACE);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.01f);
-
-		Anubis::GL::activeTexture(0x84C0); // GL_TEXTURE0
-		glEnable(GL_TEXTURE_2D);
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		sf::Texture::bind(texture->_texture.get(), sf::CoordinateType::Pixels);
-
-		glTranslatef(anchor.x, y, anchor.y);
-		glMultMatrixf(billboard);
-		glScalef(1.f, -1.f, 1.f);
-		glTranslatef(-origin.x, -origin.y, 0.f);
-
-		glColor4ub(255, 255, 255, 140);
-
-		glBegin(GL_TRIANGLES);
-		glTexCoord2f(left, top);      glVertex2f(0.f, 0.f);
-		glTexCoord2f(left, bottom);   glVertex2f(0.f, height);
-		glTexCoord2f(right, bottom);  glVertex2f(width, height);
-		glTexCoord2f(left, top);      glVertex2f(0.f, 0.f);
-		glTexCoord2f(right, bottom);  glVertex2f(width, height);
-		glTexCoord2f(right, top);     glVertex2f(width, 0.f);
-		glEnd();
-
-		sf::Texture::bind(nullptr);
 
 		glMatrixMode(GL_MODELVIEW);
 		glPopMatrix();

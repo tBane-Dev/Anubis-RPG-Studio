@@ -3,7 +3,6 @@
 #include "Editors/AnimationsEditor/MainMenu.hpp"
 #include "Components/Panel.hpp"
 #include "AnimationsManager.hpp"
-#include "Animator.hpp"
 #include "Editors/AnimationsEditor/NamePanel.hpp"
 #include "Editors/AnimationsEditor/AnimationsListPanel.hpp"
 #include "Editors/AnimationsEditor/ActionsPanel.hpp"
@@ -18,10 +17,6 @@ namespace AnimationsEditor {
 		sf::Vector2i _margin;
 
 		std::shared_ptr<MainMenu> _main_menu;
-
-		std::shared_ptr<Animations> _animations;
-		std::shared_ptr<Animations> _tempAnimations;
-		std::shared_ptr<Animator> _animator;
 
 		std::shared_ptr<NamePanel> _name_panel;
 		std::shared_ptr<AnimationsListPanel> _list_panel;

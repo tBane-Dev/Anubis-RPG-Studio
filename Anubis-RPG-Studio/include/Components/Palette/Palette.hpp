@@ -2,7 +2,6 @@
 #include "GUIManager.hpp"
 #include "Controls/ButtonWithSprite.hpp"
 #include "Objects/Object.hpp"
-#include "Animator.hpp"
 #include "Controls/Scrollbar.hpp"
 #include "Components/Palette/Categories.hpp"
 #include "Components/Palette/Tools.hpp"

@@ -1,6 +1,5 @@
 #pragma once
 #include "Components/Panel.hpp"
-#include "Animator.hpp"
 #include "Controls/ButtonWithSprite.hpp"
 #include "Controls/ButtonWithTextAndSprite.hpp"
 

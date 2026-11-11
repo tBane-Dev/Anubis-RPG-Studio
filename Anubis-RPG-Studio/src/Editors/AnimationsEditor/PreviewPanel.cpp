@@ -87,44 +87,36 @@ namespace AnimationsEditor {
 		_anim_next->setPosition(sf::Vector2i(_last->getPosition().x + btn_w - 80, _anim_prev->getPosition().y));
 
 		_first->_onclick_func = [this]() {
-			if (editor->_animator)
-				editor->_animator->setFrame(0);
+
 			};
 
 		_prev->_onclick_func = [this]() {
-			if (editor->_animator)
-				editor->_animator->prevFrame();
+
 			};
 
 
 		_play->_onclick_func = [this]() {
-			if (editor->_animator)
-				editor->_animator->play();
+
 			};
 
 		_pause->_onclick_func = [this]() {
-			if (editor->_animator)
-				editor->_animator->pause();
+
 			};
 
 		_next->_onclick_func = [this]() {
-			if (editor->_animator)
-				editor->_animator->nextFrame();
+
 			};
 
 		_last->_onclick_func = [this]() {
-			if (editor->_animator)
-				editor->_animator->lastFrame();
+
 			};
 
 		_anim_prev->_onclick_func = [this]() {
-			if (editor->_animator)
-				editor->_animator->prevAnimation();
+
 			};
 
 		_anim_next->_onclick_func = [this]() {
-			if (editor->_animator)
-				editor->_animator->nextAnimation();
+	
 			};
 
 		// stats rect
@@ -176,9 +168,7 @@ namespace AnimationsEditor {
 		_frames_count->setPosition(sf::Vector2f(s - _frames_count->getGlobalBounds().size.x - m, _statsRect.position.y + m + 3 * (basicFont.getLineSpacing(basic_text_size) + m)));
 		_frame_size->setPosition(sf::Vector2f(s - _frame_size->getGlobalBounds().size.x - m, _statsRect.position.y + m + 4 * (basicFont.getLineSpacing(basic_text_size) + m)));
 
-		if (editor->_animations) {
-			loadAnimations();
-		}
+		loadAnimations();	// TO-DO - must be a loadModel
 
 		setButtonsActivity();
 		setTooltips();
@@ -196,27 +186,6 @@ namespace AnimationsEditor {
 		_frames_count->setString(L"--");
 		_frame_size->setString(L"--");
 
-		if (!editor->_animator)
-			return;
-
-		if (!editor->_tempAnimations)
-			return;
-
-		if(!editor->_tempAnimations->_texture)
-			return;
-
-		sf::Vector2i frameSize = sf::Vector2i(0,0);
-		if(editor->_sprite_sheet_panel->_w->getNumber() > 0)
-			frameSize.x = editor->_sprite_sheet_panel->_w->getNumber(); 
-		if (editor->_sprite_sheet_panel->_h->getNumber() > 0)
-			frameSize.y = editor->_sprite_sheet_panel->_h->getNumber();
-
-		_animations_current->setString(std::to_wstring(editor->_animator->_animation));
-		_animations_count->setString(std::to_wstring(editor->_tempAnimations->_animationsCount));
-		_frame->setString(std::to_wstring(editor->_animator->_frame));
-		_frames_count->setString(std::to_wstring(editor->_tempAnimations->_framesCount));
-		_frame_size->setString(std::to_wstring(frameSize.x) + L"x" + std::to_wstring(frameSize.y));
-
 		int m = 8;
 		int s = _statsRect.position.x + _statsRect.size.x;
 		_animations_current->setPosition(sf::Vector2f(s - _animations_current->getGlobalBounds().size.x - m, _statsRect.position.y + m));
@@ -229,17 +198,6 @@ namespace AnimationsEditor {
 	}
 
 	void PreviewPanel::setButtonsActivity() {
-		if (!editor->_animator || !editor->_tempAnimations || !editor->_tempAnimations->_texture) {
-			_first->setActive(false);
-			_prev->setActive(false);
-			_play->setActive(false);
-			_pause->setActive(false);
-			_next->setActive(false);
-			_last->setActive(false);
-			_anim_prev->setActive(false);
-			_anim_next->setActive(false);
-			return;
-		}
 
 		_first->setActive(true);
 		_prev->setActive(true);
@@ -252,22 +210,6 @@ namespace AnimationsEditor {
 	}
 
 	void PreviewPanel::setTooltips() {	
-		if (!editor->_animator || !editor->_tempAnimations || !editor->_tempAnimations->getTexture()) {
-
-			std::wstring desc = L"This button is inactive because no Sprite Sheet is loaded.";
-
-			_first->setTooltip(256, L"Cannot Go To First Frame", desc);
-			_prev->setTooltip(256, L"Cannot Go To Previous Frame", desc);
-			_play->setTooltip(256, L"Cannot Play Animation", desc);
-			_pause->setTooltip(256, L"Cannot Pause Animation", desc);
-			_next->setTooltip(256, L"Cannot Go To Next Frame", desc);
-			_last->setTooltip(256, L"Cannot Go To Last Frame", desc);
-
-			_anim_prev->setTooltip(256, L"Cannot Go To Previous Animation", desc);
-			_anim_next->setTooltip(256, L"Cannot Go To Next Animation", desc);
-
-			return;
-		}
 
 		_first->setTooltip(256, L"First Frame", L"");
 		_prev->setTooltip(256, L"Previous Frame", L"");
@@ -284,7 +226,8 @@ namespace AnimationsEditor {
 
 		_first->cursorHover();
 		_prev->cursorHover();
-		(editor->_animator == nullptr || editor->_animator->_animations.expired() || !editor->_tempAnimations || !editor->_tempAnimations->_texture || editor->_animator->_isPlaying) ? _pause->cursorHover() : _play->cursorHover();
+		// TO-DO
+		//(editor->_animator == nullptr || editor->_animator->_animations.expired() || !editor->_tempAnimations || !editor->_tempAnimations->_texture || editor->_animator->_isPlaying) ? _pause->cursorHover() : _play->cursorHover();
 		_next->cursorHover();
 		_last->cursorHover();
 
@@ -298,7 +241,8 @@ namespace AnimationsEditor {
 
 		_first->handleEvent(event);
 		_prev->handleEvent(event);
-		(editor->_animator == nullptr || editor->_animator->_animations.expired() || !editor->_tempAnimations || !editor->_tempAnimations->_texture || editor->_animator->_isPlaying) ? _pause->handleEvent(event) : _play->handleEvent(event);
+		// TO-DO
+		//(editor->_animator == nullptr || editor->_animator->_animations.expired() || !editor->_tempAnimations || !editor->_tempAnimations->_texture || editor->_animator->_isPlaying) ? _pause->handleEvent(event) : _play->handleEvent(event);
 		_next->handleEvent(event);
 		_last->handleEvent(event);
 
@@ -323,7 +267,7 @@ namespace AnimationsEditor {
 		_anim_prev->update();
 		_anim_next->update();
 
-		loadAnimations();
+		loadAnimations(); // TO-DO - must be loadModel()
 
 		/*
 		* now working in main editor update loop
@@ -348,57 +292,12 @@ namespace AnimationsEditor {
 		checkerboard_shader->setUniform("rectPos", rect.getPosition());
 		Anubis::render_window->draw(rect, states);
 
-		// draw animation
-		std::shared_ptr<Animator> animator = editor->_animator;
-		if (animator) {
-			std::shared_ptr<Animations> animations = animator->getAnimations().lock();
-			if (animations && animations->getTexture()) {
-
-				// TO-DO - tempAnimations
-				sf::Vector2i frameSize = sf::Vector2i(0, 0);
-				if (editor->_sprite_sheet_panel->_w->getNumber() > 0)
-					frameSize.x = editor->_sprite_sheet_panel->_w->getNumber();
-
-				if (editor->_sprite_sheet_panel->_h->getNumber() > 0)
-					frameSize.y = editor->_sprite_sheet_panel->_h->getNumber();
-
-				if (frameSize.x > (int)animations->getTexture()->_texture->getSize().x)
-					frameSize.x = std::min(frameSize.x, (int)animations->getTexture()->_texture->getSize().x);
-				
-				if (frameSize.y > (int)animations->getTexture()->_texture->getSize().y)
-					frameSize.y = std::min(frameSize.y, (int)animations->getTexture()->_texture->getSize().y);
-
-				sf::Vector2i framePosition = sf::Vector2i(0, 0);
-				if (editor->_sprite_sheet_panel->_x->getNumber() >= 0) {
-					framePosition.x = editor->_sprite_sheet_panel->_x->getNumber();
-					framePosition.x += animator->_frame * frameSize.x;
-				}
-
-				if (editor->_sprite_sheet_panel->_y->getNumber() >= 0) {
-					framePosition.y = editor->_sprite_sheet_panel->_y->getNumber();
-					framePosition.y += animator->_animation * frameSize.y;
-				}
-					
-
-				sf::IntRect frameRect = sf::IntRect(framePosition, frameSize);
-
-				if (animations->getTexture()) {
-					sf::Sprite sprite(*animations->getTexture()->_texture);
-					sprite.setTextureRect(frameRect);
-					float scale = std::min(256.f / frameRect.size.x, 256.f / frameRect.size.y);
-					sprite.setScale(sf::Vector2f(scale, scale));
-					sprite.setPosition(sf::Vector2f(
-						rect.getPosition().x + (rect.getSize().x - sprite.getGlobalBounds().size.x)/2, 
-						rect.getPosition().y + (rect.getSize().y - sprite.getGlobalBounds().size.y)/26));
-					Anubis::render_window->draw(sprite);
-				}
-			}
-		}
-
+		
 		// draw buttons
 		_first->draw();
 		_prev->draw();
-		(animator == nullptr || animator->_animations.expired() || !editor->_tempAnimations || !editor->_tempAnimations->_texture || animator->_isPlaying) ? _pause->draw() : _play->draw();
+		// TO-DO
+		//(animator == nullptr || animator->_animations.expired() || !editor->_tempAnimations || !editor->_tempAnimations->_texture || animator->_isPlaying) ? _pause->draw() : _play->draw();
 		_next->draw();
 		_last->draw();
 

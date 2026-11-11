@@ -4,10 +4,9 @@
 #include "Objects/Collider.hpp"
 #include "Objects/Mesh.hpp"
 
-GameObject::GameObject(std::wstring name, std::weak_ptr<Animations> animations, sf::Vector2i origin, std::shared_ptr<Collider> collider, std::shared_ptr<Mesh> mesh, std::weak_ptr<Anubis::Model3D> model) : Object()
+GameObject::GameObject(std::wstring name, sf::Vector2i origin, std::shared_ptr<Collider> collider, std::shared_ptr<Mesh> mesh, std::weak_ptr<Anubis::Model3D> model) : Object()
 {
 	_name = name;
-	_animations = animations;
 	_origin = origin;
 	_collider = collider;
 	_mesh = mesh;
@@ -17,7 +16,6 @@ GameObject::GameObject(std::wstring name, std::weak_ptr<Animations> animations, 
 GameObject::GameObject(std::wstring name) : Object()
 {
 	_name = name;
-	_animations = std::weak_ptr<Animations>();
 	_origin = sf::Vector2i(0, 0);
 	_collider = nullptr;
 	_mesh = nullptr;
@@ -34,10 +32,6 @@ std::wstring GameObject::getName() {
 
 sf::Vector2i GameObject::getOrigin() {
 	return _origin;
-}
-
-std::weak_ptr<Animations> GameObject::getAnimations() {
-	return _animations;
 }
 
 std::shared_ptr<Collider> GameObject::getCollider() {

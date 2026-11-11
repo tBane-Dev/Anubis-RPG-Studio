@@ -7,7 +7,7 @@
 #include "ShadersManager.hpp"
 
 
-MonsterPrefab::MonsterPrefab(std::wstring name, std::weak_ptr<Animations> animations, sf::Vector2i origin, int stepSize, std::shared_ptr<Collider> collider, std::shared_ptr<Mesh> mesh, std::weak_ptr<Anubis::Model3D> model) : GameObject(name, animations, origin, collider, mesh, model) {
+MonsterPrefab::MonsterPrefab(std::wstring name, sf::Vector2i origin, int stepSize, std::shared_ptr<Collider> collider, std::shared_ptr<Mesh> mesh, std::weak_ptr<Anubis::Model3D> model) : GameObject(name, origin, collider, mesh, model) {
 	_type = ObjectType::Monster;
 	_stepSize = stepSize;
 
@@ -26,8 +26,6 @@ Monster::Monster(std::weak_ptr<GameObject> prefab) : PlacedGameObject(prefab) {
 
 	_basePosition = sf::Vector2f(0.0f, 0.0f);
 	_direction = Direction::Down;
-
-	_animator->setRandFrame();
 
 	_path = std::make_shared<MapEditor::Path>();
 	_path->setStartPoint(sf::Vector2i(_position));
@@ -69,14 +67,6 @@ void Monster::update() {
 	if (_state == MonsterState::Moving) {
 
 		float interval = 0.125f;
-		if (!_animator->_animations.expired())
-			interval = _animator->_animations.lock()->_interval;
-
-		_animator->_timer += Anubis::deltaTime.asSeconds();
-		if (_animator->_timer >= interval)
-			_animator->_timer = 0.0f;
-
-
 		float moveSpeed = 32.0f;
 
 		if (!_model->_animations.empty()) {

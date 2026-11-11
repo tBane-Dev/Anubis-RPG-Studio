@@ -30,13 +30,6 @@ AnimationsListItem::~AnimationsListItem() {
 	
 }
 
-void AnimationsListItem::setAnimation(std::weak_ptr<Animations> animation) {
-	_animations = animation;
-	_name->setString((!animation.expired()) ? animation.lock()->_path : L"");
-	_animCount->setString((!animation.expired()) ? std::to_wstring(animation.lock()->_animationsCount) : L"--");
-	_framesCount->setString((!animation.expired()) ? std::to_wstring(animation.lock()->_framesCount) : L"--");	
-}
-
 void AnimationsListItem::setPosition(sf::Vector2i position, int offset, int otherButtonsWidth) {
 	Button::setPosition(position);
 
@@ -47,8 +40,8 @@ void AnimationsListItem::setPosition(sf::Vector2i position, int offset, int othe
 
 void AnimationsListItem::cursorHover() {
 	
-	if(!_animations.expired())
-		Button::cursorHover();
+	Button::cursorHover();
+		
 }
 
 void AnimationsListItem::draw() {
@@ -115,7 +108,7 @@ AnimationsListDialog::AnimationsListDialog() : Main::Window(L"Animations List", 
 		scrollbarWidth,
 		(_itemsRect.position.y + _itemsRect.size.y) - _detailsRect.position.y,
 		0,
-		std::max(0, (int)animations_manager->getAnimationsCount() * basic_text_rect_height - _itemsInnerRect->size.y),
+		std::max(0, (int)10 * basic_text_rect_height - _itemsInnerRect->size.y),	// TO-DO
 		std::ceil((float)_itemsInnerRect->size.y / (float)basic_text_rect_height) * basic_text_rect_height,
 		0
 	);
@@ -234,16 +227,14 @@ void AnimationsListDialog::setAnimationsItems() {
 			_animationsItems[i]->setSelect(false);
 		}
 
-		if (i + startIndex < animations_manager->getAnimationsCount()) {
-			_animationsItems[i]->setAnimation(animations_manager->getAnimations(i + startIndex));
+		if (i + startIndex < 10) {
 			_animationsItems[i]->_onclick_func = [this, i]() {
 				_selectedItemIndex = i + (_scrollbar ? _scrollbar->getValue() / basic_text_rect_height : 0);
 				setAnimationsItems();
-				_fileNameInput->setText(_animationsItems[i]->_animations.lock()->_path);
+				
 			};
 		}
 		else {
-			_animationsItems[i]->setAnimation(std::weak_ptr<Animations>());
 			_animationsItems[i]->_onclick_func = nullptr;
 		}
 

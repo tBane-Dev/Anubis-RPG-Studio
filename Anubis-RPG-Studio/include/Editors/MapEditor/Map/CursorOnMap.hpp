@@ -48,7 +48,6 @@ namespace MapEditor {
 		sf::Vector2i getPlacementPosition(std::shared_ptr<GameObject> prefab);
 		void drawTerrainBrush();
 		void drawPlacementPreview(std::shared_ptr<GameObject> prefab);
-		void drawPreviewSprite(std::shared_ptr<GameObject> prefab, sf::Vector2i position);
 
 		std::shared_ptr<PlacedGameObject> getObjectUnderCursor();
 		std::vector<std::shared_ptr<PlacedGameObject>> getObjectsInSelectionRect();

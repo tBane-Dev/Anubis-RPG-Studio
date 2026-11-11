@@ -15,7 +15,6 @@ namespace PrefabsEditor {
 		_title->setPosition(sf::Vector2f(32, 48));
 
 		_object = std::weak_ptr<GameObject>();
-		_animator = nullptr;
 		_collider = nullptr;
 		_mesh = nullptr;
 	}
@@ -28,9 +27,6 @@ namespace PrefabsEditor {
 		_main_menu = std::make_shared<MainMenu>();
 		_palette = std::make_shared<Palette>();
 		_main_panel = std::make_shared<MainPanel>(_margin);
-
-		if (!_object.expired())
-			_animator = std::make_shared<Animator>(_object.lock()->getAnimations());
 
 		_animation_panel = std::make_shared<AnimationPanel>(_margin);
 		_collider_panel = std::make_shared<ColliderPanel>(_margin);

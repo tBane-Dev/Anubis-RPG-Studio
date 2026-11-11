@@ -22,7 +22,6 @@ namespace PrefabsEditor {
 		std::shared_ptr<Palette> _palette;
 
 		std::weak_ptr<GameObject> _object;
-		std::shared_ptr<Animator> _animator;
 		std::shared_ptr<Collider> _collider;
 		std::shared_ptr<Mesh> _mesh;
 

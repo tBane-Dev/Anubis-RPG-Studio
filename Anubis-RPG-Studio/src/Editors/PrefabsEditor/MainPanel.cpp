@@ -108,7 +108,6 @@ namespace PrefabsEditor {
 			if (_type->getText() == L"Monster") {
 				prefab = std::make_shared<MonsterPrefab>(
 					_name->getText(),
-					PrefabsEditor::editor->_animator->getAnimations(),
 					sf::Vector2i(PrefabsEditor::editor->_collider_panel->_x->getNumber(), PrefabsEditor::editor->_collider_panel->_y->getNumber()),
 					4,
 					collider,
@@ -119,7 +118,6 @@ namespace PrefabsEditor {
 			else if (_type->getText() == L"Nature") {
 				prefab = std::make_shared<NaturePrefab>(
 					_name->getText(),
-					PrefabsEditor::editor->_animator->getAnimations(),
 					sf::Vector2i(PrefabsEditor::editor->_collider_panel->_x->getNumber(), PrefabsEditor::editor->_collider_panel->_y->getNumber()),
 					collider,
 					mesh,
@@ -178,7 +176,6 @@ namespace PrefabsEditor {
 			if (_type->getText() == L"Monster") {
 				prefab = std::make_shared<MonsterPrefab>(
 					_name->getText(),
-					PrefabsEditor::editor->_animator->getAnimations(),
 					sf::Vector2i(PrefabsEditor::editor->_collider_panel->_x->getNumber(), PrefabsEditor::editor->_collider_panel->_y->getNumber()),
 					4,
 					collider,
@@ -189,7 +186,6 @@ namespace PrefabsEditor {
 			else if (_type->getText() == L"Nature") {
 				prefab = std::make_shared<NaturePrefab>(
 					_name->getText(),
-					PrefabsEditor::editor->_animator->getAnimations(),
 					sf::Vector2i(PrefabsEditor::editor->_collider_panel->_x->getNumber(), PrefabsEditor::editor->_collider_panel->_y->getNumber()),
 					collider,
 					mesh,
@@ -241,7 +237,6 @@ namespace PrefabsEditor {
 					PrefabsEditor::editor->_palette->_slots->updateObjects();
 
 					editor->_object = std::weak_ptr<GameObject>();
-					editor->_animator = nullptr;
 					editor->_main_panel->_name->setText(L"");
 					editor->_main_panel->_type->setText(L"");
 					editor->_collider = nullptr;
@@ -258,7 +253,6 @@ namespace PrefabsEditor {
 						std::shared_ptr<GameObject> newObject = std::dynamic_pointer_cast<GameObject>(PrefabsEditor::editor->_palette->_slots->_selectedSlot->_object.lock());
 
 						editor->_object = newObject;
-						editor->_animator = std::make_shared<Animator>(newObject->getAnimations());
 
 						editor->_main_panel->_name->setText(newObject->_name);
 						editor->_main_panel->_type->setText(ObjectTypeToWString(newObject->_type));
@@ -319,9 +313,6 @@ namespace PrefabsEditor {
 		if (WStringToObjectType(_type->getText()) == ObjectType::None)
 			return false;
 
-		if (!editor->_animator || editor->_animator->_animations.expired() || !editor->_animator->_animations.lock()->getTexture())
-			return false;
-
 		if (!PrefabsEditor::editor->_mesh)
 			return false;
 
@@ -337,10 +328,6 @@ namespace PrefabsEditor {
 
 		// object type
 		if (ObjectTypeToWString(object->_type) != _type->getText())
-			return true;
-
-		// animations
-		if (object->_animations.lock() != editor->_animator->_animations.lock())
 			return true;
 
 		// collider
@@ -443,7 +430,6 @@ namespace PrefabsEditor {
 			!editor ||
 			!editor->_main_panel ||
 			WStringToObjectType(_type->getText()) == ObjectType::None ||
-			(!editor->_animator || editor->_animator->_animations.expired() || !editor->_animator->_animations.lock()->getTexture()) ||
 			!editor->_mesh || !editor->_mesh->everyShapeIsComplete()
 			) {
 
@@ -486,9 +472,6 @@ namespace PrefabsEditor {
 
 			if (!editor->_main_panel || WStringToObjectType(editor->_main_panel->_type->getText()) == ObjectType::None)
 				tooltipDesc += L"-The Type is valid\n";
-
-			if (!editor->_animator || editor->_animator->_animations.expired() || !editor->_animator->_animations.lock()->getTexture())
-				tooltipDesc += L"-The Animations is loaded\n";
 			
 			if(!editor->_mesh || !editor->_mesh->everyShapeIsComplete())
 				tooltipDesc += L"-The Mesh is complete\n";
@@ -509,9 +492,6 @@ namespace PrefabsEditor {
 
 			if (!editor->_main_panel || WStringToObjectType(editor->_main_panel->_type->getText()) == ObjectType::None)
 				tooltipDesc += L"-The Type is valid\n";
-
-			if (!editor->_animator || editor->_animator->_animations.expired() || !editor->_animator->_animations.lock()->getTexture())
-				tooltipDesc += L"-The Animations is loaded\n";
 
 			if(!editor->_mesh || !editor->_mesh->everyShapeIsComplete())
 				tooltipDesc += L"-The Mesh is complete\n";

@@ -38,8 +38,6 @@ public:
 	};
 
 	std::shared_ptr<Texture> _texture;
-	std::shared_ptr<Animations> _animations;
-
 	std::vector<std::shared_ptr<Group>> _groups;
 
 	Wallset();

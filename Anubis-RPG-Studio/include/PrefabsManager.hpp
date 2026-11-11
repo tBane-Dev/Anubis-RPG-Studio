@@ -16,7 +16,6 @@ public:
     std::shared_ptr<GameObject> getPrefab(std::wstring path);
 	std::vector<std::shared_ptr<GameObject>>& getAllPrefabs();
 	std::vector<std::shared_ptr<GameObject>> getPrefabs(ObjectType type);
-    void removePrefabsByAnimations(int animationID);
     void replacePrefab(std::shared_ptr<GameObject> oldPrefab, std::shared_ptr<GameObject> newPrefab);
 
 	void saveFromProject(std::ofstream& file);

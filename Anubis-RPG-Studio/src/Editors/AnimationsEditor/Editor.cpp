@@ -67,10 +67,6 @@ namespace AnimationsEditor {
 
 	void Editor::update() {
 
-		if (_animator) {
-			_animator->update();
-		}
-
 		_main_menu->update();
 		_name_panel->update();
 		_list_panel->update();

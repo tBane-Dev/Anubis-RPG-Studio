@@ -39,26 +39,7 @@ namespace AnimationsEditor {
 					return;
 				}
 
-				std::shared_ptr<Texture> texture = std::make_shared<Texture>(fileDialog->getPathFile(), image);
-
-				if (!editor->_animations) {
-					editor->_animations = std::make_shared<Animations>(fileDialog->getPathFile(), texture, sf::Vector2i(texture->getSize()), 1, 1);
-				}
-				
-				if (!editor->_tempAnimations) {
-					editor->_tempAnimations = std::make_shared<Animations>(editor->_animations->_path, texture, sf::Vector2i(texture->getSize()), 1, 1);
-				}
-				else {
-					editor->_tempAnimations->_texture = texture;
-					editor->_tempAnimations->_offsetX = 0;
-					editor->_tempAnimations->_offsetY = 0;
-					editor->_tempAnimations->_frameSize = texture->getSize();
-					editor->_tempAnimations->_animationsCount = 1;
-					editor->_tempAnimations->_framesCount = 1;
-				}
-
-				editor->_animator = std::make_shared<Animator>(editor->_tempAnimations);
-
+			
 				AnimationsEditor::editor->_sprite_sheet_panel->setTextInputsRange();
 				AnimationsEditor::editor->_sprite_sheet_panel->loadAnimations();
 				AnimationsEditor::editor->_actions_panel->setButtonsActivity();
@@ -140,85 +121,36 @@ namespace AnimationsEditor {
 
 		// text inputs functions
 		_x->_onEditedFunction = [this]() {
-			if (editor->_animations) {
-				int x = _x->getNumber();
-				if (x >= 0 && x < (!editor->_tempAnimations->getTexture())? 0 : editor->_tempAnimations->getTexture()->getSize().x) {
-					editor->_tempAnimations->_offsetX = x;
-					editor->_preview_panel->loadAnimations();
-					editor->_actions_panel->setButtonsActivity();
-				}
-			}
+			
 		};
 
 		_y->_onEditedFunction = [this]() {
-			if (editor->_animations) {
-				int y = _y->getNumber();
-				if (y >= 0 && y < (!editor->_tempAnimations->getTexture()) ? 0 : editor->_tempAnimations->getTexture()->getSize().y) {
-					editor->_tempAnimations->_offsetY = y;
-					editor->_preview_panel->loadAnimations();
-					editor->_actions_panel->setButtonsActivity();
-				}
-			}
+	
+			
 		};
 
-		
 		_w->_onEditedFunction = [this]() {
-			if (editor->_animations) {
-				int w = _w->getNumber();
-				if (editor->_tempAnimations->getTexture() && w > 0 && w <= editor->_tempAnimations->getTexture()->getSize().x) {
-					editor->_tempAnimations->_frameSize.x = w;
-					editor->_preview_panel->loadAnimations();
-					editor->_actions_panel->setButtonsActivity();
-				}	
-			}
+			
 		};
 
 		_h->_onEditedFunction = [this]() {
-			if (editor->_animations) {
-				int h = _h->getNumber();
-				if (editor->_tempAnimations->getTexture() && h > 0 && h <= editor->_tempAnimations->getTexture()->getSize().y) {
-					editor->_tempAnimations->_frameSize.y = h;
-					editor->_preview_panel->loadAnimations();
-					editor->_actions_panel->setButtonsActivity();
-				}
-			}
+			
 		};
 
 		_a->_onEditedFunction = [this]() {
-			if (editor->_animations) {
-				int a = _a->getNumber();
-				if (a > 0 && a <= editor->_tempAnimations->getTexture()->getSize().y) {
-					editor->_tempAnimations->_animationsCount = a;
-					editor->_preview_panel->loadAnimations();
-					editor->_actions_panel->setButtonsActivity();
-				}
-			}
+	
 		};
 
 		_f->_onEditedFunction = [this]() {
-			if (editor->_animations) {
-				int f = _f->getNumber();
-				if (f > 0 && f <= editor->_tempAnimations->getTexture()->getSize().y) {
-					editor->_tempAnimations->_framesCount = f;
-					editor->_preview_panel->loadAnimations();
-					editor->_actions_panel->setButtonsActivity();
-				}
-			}
+	
 		};
 
 		_i->_onEditedFunction = [this]() {
-			if (editor->_animations) {
-				float i = _i->getNumber();
-				if (i > 0 && i <= _i->_maxValue) {
-					editor->_tempAnimations->_interval = i;
-					editor->_preview_panel->loadAnimations();
-					editor->_actions_panel->setButtonsActivity();
-				}
-			}
-			};
+
+		};
 
 
-		loadAnimations();
+		loadAnimations(); // TO-DO - must be the laodModel
 	}
 
 	SpriteSheetPanel::~SpriteSheetPanel() {
@@ -235,18 +167,9 @@ namespace AnimationsEditor {
 		_f->setText(L"");
 		_i->setText(L"");
 
-		if (!editor->_tempAnimations)
-			return;
-
-		_x->setText(std::to_wstring(editor->_tempAnimations->_offsetX));
-		_y->setText(std::to_wstring(editor->_tempAnimations->_offsetY));
-		_w->setText(std::to_wstring(editor->_tempAnimations->_frameSize.x));
-		_h->setText(std::to_wstring(editor->_tempAnimations->_frameSize.y));
-		_a->setText(std::to_wstring(editor->_tempAnimations->_animationsCount));
-		_f->setText(std::to_wstring(editor->_tempAnimations->_framesCount));
 
 		std::ostringstream ss;
-		ss << std::fixed << std::setprecision(3) << editor->_tempAnimations->_interval;
+		ss << std::fixed << std::setprecision(3) << 0.125f;
 		std::string text = ss.str();
 		std::wstring intervalText(text.begin(), text.end());
 		_i->setText(intervalText);
@@ -254,14 +177,12 @@ namespace AnimationsEditor {
 
 	void SpriteSheetPanel::setTextInputsRange() {
 
-		if (!editor->_tempAnimations || !editor->_tempAnimations->_texture) return;
-
-		_x->setMaxValue(editor->_tempAnimations->_texture->getSize().x);
-		_y->setMaxValue(editor->_tempAnimations->_texture->getSize().y);
-		_w->setMaxValue(editor->_tempAnimations->_texture->getSize().x);
-		_h->setMaxValue(editor->_tempAnimations->_texture->getSize().y);
-		_a->setMaxValue(editor->_tempAnimations->_texture->getSize().y);
-		_f->setMaxValue(editor->_tempAnimations->_texture->getSize().x);
+		//_x->setMaxValue(editor->_tempAnimations->_texture->getSize().x);
+		//_y->setMaxValue(editor->_tempAnimations->_texture->getSize().y);
+		//_w->setMaxValue(editor->_tempAnimations->_texture->getSize().x);
+		//_h->setMaxValue(editor->_tempAnimations->_texture->getSize().y);
+		//_a->setMaxValue(editor->_tempAnimations->_texture->getSize().y);
+		//_f->setMaxValue(editor->_tempAnimations->_texture->getSize().x);
 		_i->setMaxValue(10.0f);
 	}
 
@@ -327,21 +248,6 @@ namespace AnimationsEditor {
 
 		// draw sprite sheet
 		float scale = 1;
-		if (editor->_tempAnimations && editor->_tempAnimations->getTexture()) {
-
-			int width = editor->_tempAnimations->getTexture()->_texture->getSize().x;
-			int height = editor->_tempAnimations->getTexture()->_texture->getSize().y;
-
-			float scaleX = rect.getSize().x / width;
-			float scaleY = rect.getSize().y / height;
-
-			scale = std::min(scaleX, scaleY);
-
-			sf::Sprite sprite(*editor->_tempAnimations->getTexture()->_texture);
-			sprite.setScale(sf::Vector2f(scale, scale));
-			sprite.setPosition(rect.getPosition());
-			Anubis::render_window->draw(sprite);
-		}
 
 		// draw grid
 		float gridWidth = 1.0f;

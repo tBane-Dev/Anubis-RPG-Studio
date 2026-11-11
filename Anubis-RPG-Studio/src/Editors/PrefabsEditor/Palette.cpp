@@ -86,7 +86,6 @@ namespace PrefabsEditor {
 
 				std::weak_ptr<GameObject> prefab = std::dynamic_pointer_cast<GameObject>(slot->_object.lock());
 				editor->_object = prefab;
-				editor->_animator = std::make_shared<Animator>(prefab.lock()->getAnimations());
 				
 				editor->_main_panel->_name->setText(prefab.lock()->_name);
 				editor->_main_panel->_type->setText(ObjectTypeToWString(prefab.lock()->_type));

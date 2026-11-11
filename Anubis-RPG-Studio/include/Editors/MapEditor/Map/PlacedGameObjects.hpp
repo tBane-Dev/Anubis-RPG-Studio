@@ -28,7 +28,6 @@ namespace MapEditor {
         static std::shared_ptr<Anubis::Model3D> createModel(const std::shared_ptr<GameObject>& prefab);
 
         void removeGameObjectsByPrefab(std::weak_ptr<GameObject> prefab);
-        void removeGameObjectsByAnimations(int animationID);
         void replacePrefab(std::shared_ptr<GameObject> oldPrefab, std::shared_ptr<GameObject> newPrefab);
 
         void saveFromProject(std::ofstream& file);

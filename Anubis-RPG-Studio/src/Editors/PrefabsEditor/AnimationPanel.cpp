@@ -86,44 +86,36 @@ namespace PrefabsEditor {
 		_anim_next->setPosition(sf::Vector2i(_last->getPosition().x + btn_w - 80, _anim_prev->getPosition().y));
 
 		_first->_onclick_func = [this]() {
-			if (editor->_animator)
-				editor->_animator->setFrame(0);
+
 			};
 
 		_prev->_onclick_func = [this]() {
-			if (editor->_animator)
-				editor->_animator->prevFrame();
+
 			};
 
 
 		_play->_onclick_func = [this]() {
-			if (editor->_animator)
-				editor->_animator->play();
+
 			};
 
 		_pause->_onclick_func = [this]() {
-			if (editor->_animator)
-				editor->_animator->pause();
+	
 			};
 
 		_next->_onclick_func = [this]() {
-			if (editor->_animator)
-				editor->_animator->nextFrame();
+
 			};
 
 		_last->_onclick_func = [this]() {
-			if (editor->_animator)
-				editor->_animator->lastFrame();
+	
 			};
 
 		_anim_prev->_onclick_func = [this]() {
-			if (editor->_animator)
-				editor->_animator->prevAnimation();
+
 			};
 
 		_anim_next->_onclick_func = [this]() {
-			if (editor->_animator)
-				editor->_animator->nextAnimation();
+	
 			};
 
 		setButtonsActivity();
@@ -204,24 +196,8 @@ namespace PrefabsEditor {
 			std::function<void()> func = [this, dialog]() {
 				if (!dialog->_fileNameInput->getText().empty()) {
 					std::wstring animName = dialog->_fileNameInput->getText();
-					if (!animations_manager->getAnimations(animName).expired()) {
-
-						if(!editor->_animator)
-							editor->_animator = std::make_shared<Animator>(animations_manager->getAnimations(animName));
-						else
-							editor->_animator->_animations = animations_manager->getAnimations(animName);
-						
-						editor->_animation_panel->setButtonsActivity();
-						editor->_animation_panel->setTooltips();
-						editor->_main_panel->setButtonsActivity();
-						editor->_main_panel->setTooltips();
-						editor->_mesh_panel->setButtonsActivity();
-						
-						Main::windows_manager->pop_back();
-
-					}
 				}
-				};
+			};
 
 			dialog->_confirmButton->_onclick_func = func;
 
@@ -234,7 +210,7 @@ namespace PrefabsEditor {
 	}
 
 	void AnimationPanel::setButtonsActivity() {
-		if (!editor || !editor->_animator || editor->_animator->_animations.expired()) {
+		if (!editor) {
 
 			_first->setActive(false);
 			_prev->setActive(false);
@@ -259,7 +235,7 @@ namespace PrefabsEditor {
 
 	void AnimationPanel::setTooltips() {
 	
-		if(!editor || !editor->_animator || editor->_animator->_animations.expired()){
+		if(!editor){
 
 			std::wstring desc = L"This button is inactive because no Animations is loaded.";
 
@@ -291,34 +267,12 @@ namespace PrefabsEditor {
 
 		if (!editor) return;
 
-		std::shared_ptr<Animator> animator = editor->_animator;
-		std::shared_ptr<Animations> animations = (animator) ? animator->getAnimations().lock() : nullptr;
-
-		if (!animator || !animations) {
-			_animations_name->setString(L"--");
-			_animations_current->setString(L"--");
-			_animations_count->setString(L"--");
-			_frame->setString(L"--");
-			_frames_count->setString(L"--");
-			_frame_size->setString(L"--");
-		}
-		else {
-
-			std::wstring name = animations->_path;
-			name = name.substr(name.find_first_of(L"\\/") + 1);
-			_animations_name->setString(name);
-
-			_animations_current->setString(std::to_wstring(animator->_animation));
-			_animations_count->setString(std::to_wstring(animations->_animationsCount));
-
-			_frame->setString(std::to_wstring(animator->_frame));
-			_frames_count->setString(std::to_wstring(animations->_framesCount));
-
-			sf::IntRect frameRect = animations->getFrameRect(animator->_animation, animator->_frame);
-			_frame_size->setString(std::to_wstring(frameRect.size.x) + L" x " + std::to_wstring(frameRect.size.y));
-		}
-
-
+		_animations_name->setString(L"--");
+		_animations_current->setString(L"--");
+		_animations_count->setString(L"--");
+		_frame->setString(L"--");
+		_frames_count->setString(L"--");
+		_frame_size->setString(L"--");
 
 		int m = 8;
 		int s = _statsRect.position.x + _statsRect.size.x;
@@ -336,7 +290,8 @@ namespace PrefabsEditor {
 
 		_first->cursorHover();
 		_prev->cursorHover();
-		(editor->_animator == nullptr || editor->_animator->_isPlaying) ? _pause->cursorHover() : _play->cursorHover();
+		// TO-DO
+		//(editor->_animator == nullptr || editor->_animator->_isPlaying) ? _pause->cursorHover() : _play->cursorHover();
 		_next->cursorHover();
 		_last->cursorHover();
 
@@ -351,7 +306,8 @@ namespace PrefabsEditor {
 
 		_first->handleEvent(event);
 		_prev->handleEvent(event);
-		(editor->_animator == nullptr || editor->_animator->_isPlaying) ? _pause->handleEvent(event) : _play->handleEvent(event);
+		// TO-DO
+		//(editor->_animator == nullptr || editor->_animator->_isPlaying) ? _pause->handleEvent(event) : _play->handleEvent(event);
 		_next->handleEvent(event);
 		_last->handleEvent(event);
 
@@ -378,9 +334,6 @@ namespace PrefabsEditor {
 		_anim_prev->update();
 		_anim_next->update();
 
-		if (editor->_animator)
-			editor->_animator->update();
-
 		loadStatsValues();
 
 		_set_animation->update();
@@ -391,10 +344,6 @@ namespace PrefabsEditor {
 
 		Anubis::render_window->draw(*_title);
 
-		// animator and animations
-		std::shared_ptr<Animator>& animator = PrefabsEditor::editor->_animator;
-		std::shared_ptr<Animations> animations = (animator) ? animator->getAnimations().lock() : nullptr;
-
 		// canvas background
 		sf::IntRect canvasRect = sf::IntRect(sf::Vector2i(getPosition().x + (getSize().x - 256) / 2, getPosition().y + _title->getFont().getLineSpacing(20) + 24 + 16), sf::Vector2i(256, 256));
 		sf::RectangleShape canvasRectShape(sf::Vector2f(canvasRect.size));
@@ -402,47 +351,24 @@ namespace PrefabsEditor {
 		canvasRectShape.setPosition(sf::Vector2f(canvasRect.position));
 		Anubis::render_window->draw(canvasRectShape);
 
-		// sprite
-		if (animator && animations) {
+		
+		// draw checkerboard
+		sf::IntRect spriteRect = sf::IntRect(sf::Vector2i(0, 0), sf::Vector2i(256, 256));
+		spriteRect.position = sf::Vector2i(canvasRect.position.x + (canvasRect.size.x - spriteRect.size.x) / 2, canvasRect.position.y + (canvasRect.size.y - spriteRect.size.y) / 2);
+		sf::RectangleShape rect(sf::Vector2f(spriteRect.size));
+		rect.setFillColor(sf::Color::Red);
+		rect.setPosition(sf::Vector2f(spriteRect.position));
 
-			float spriteScale = std::min((float)canvasRect.size.x / (float)animations->getFrameRect(0, 0).size.x, (float)canvasRect.size.y / (float)animations->getFrameRect(0, 0).size.y);;
-
-			// draw checkerboard
-			sf::IntRect spriteRect = (animator && animations) ? animations->getFrameRect(animator->_animation, animator->_frame) : sf::IntRect(sf::Vector2i(0, 0), sf::Vector2i(256, 256));
-			spriteRect.position = sf::Vector2i(canvasRect.position.x + (canvasRect.size.x - (float)spriteRect.size.x * spriteScale) / 2, canvasRect.position.y + (canvasRect.size.y - (float)spriteRect.size.y * spriteScale) / 2);
-			sf::RectangleShape rect(sf::Vector2f((float)spriteRect.size.x * spriteScale, (float)spriteRect.size.y * spriteScale));
-			rect.setFillColor(sf::Color::Red);
-			rect.setPosition(sf::Vector2f(spriteRect.position));
-
-			sf::RenderStates states;
-			states.shader = &*checkerboard_shader;
-			checkerboard_shader->setUniform("rectPos", sf::Vector2f(spriteRect.position));
-			Anubis::render_window->draw(rect, states);
-
-			sf::Sprite sprite(*animations->getTexture()->_texture);
-			sprite.setTextureRect(animations->getFrameRect(animator->_animation, animator->_frame));
-			sprite.setScale(sf::Vector2f(spriteScale, spriteScale));
-			sprite.setPosition(sf::Vector2f(canvasRect.position + sf::Vector2i((canvasRect.size.x - animations->getFrameRect(0, 0).size.x * spriteScale) / 2, (canvasRect.size.y - animations->getFrameRect(0, 0).size.y * spriteScale) / 2)));
-			Anubis::render_window->draw(sprite);
-		}
-		else {
-			// draw checkerboard
-			sf::IntRect spriteRect = (animator && animations) ? animations->getFrameRect(animator->_animation, animator->_frame) : sf::IntRect(sf::Vector2i(0, 0), sf::Vector2i(256, 256));
-			spriteRect.position = sf::Vector2i(canvasRect.position.x + (canvasRect.size.x - spriteRect.size.x) / 2, canvasRect.position.y + (canvasRect.size.y - spriteRect.size.y) / 2);
-			sf::RectangleShape rect(sf::Vector2f(spriteRect.size));
-			rect.setFillColor(sf::Color::Red);
-			rect.setPosition(sf::Vector2f(spriteRect.position));
-
-			sf::RenderStates states;
-			states.shader = &*checkerboard_shader;
-			checkerboard_shader->setUniform("rectPos", sf::Vector2f(spriteRect.position));
-			Anubis::render_window->draw(rect, states);
-		}
-
+		sf::RenderStates states;
+		states.shader = &*checkerboard_shader;
+		checkerboard_shader->setUniform("rectPos", sf::Vector2f(spriteRect.position));
+		Anubis::render_window->draw(rect, states);
+		
 		// draw buttons
 		_first->draw();
 		_prev->draw();
-		(animator == nullptr || animator->_isPlaying) ? _pause->draw() : _play->draw();
+		// TO-DO
+		//(animator == nullptr || animator->_isPlaying) ? _pause->draw() : _play->draw();
 		_next->draw();
 		_last->draw();
 

@@ -15,12 +15,10 @@ public:
 	std::unique_ptr<sf::Text> _animCount;
 	std::unique_ptr<sf::Text> _framesCount;
 
-	std::weak_ptr<Animations> _animations;
 	
 	AnimationsListItem(int offset, int otherButtonsWidth);
 	~AnimationsListItem();
 
-	void setAnimation(std::weak_ptr<Animations> animation);
 	virtual void setPosition(sf::Vector2i position, int offset, int otherButtonsWidth);
 
 	virtual void cursorHover();

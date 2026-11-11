@@ -1,7 +1,6 @@
 #pragma once
 #include "Objects/Object.hpp"
 #include "Objects/GameObject.hpp"
-#include "Animator.hpp"
 #include "3D/Model3D.hpp"
 
 
@@ -10,8 +9,7 @@ public:
 
 	std::weak_ptr<GameObject> _prefab;
 	std::shared_ptr<Anubis::Model3D> _model;
-	std::shared_ptr<Animator> _animator;
-    sf::Vector2f _position;			// 
+    sf::Vector2f _position;
 	
 	bool _isSelected;
 	std::unique_ptr<sf::Text> _text;

@@ -17,28 +17,10 @@ namespace AnimationsEditor {
 		_name = std::make_shared<TextInput>(sf::Vector2i(384, 48), L"Type here", 32, 20);
 		_name->setPosition(sf::Vector2i(_rect.position.x + 16, _nameText->getGlobalBounds().position.y + 32));
 
-		if(editor->_tempAnimations) {
-			_name->setText(AnimationsEditor::editor->_tempAnimations->_path);
-		}
 
 		_name->_onEditedFunction = [this]() {
 
-			if(!editor->_animations)
-				editor->_animations = std::make_shared<Animations>(_name->getText(), nullptr, sf::Vector2i(0, 0), 1, 1);
-
-			if (!editor->_tempAnimations)
-				editor->_tempAnimations = std::make_shared<Animations>(_name->getText(), nullptr, sf::Vector2i(0, 0), 1, 1);
-
-			if (!editor->_animator)
-				editor->_animator = std::make_shared<Animator>(editor->_tempAnimations);
-
-			editor->_tempAnimations->_path = _name->getText();
-
-			editor->_preview_panel->loadAnimations();
-			editor->_preview_panel->setButtonsActivity();
-			editor->_actions_panel->setButtonsActivity();
-			editor->_actions_panel->setTooltips();
-			};
+		};
 	}
 
 	NamePanel::~NamePanel() {
@@ -47,10 +29,7 @@ namespace AnimationsEditor {
 
 	void NamePanel::loadAnimations() {
 
-		_name->setText(L"");
-
-		if(editor->_animations)
-			_name->setText(editor->_animations->_path);
+		_name->setText(L"animation");
 	}
 
 	void NamePanel::cursorHover() {

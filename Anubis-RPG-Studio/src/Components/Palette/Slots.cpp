@@ -41,13 +41,6 @@ Slots::Slots() {
 	_selectedSlotId = -1;
 	_selectedSlot = nullptr;
 
-	_emptySlotAnimation = std::make_shared<Animations>(
-		L"none",
-		textures_manager->getTexture(L"assets\\tex\\palette\\none.png"),
-		sf::Vector2i(80, 80),
-		1, 1
-	);
-
 	_type = ObjectType::None;
 	setCategory(_type);
 
@@ -248,12 +241,10 @@ void Slots::loadObjects() {
 		for (int i = 0; i < (_slotsCount.x) * (_slotsCount.y + 1); i++) {
 			if (i < Components::Palette::terrains.size()) {
 				_slots[i]->setObject(Components::Palette::terrains[i]);
-				_slots[i]->_animator = nullptr;
 				_slots[i]->setActive(true);
 			}
 			else {
 				_slots[i]->_object = std::weak_ptr<Object>();
-				_slots[i]->_animator = nullptr;
 				_slots[i]->setActive(false);
 			}
 		}
@@ -265,16 +256,11 @@ void Slots::loadObjects() {
 
 	for (int i = 0; i < (_slotsCount.x) * (_slotsCount.y+1); i++) {
 		if (i < prefabs.size()) {
-			if(prefabs[i]->getAnimations().expired())
-				DebugLog(L"Prefab " + prefabs[i]->_name + L" has no animations");
 			_slots[i]->setObject(prefabs[i]);
-			_slots[i]->_animator = std::make_shared<Animator>((prefabs[i]->getAnimations().expired())? _emptySlotAnimation : prefabs[i]->getAnimations());
-			_slots[i]->_animator->play();
 			_slots[i]->setActive(true);
 		}
 		else {
 			_slots[i]->_object = std::weak_ptr<Object>();
-			_slots[i]->_animator = nullptr;
 			_slots[i]->setActive(false);
 		}
 	}
@@ -296,12 +282,10 @@ void Slots::updateObjects() {
 		for (int i = 0; i < (_slotsCount.x) * (_slotsCount.y + 1); i++) {
 			if (i + startIndex < Components::Palette::terrains.size()) {
 				_slots[i]->_object = Components::Palette::terrains[i + startIndex];
-				_slots[i]->_animator = nullptr;
 				_slots[i]->setActive(true);
 			}
 			else {
 				_slots[i]->_object = std::weak_ptr<Object>();
-				_slots[i]->_animator = nullptr;
 				_slots[i]->setActive(false);
 			}
 		}
@@ -314,13 +298,10 @@ void Slots::updateObjects() {
 	for (int i = 0; i < (_slotsCount.x) * (_slotsCount.y+1); i++) {
 		if (i + startIndex < prefabs.size()) {
 			_slots[i]->_object = prefabs[i + startIndex];
-			_slots[i]->_animator = std::make_shared<Animator>((prefabs[i]->getAnimations().expired()) ? _emptySlotAnimation : prefabs[i]->getAnimations());
-			_slots[i]->_animator->play();
 			_slots[i]->setActive(true);
 		}
 		else {
 			_slots[i]->_object = std::weak_ptr<Object>();
-			_slots[i]->_animator = nullptr;
 			_slots[i]->setActive(false);
 		}
 	}

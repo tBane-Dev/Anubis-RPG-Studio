@@ -60,23 +60,6 @@ std::vector<std::shared_ptr<GameObject>> PrefabsManager::getPrefabs(ObjectType t
     return prefabsOfType;
 }
 
-void PrefabsManager::removePrefabsByAnimations(int animationID) {
-
-    std::shared_ptr<Animations> animation =
-        animations_manager->getAnimations(animationID).lock();
-
-    if (!animation)
-        return;
-
-    std::erase_if(_prefabs, [&](const std::shared_ptr<GameObject>& prefab) {
-            if (!prefab)
-                return false;
-
-            return prefab->_animations.lock() == animation;
-        }
-    );
-}
-
 void PrefabsManager::replacePrefab(
     std::shared_ptr<GameObject> oldPrefab,
     std::shared_ptr<GameObject> newPrefab
@@ -109,7 +92,7 @@ void PrefabsManager::saveFromProject(std::ofstream& file) {
 			saveMesh(monsterPrefab->getMesh(), file);
             writer.write_Vector2i(monsterPrefab->_origin);
             writer.write_int32(monsterPrefab->_stepSize);
-            writer.write_wstring((!monsterPrefab->_animations.expired()) ? monsterPrefab->_animations.lock()->_path : L"");
+            writer.write_wstring(L"");
         }
         
         if (prefab->_type == ObjectType::Nature) {
@@ -119,7 +102,7 @@ void PrefabsManager::saveFromProject(std::ofstream& file) {
             saveCollider(naturePrefab->getCollider(), file);
 			saveMesh(naturePrefab->getMesh(), file);
 			writer.write_Vector2i(naturePrefab->_origin);
-            writer.write_wstring((!naturePrefab->_animations.expired()) ? naturePrefab->_animations.lock()->_path : L"");
+            writer.write_wstring(L"");
         }
 
         
@@ -152,8 +135,7 @@ void PrefabsManager::loadFromProject(std::ifstream& file, std::shared_ptr<Loader
             sf::Vector2i origin = reader.read_Vector2i();
             int stepSize = reader.read_int32();
             std::wstring animationsPath = reader.read_wstring();
-            std::shared_ptr<Animations> animations = animations_manager->getAnimations(animationsPath).lock();
-            std::shared_ptr<GameObject> prefab = std::make_shared<MonsterPrefab>(name, animations, origin, stepSize, collider, mesh, Anubis::models_manager->getModel(name));
+            std::shared_ptr<GameObject> prefab = std::make_shared<MonsterPrefab>(name, origin, stepSize, collider, mesh, Anubis::models_manager->getModel(name));
             addPrefab(prefab);
 			DebugStat(name);
 		}
@@ -165,8 +147,7 @@ void PrefabsManager::loadFromProject(std::ifstream& file, std::shared_ptr<Loader
 			std::shared_ptr<Mesh> mesh = loadMesh(file);
             sf::Vector2i origin = reader.read_Vector2i();
             std::wstring animationsPath = reader.read_wstring();
-            std::shared_ptr<Animations> animations = animations_manager->getAnimations(animationsPath).lock();
-            std::shared_ptr<GameObject> prefab = std::make_shared<NaturePrefab>(name, animations, origin, collider, mesh, Anubis::models_manager->getModel(name));
+            std::shared_ptr<GameObject> prefab = std::make_shared<NaturePrefab>(name, origin, collider, mesh, Anubis::models_manager->getModel(name));
             addPrefab(prefab);
             DebugStat(name);
 		}
