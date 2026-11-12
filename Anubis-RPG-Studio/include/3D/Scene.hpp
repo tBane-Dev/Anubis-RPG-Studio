@@ -37,6 +37,9 @@ namespace Anubis {
 		std::vector<std::shared_ptr<Model3D>> _pressed;
 		std::vector<std::shared_ptr<Model3D>> _selected;	// highlight only, set by MapEditor::CursorOnMap
 
+		// Part of the window the scene is drawn in (window pixels). Size 0 = whole window.
+		sf::IntRect _viewport;
+
 		// Projection parameters used by setProjection() and by unprojection.
 		float _fovY = 60.f;
 		float _nearPlane = 0.1f;
@@ -85,12 +88,13 @@ namespace Anubis {
 
 		bool initializeModel3DShaders();
 
+		sf::IntRect getViewport();
 		void setViewport();
 		void setProjection();
 		void setCamera();
 		void lookAt(sf::Vector3f target);
 
-		void addModel(std::shared_ptr<Anubis::Model3D> model);
+		void addModel(std::shared_ptr<Model3D> model);
 		void removeModel(std::shared_ptr<Model3D> model);
 
 		bool createShadowBuffer();

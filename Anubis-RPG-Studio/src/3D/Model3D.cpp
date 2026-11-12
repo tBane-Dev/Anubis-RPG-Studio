@@ -24,6 +24,7 @@ namespace Anubis {
 		_scale = 1.0f;
 		_windStrength = 0.f;
 		_isSelectable = false;
+		_isAnimating = true;
 
 		_meshes.clear();
 
@@ -42,6 +43,7 @@ namespace Anubis {
 		_scale = scale;
 		_windStrength = 0.0f;
 		_isSelectable = false;
+		_isAnimating = true;
 
 		_meshes.clear();
 
@@ -59,6 +61,7 @@ namespace Anubis {
 		_scale = other._scale;
 		_windStrength = other._windStrength;
 		_isSelectable = other._isSelectable;
+		_isAnimating = true;
 
 		_rotationDelta = other._rotationDelta;
 		_rotationSpeed = other._rotationSpeed;
@@ -224,6 +227,9 @@ namespace Anubis {
 	}
 
 	bool Model3D::updateAnimation(float deltaSeconds) {
+
+		if (!_isAnimating)
+			return true;
 
 		if (_player._index < 0)
 			return true;

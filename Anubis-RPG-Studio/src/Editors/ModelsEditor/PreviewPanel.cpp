@@ -1,363 +1,337 @@
-#include "Editors/ModelsEditor/PreviewPanel.hpp"
+﻿#include "Editors/ModelsEditor/PreviewPanel.hpp"
 #include "Editors/ModelsEditor/Editor.hpp"
 #include "Theme.hpp"
 #include "RenderWindow.hpp"
 #include "DebugLog.hpp"
 #include "Objects/Monster.hpp"
 #include "PrefabsManager.hpp"
+#include "Windows/FileDialog/FileDialog.hpp"
 #include "ShadersManager.hpp"
+#include "PrefabsManager.hpp"
+#include "Cursor.hpp"
+#include "SFML/OpenGL.hpp"
 
 namespace ModelsEditor {
 
-	PreviewPanel::PreviewPanel(sf::Vector2i margin) : Panel(sf::Vector2i(520, 900), sf::Vector2i(1332 + margin.x, ModelsEditor::editor->_main_menu->getSize().y + margin.y)) {
+	PreviewPanel::PreviewPanel(sf::Vector2i margin) : Panel(sf::Vector2i(912, 712 + 60), sf::Vector2i(420 + margin.x, ModelsEditor::editor->_main_menu->getSize().y + margin.y + 128)) {
 
 		_title = std::make_unique<sf::Text>(basicFont, L"Preview", 20);
 		_title->setFillColor(basic_text_color);
 		_title->setPosition(sf::Vector2f(_rect.position.x + 16, _rect.position.y + 16));
 	
-		// buttons
-		_first = std::make_shared<ButtonWithSprite>(
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\first.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\first_hover.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\first_press.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\first_inactive.png"));
+		//_loadBtn = std::make_shared<ButtonWithTextAndSprite>(
+		//	L"Load Spritesheet",
+		//	textures_manager->getTexture(L"assets\\tex\\editors_ui\\mediumButton.png"),
+		//	textures_manager->getTexture(L"assets\\tex\\editors_ui\\mediumButton_hover.png"),
+		//	textures_manager->getTexture(L"assets\\tex\\editors_ui\\mediumButton_press.png"),
+		//	textures_manager->getTexture(L"assets\\tex\\editors_ui\\mediumButton_inactive.png"),
+		//	sf::Vector2i(_rect.position.x + 512 + 64, _rect.position.y + 48)
+		//);
+		//
+		//_loadBtn->_onclick_func = [this]() {
+		//
+		//	std::shared_ptr<FileDialog> fileDialog = std::make_shared<FileDialog>(L"Load Spritesheet", L"Load");
+		//	fileDialog->setPosition(sf::Vector2i(256, 192));
+		//
+		//	std::function<void()> function = [this, fileDialog]() {
+		//
+		//		std::shared_ptr<sf::Image> image = std::make_shared<sf::Image>();
+		//		
+		//		if (!image->loadFromFile(fileDialog->getPathFile())) {
+		//			DebugError(L"Nie udało się wczytać obrazka: " + fileDialog->getPathFile());
+		//			return;
+		//		}
+		//
+		//	
+		//		ModelsEditor::editor->_sprite_sheet_panel->setTextInputsRange();
+		//		ModelsEditor::editor->_sprite_sheet_panel->loadModel();
+		//		ModelsEditor::editor->_actions_panel->setButtonsActivity();
+		//		ModelsEditor::editor->_actions_panel->setTooltips();
+		//		ModelsEditor::editor->_preview_panel->loadAnimations();
+		//		ModelsEditor::editor->_preview_panel->setButtonsActivity();
+		//		ModelsEditor::editor->_preview_panel->setTooltips();
+		//
+		//
+		//		
+		//	};
+		//
+		//	fileDialog->setFunction(function);
+		//	Main::windows_manager->push_back(fileDialog);
+		//};
 
-		_prev = std::make_shared<ButtonWithSprite>(
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\prev.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\prev_hover.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\prev_press.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\prev_inactive.png"));
+		_sceneRect.size = sf::Vector2i(512 + 256 + 64, 512 + 128 + 32);
+		_sceneRect.position = sf::Vector2i(getPosition().x + 32, getPosition().y + _title->getFont().getLineSpacing(20) + 24 + 16);
+		
+		_scene = std::make_shared<Anubis::Scene>();
+		_scene->initializeModel3DShaders();
 
-		_play = std::make_shared<ButtonWithSprite>(
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\play.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\play_hover.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\play_press.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\play_inactive.png"));
-
-		_pause = std::make_shared<ButtonWithSprite>(
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\pause.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\pause_hover.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\pause_press.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\pause_inactive.png"));
-
-		_next = std::make_shared<ButtonWithSprite>(
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\next.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\next_hover.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\next_press.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\next_inactive.png"));
-
-		_last = std::make_shared<ButtonWithSprite>(
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\last.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\last_hover.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\last_press.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\last_inactive.png"));
-
-		_anim_prev = std::make_shared<ButtonWithSprite>(
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_prev.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_prev_hover.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_prev_press.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_prev_inactive.png"));
-
-		_anim_next = std::make_shared<ButtonWithSprite>(
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_next.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_next_hover.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_next_press.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_next_inactive.png"));
-
-		int padding = 10;
-		int total_width = _rect.size.x - padding * 2;
-		int btn_w = 64;
-		int buttons_count = 5;
-		int buttons_width = buttons_count * btn_w;
-		int margin_between_buttons = (total_width - buttons_width) / buttons_count / 4;
-		int all_width = buttons_width + margin_between_buttons * (buttons_count - 1);
-
-		sf::Vector2f startPosition;
-		startPosition.x = _rect.position.x + padding + (total_width - all_width) / 2;
-		startPosition.y = _rect.position.y + _title->getFont().getLineSpacing(20) + 24 + 16 + 256 + 16;
-
-		_first->setPosition(sf::Vector2i(startPosition.x, startPosition.y));
-		_prev->setPosition(sf::Vector2i(_first->getPosition().x + btn_w + margin_between_buttons, _first->getPosition().y));
-		_play->setPosition(sf::Vector2i(_prev->getPosition().x + btn_w + margin_between_buttons, _prev->getPosition().y));
-		_pause->setPosition(sf::Vector2i(_play->getPosition().x, _play->getPosition().y));
-		_next->setPosition(sf::Vector2i(_pause->getPosition().x + btn_w + margin_between_buttons, _pause->getPosition().y));
-		_last->setPosition(sf::Vector2i(_next->getPosition().x + btn_w + margin_between_buttons, _next->getPosition().y));
-
-		_anim_prev->setPosition(sf::Vector2i(_first->getPosition().x, _first->getPosition().y + btn_w + margin_between_buttons));
-		_anim_next->setPosition(sf::Vector2i(_last->getPosition().x + btn_w - 80, _anim_prev->getPosition().y));
-
-		_first->_onclick_func = [this]() {
-
-			};
-
-		_prev->_onclick_func = [this]() {
-
-			};
+		sf::Vector2i topLeft = Anubis::render_window->mapCoordsToPixel(sf::Vector2f(_sceneRect.position));
+		sf::Vector2i bottomRight = Anubis::render_window->mapCoordsToPixel(sf::Vector2f(_sceneRect.position + _sceneRect.size));
+		_scenePixelRect = sf::IntRect(topLeft, bottomRight - topLeft);
+		_scene->_viewport = _scenePixelRect;
 
 
-		_play->_onclick_func = [this]() {
-
-			};
-
-		_pause->_onclick_func = [this]() {
-
-			};
-
-		_next->_onclick_func = [this]() {
-
-			};
-
-		_last->_onclick_func = [this]() {
-
-			};
-
-		_anim_prev->_onclick_func = [this]() {
-
-			};
-
-		_anim_next->_onclick_func = [this]() {
-	
-			};
-
-		// stats rect
-		int m = 8;
-		_statsRect = sf::IntRect(
-			sf::Vector2i(
-				_anim_prev->getPosition().x - 16,
-				_anim_prev->getPosition().y + _anim_prev->getSize().y + 16
-			),
-			sf::Vector2i(
-				_anim_next->getPosition().x + _anim_next->getSize().x - _anim_prev->getPosition().x + 32,
-				8 * (basicFont.getLineSpacing(basic_text_size) + m) + m)
-		);
-
-		_animations_label = std::make_unique<sf::Text>(basicFont, L"Animations", basic_text_size);
-		_triangles_label = std::make_unique<sf::Text>(basicFont, L"Triangles", basic_text_size);
-		_meshes_label = std::make_unique<sf::Text>(basicFont, L"Meshes", basic_text_size);
-		_nodes_label = std::make_unique<sf::Text>(basicFont, L"Nodes", basic_text_size);
-		_skins_label = std::make_unique<sf::Text>(basicFont, L"Skins", basic_text_size);
-		_joints_label = std::make_unique<sf::Text>(basicFont, L"Joints", basic_text_size);
-		_textures_label = std::make_unique<sf::Text>(basicFont, L"Textures", basic_text_size);
-		_size_label = std::make_unique<sf::Text>(basicFont, L"Size", basic_text_size);
-
-		_animations_label->setFillColor(basic_text_color);
-		_triangles_label->setFillColor(basic_text_color);
-		_meshes_label->setFillColor(basic_text_color);
-		_nodes_label->setFillColor(basic_text_color);
-		_skins_label->setFillColor(basic_text_color);
-		_joints_label->setFillColor(basic_text_color);
-		_textures_label->setFillColor(basic_text_color);
-		_size_label->setFillColor(basic_text_color);
-
-		_animations_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m));
-
-		_triangles_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 1 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_meshes_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 2 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_nodes_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 3 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_skins_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 4 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_joints_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 5 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_textures_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 6 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_size_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 7 * (basicFont.getLineSpacing(basic_text_size) + m)));
-
-		_animations = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
-		_triangles = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
-		_meshes = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
-		_nodes = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
-		_skins = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
-		_joints = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
-		_textures = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
-		_size = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
-
-		_animations->setFillColor(basic_text_color);
-		_triangles->setFillColor(basic_text_color);
-		_meshes->setFillColor(basic_text_color);
-		_nodes->setFillColor(basic_text_color);
-		_skins->setFillColor(basic_text_color);
-		_joints->setFillColor(basic_text_color);
-		_textures->setFillColor(basic_text_color);
-		_size->setFillColor(basic_text_color);
-
-		int s = _statsRect.position.x + _statsRect.size.x;
-		_animations->setPosition(sf::Vector2f(s - _animations->getGlobalBounds().size.x - m, _statsRect.position.y + m));
-		_triangles->setPosition(sf::Vector2f(s - _triangles->getGlobalBounds().size.x - m, _statsRect.position.y + m + 1 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_meshes->setPosition(sf::Vector2f(s - _meshes->getGlobalBounds().size.x - m, _statsRect.position.y + m + 2 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_nodes->setPosition(sf::Vector2f(s - _nodes->getGlobalBounds().size.x - m, _statsRect.position.y + m + 3 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_skins->setPosition(sf::Vector2f(s - _skins->getGlobalBounds().size.x - m, _statsRect.position.y + m + 4 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_joints->setPosition(sf::Vector2f(s - _joints->getGlobalBounds().size.x - m, _statsRect.position.y + m + 5 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_textures->setPosition(sf::Vector2f(s - _textures->getGlobalBounds().size.x - m, _statsRect.position.y + m + 6 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_size->setPosition(sf::Vector2f(s - _size->getGlobalBounds().size.x - m, _statsRect.position.y + m + 7 * (basicFont.getLineSpacing(basic_text_size) + m)));
-
-		loadAnimations();	// TO-DO - must be a loadModel
-
-		setButtonsActivity();
-		setTooltips();
+		loadModel(); // TO-DO - must be the laodModel
 	}
 
 	PreviewPanel::~PreviewPanel() {
 
 	}
 
-	void PreviewPanel::loadAnimations() {
+	void PreviewPanel::loadModel() {
 
-		_animations->setString(L"--");
-		_triangles->setString(L"--");
-		_meshes->setString(L"--");
-		_nodes->setString(L"--");
-		_skins->setString(L"--");
-		_joints->setString(L"--");
-		_textures->setString(L"--");
-		_size->setString(L"--");
+		// TO-DO
+		//std::ostringstream ss;
+		//ss << std::fixed << std::setprecision(3) << 0.125f;
+		//std::string text = ss.str();
+		//std::wstring intervalText(text.begin(), text.end());
+		//_i->setText(intervalText);
 
-		int m = 8;
-		int s = _statsRect.position.x + _statsRect.size.x;
-		_animations->setPosition(sf::Vector2f(s - _animations->getGlobalBounds().size.x - m, _statsRect.position.y + m));
-		_triangles->setPosition(sf::Vector2f(s - _triangles->getGlobalBounds().size.x - m, _statsRect.position.y + m + 1 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_meshes->setPosition(sf::Vector2f(s - _meshes->getGlobalBounds().size.x - m, _statsRect.position.y + m + 2 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_nodes->setPosition(sf::Vector2f(s - _nodes->getGlobalBounds().size.x - m, _statsRect.position.y + m + 3 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_skins->setPosition(sf::Vector2f(s - _skins->getGlobalBounds().size.x - m, _statsRect.position.y + m + 4 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_joints->setPosition(sf::Vector2f(s - _joints->getGlobalBounds().size.x - m, _statsRect.position.y + m + 5 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_textures->setPosition(sf::Vector2f(s - _textures->getGlobalBounds().size.x - m, _statsRect.position.y + m + 6 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_size->setPosition(sf::Vector2f(s - _size->getGlobalBounds().size.x - m, _statsRect.position.y + m + 7 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_scene->_models.clear();
 
-		
+		_model = nullptr;
+		_modelRadius = 1.f;
+
+		if (Anubis::prefabs_manager->_prefabs.empty()) return;
+
+		std::shared_ptr<Anubis::Model3D> model = std::make_shared<Anubis::Model3D>(*Anubis::prefabs_manager->getPrefab(L"dziobak")->_model.lock());
+
+		sf::Vector3f boundsMin;
+		sf::Vector3f boundsMax;
+		bool hasBounds = false;
+
+		for (auto& mesh : model->_meshes) {
+			if (!mesh || !mesh->_geometry || !mesh->_geometry->_hasBounds)
+				continue;
+
+			sf::Vector3f mn = mesh->_geometry->_boundsMin;
+			sf::Vector3f mx = mesh->_geometry->_boundsMax;
+
+			if (!hasBounds) {
+				boundsMin = mn;
+				boundsMax = mx;
+				hasBounds = true;
+				continue;
+			}
+
+			boundsMin = sf::Vector3f(std::min(boundsMin.x, mn.x), std::min(boundsMin.y, mn.y), std::min(boundsMin.z, mn.z));
+			boundsMax = sf::Vector3f(std::max(boundsMax.x, mx.x), std::max(boundsMax.y, mx.y), std::max(boundsMax.z, mx.z));
+		}
+
+		if (!hasBounds)
+			return;
+
+		_model = model;
+		_scene->addModel(_model);
+
+		_model->setScene(_scene);
+		_model->_isSelectable = true;
+		_model->_scale = 1.f;
+		_model->_rotation = Anubis::Quaternion(1.f, 0.f, 0.f, 0.f);
+
+		if (!_model->_animations.empty())
+			_model->playAnimation(0, true);
+
+		// skinned model: move the bind pose bounds by the average joint matrix (global * inverseBind)
+		if (!_model->_skins.empty()) {
+			Anubis::Skin3D& skin = _model->_skins[0];
+			Anubis::Matrix4 average{};
+			int count = 0;
+
+			for (std::size_t i = 0; i < skin._joints.size() && i < skin._inverseBindMatrices.size(); i++) {
+				Anubis::Matrix4& global = _model->_nodes[skin._joints[i]]._globalMatrix;
+				Anubis::Matrix4& inverseBind = skin._inverseBindMatrices[i];
+
+				for (int column = 0; column < 4; column++)
+					for (int row = 0; row < 4; row++)
+						for (int k = 0; k < 4; k++)
+							average[column * 4 + row] += global[k * 4 + row] * inverseBind[column * 4 + k];
+
+				count++;
+			}
+
+			if (count > 0) {
+				for (int i = 0; i < 16; i++)
+					average[i] /= (float)count;
+
+				sf::Vector3f newMin(1e30f, 1e30f, 1e30f);
+				sf::Vector3f newMax(-1e30f, -1e30f, -1e30f);
+
+				for (int i = 0; i < 8; i++) {
+					float x = (i & 1) ? boundsMax.x : boundsMin.x;
+					float y = (i & 2) ? boundsMax.y : boundsMin.y;
+					float z = (i & 4) ? boundsMax.z : boundsMin.z;
+
+					sf::Vector3f p(
+						average[0] * x + average[4] * y + average[8] * z + average[12],
+						average[1] * x + average[5] * y + average[9] * z + average[13],
+						average[2] * x + average[6] * y + average[10] * z + average[14]
+					);
+
+					newMin = sf::Vector3f(std::min(newMin.x, p.x), std::min(newMin.y, p.y), std::min(newMin.z, p.z));
+					newMax = sf::Vector3f(std::max(newMax.x, p.x), std::max(newMax.y, p.y), std::max(newMax.z, p.z));
+				}
+
+				boundsMin = newMin;
+				boundsMax = newMax;
+			}
+		}
+
+		sf::Vector3f center = (boundsMin + boundsMax) * 0.5f;
+		sf::Vector3f size = boundsMax - boundsMin;
+
+		_modelRadius = 0.5f * std::sqrt(size.x * size.x + size.y * size.y + size.z * size.z);
+		if (_modelRadius <= 0.f) _modelRadius = 1.f;
+
+		_model->_position = -center;
+
+		float distance = _modelRadius * 0.6f / std::sin(_scene->_fovY * 0.5f * 3.14159265f / 180.f);
+
+		float cameraXAngle = 15.0f;
+		_scene->_camera->_rotation = Anubis::Quaternion(
+			std::cos(cameraXAngle * 3.14159265f / 180.f * 0.5f),
+			std::sin(cameraXAngle * 3.14159265f / 180.f * 0.5f),
+			0.f,
+			0.f
+		);
+
+		std::array<float, 16> m = _scene->_camera->_rotation.matrix();
+
+		_scene->_camera->_position = sf::Vector3f(m[2], m[6], m[10]) * distance;
+
+		_scene->_cameraRadius = distance;
+		_scene->_cameraZoom = 1.f;
+		_scene->_panPlaneY = 0.f;
+
 	}
 
-	void PreviewPanel::setButtonsActivity() {
+	void PreviewPanel::drawModel() {
 
-		_first->setActive(true);
-		_prev->setActive(true);
-		_play->setActive(true);
-		_pause->setActive(true);
-		_next->setActive(true);
-		_last->setActive(true);
-		_anim_prev->setActive(true);
-		_anim_next->setActive(true);
+		if (!_model)
+			return;
+
+		if (_scenePixelRect.size.x <= 0 || _scenePixelRect.size.y <= 0)
+			return;
+
+		int glY = (int)Anubis::render_window->getSize().y - (_scenePixelRect.position.y + _scenePixelRect.size.y);
+
+		glEnable(GL_SCISSOR_TEST);
+		glScissor(_scenePixelRect.position.x, glY, _scenePixelRect.size.x, _scenePixelRect.size.y);
+		glViewport(_scenePixelRect.position.x, glY, _scenePixelRect.size.x, _scenePixelRect.size.y);
+
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glDepthMask(GL_TRUE);
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		float aspect = (float)_scenePixelRect.size.x / (float)_scenePixelRect.size.y;
+		float halfHeight = _scene->_nearPlane * std::tan(_scene->_fovY * 0.5f * 3.14159265f / 180.f);
+		float halfWidth = halfHeight * aspect;
+
+		glFrustum(-halfWidth, halfWidth, -halfHeight, halfHeight, _scene->_nearPlane, _scene->_farPlane);
+
+		_scene->setCamera();
+		_scene->draw();
+
+		glDisable(GL_SCISSOR_TEST);
+		Anubis::render_window->resetGLStates();
 	}
 
-	void PreviewPanel::setTooltips() {	
+	void PreviewPanel::setTextInputsRange() {
 
-		_first->setTooltip(256, L"First Frame", L"");
-		_prev->setTooltip(256, L"Previous Frame", L"");
-		_play->setTooltip(256, L"Play Animation", L"");
-		_pause->setTooltip(256, L"Pause Animation", L"");
-		_next->setTooltip(256, L"Next Frame", L"");
-		_last->setTooltip(256, L"Last Frame", L"");
-		_anim_prev->setTooltip(256, L"Previous Animation", L"");
-		_anim_next->setTooltip(256, L"Next Animation", L"");
 	}
 
 	void PreviewPanel::cursorHover() {
 		Components::Panel::cursorHover();
 
-		_first->cursorHover();
-		_prev->cursorHover();
-		// TO-DO
-		//(editor->_animator == nullptr || editor->_animator->_animations.expired() || !editor->_tempAnimations || !editor->_tempAnimations->_texture || editor->_animator->_isPlaying) ? _pause->cursorHover() : _play->cursorHover();
-		_next->cursorHover();
-		_last->cursorHover();
-
-		_anim_prev->cursorHover();
-		_anim_next->cursorHover();
+		//_loadBtn->cursorHover();
+		_scene->cursorHover();
 
 	}
 
 	void PreviewPanel::handleEvent(const sf::Event& event) {
 		Components::Panel::handleEvent(event);
 
-		_first->handleEvent(event);
-		_prev->handleEvent(event);
-		// TO-DO
-		//(editor->_animator == nullptr || editor->_animator->_animations.expired() || !editor->_tempAnimations || !editor->_tempAnimations->_texture || editor->_animator->_isPlaying) ? _pause->handleEvent(event) : _play->handleEvent(event);
-		_next->handleEvent(event);
-		_last->handleEvent(event);
+		//_loadBtn->handleEvent(event);
 
-		_anim_prev->handleEvent(event);
-		_anim_next->handleEvent(event);
-	}
+		std::array<float, 16> m = _scene->_camera->_rotation.matrix();
+		sf::Vector3f right(m[0], m[4], m[8]);
+		sf::Vector3f up(m[1], m[5], m[9]);
+		sf::Vector3f back(m[2], m[6], m[10]);
 
-	void PreviewPanel::update() {
+		bool isOnPreview = _scene->getViewport().contains(Anubis::cursor->_position);
 
-		if (!editor)
+		if (const auto* scroll = event.getIf<sf::Event::MouseWheelScrolled>(); scroll && isOnPreview) {
+			float oldDistance = _scene->_cameraRadius / _scene->_cameraZoom;
+
+			if (scroll->delta > 0 && _scene->_cameraZoom < 4.0f) _scene->_cameraZoom += 0.25f;
+			if (scroll->delta < 0 && _scene->_cameraZoom > 0.25f) _scene->_cameraZoom -= 0.25f;
+
+			float distance = _scene->_cameraRadius / _scene->_cameraZoom;
+
+			_scene->_camera->_position += back * (distance - oldDistance);
+			_scene->_cameraIsMoving = true;
 			return;
+		}
 
+		if (const auto* pressed = event.getIf<sf::Event::MouseButtonPressed>(); pressed && pressed->button == sf::Mouse::Button::Middle && isOnPreview) {
+			_scene->_lastCameraMouse = pressed->position;
+			_scene->_isPressedMiddle = true;
+			return;
+		}
+
+		if (const auto* released = event.getIf<sf::Event::MouseButtonReleased>(); released && released->button == sf::Mouse::Button::Middle) {
+			_scene->_isPressedMiddle = false;
+			return;
+		}
+
+		if (const auto* moved = event.getIf<sf::Event::MouseMoved>(); moved && _scene->_isPressedMiddle) {
+			sf::Vector2i delta = moved->position - _scene->_lastCameraMouse;
+
+			// world units per pixel at the distance of the model, so the model follows the cursor
+			float distance = _scene->_cameraRadius / _scene->_cameraZoom;
+			float unitsPerPixel = 2.f * distance * std::tan(_scene->_fovY * 0.5f * 3.14159265f / 180.f) / (float)_scene->getViewport().size.y;
+
+			_scene->_camera->_position -= right * ((float)delta.x * unitsPerPixel);
+			_scene->_camera->_position += up * ((float)delta.y * unitsPerPixel);
+
+			_scene->_lastCameraMouse = moved->position;
+			_scene->_cameraIsMoving = true;
+			return;
+		}
+	}
+	void PreviewPanel::update() {
 		Components::Panel::update();
 
-		_first->update();
-		_prev->update();
-		_play->update();
-		_pause->update();
-		_next->update();
-		_last->update();
+		//_loadBtn->update();
 
-		_anim_prev->update();
-		_anim_next->update();
-
-		loadAnimations(); // TO-DO - must be loadModel()
-
-		/*
-		* now working in main editor update loop
-		if (editor->_animator)
-			editor->_animator->update();
-		*/
+		_scene->update();
+		_model->update();
 
 	}
 
 	void PreviewPanel::draw() {
 		Components::Panel::draw();
-
+		
+		// draw title
 		Anubis::render_window->draw(*_title);
 
-		// draw checkerboard
-		sf::RectangleShape rect(sf::Vector2f(sf::Vector2f(256, 256)));
-		rect.setFillColor(sf::Color::Red);
-		rect.setPosition(sf::Vector2f(getPosition().x + (getSize().x - 256) / 2, getPosition().y + _title->getFont().getLineSpacing(20) + 24 + 16));
+		// draw load button
+		//_loadBtn->draw();
 
+		// draw checkerboard
+		sf::RectangleShape rect(sf::Vector2f(_sceneRect.size));
+		rect.setFillColor(sf::Color::White);
+		rect.setPosition(sf::Vector2f(_sceneRect.position));
 		sf::RenderStates states;
 		states.shader = &*Anubis::shaders_manager->checkerboard_shader;
 		Anubis::shaders_manager->checkerboard_shader->setUniform("rectPos", rect.getPosition());
 		Anubis::render_window->draw(rect, states);
 
-		
-		// draw buttons
-		_first->draw();
-		_prev->draw();
-		// TO-DO
-		//(animator == nullptr || animator->_animations.expired() || !editor->_tempAnimations || !editor->_tempAnimations->_texture || animator->_isPlaying) ? _pause->draw() : _play->draw();
-		_next->draw();
-		_last->draw();
-
-		_anim_prev->draw();
-		_anim_next->draw();
-
-		// draw stats rect
-		int m = 2;
-		sf::RectangleShape statsRectShape(sf::Vector2f(_statsRect.size + sf::Vector2i(2 * m, 2 * m)));
-		statsRectShape.setPosition(sf::Vector2f(_statsRect.position - sf::Vector2i(m, m)));
-		statsRectShape.setFillColor(sf::Color(24, 24, 24, 255));
-		statsRectShape.setOutlineThickness(m);
-		statsRectShape.setOutlineColor(sf::Color(0, 0, 0, 255));
-		Anubis::render_window->draw(statsRectShape);
-
-		// texts labels
-		Anubis::render_window->draw(*_animations_label);
-		Anubis::render_window->draw(*_triangles_label);
-		Anubis::render_window->draw(*_meshes_label);
-		Anubis::render_window->draw(*_nodes_label);
-		Anubis::render_window->draw(*_skins_label);
-		Anubis::render_window->draw(*_joints_label);
-		Anubis::render_window->draw(*_textures_label);
-		Anubis::render_window->draw(*_size_label);
-
-		// text inputs
-		Anubis::render_window->draw(*_animations);
-		Anubis::render_window->draw(*_triangles);
-		Anubis::render_window->draw(*_meshes);
-		Anubis::render_window->draw(*_nodes);
-		Anubis::render_window->draw(*_skins);
-		Anubis::render_window->draw(*_joints);
-		Anubis::render_window->draw(*_textures);
-		Anubis::render_window->draw(*_size);
-
-		
+		// draw model
+		drawModel();
 	}
 }

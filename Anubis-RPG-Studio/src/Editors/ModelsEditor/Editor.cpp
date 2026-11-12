@@ -3,6 +3,7 @@
 #include "Theme.hpp"
 #include "RenderWindow.hpp"
 #include "WindowsManager.hpp"
+#include "Cursor.hpp"
 
 namespace ModelsEditor {
 	Editor::Editor() {
@@ -24,13 +25,15 @@ namespace ModelsEditor {
 
 		_list_panel = std::make_shared<ModelsListPanel>(_margin);
 		_name_panel = std::make_shared<NamePanel>(_margin);
-		_sprite_sheet_panel = std::make_shared<SpriteSheetPanel>(_margin);
-		_actions_panel = std::make_shared<ActionsPanel>(_margin);
 		_preview_panel = std::make_shared<PreviewPanel>(_margin);
+		_actions_panel = std::make_shared<ActionsPanel>(_margin);
+		_player_panel = std::make_shared<PlayerPanel>(_margin);
 	}
 
 	void Editor::cursorHover() {
 		
+		Main::Editor::cursorHover();
+
 		if (Main::windows_manager->get_back())
 			return;
 
@@ -42,8 +45,8 @@ namespace ModelsEditor {
 		_name_panel->cursorHover();
 		_list_panel->cursorHover();
 		_actions_panel->cursorHover();
-		_sprite_sheet_panel->cursorHover();
 		_preview_panel->cursorHover();
+		_player_panel->cursorHover();
 		_main_menu->cursorHover();
 
 	}
@@ -60,8 +63,8 @@ namespace ModelsEditor {
 		_name_panel->handleEvent(event);
 		_list_panel->handleEvent(event);
 		_actions_panel->handleEvent(event);
-		_sprite_sheet_panel->handleEvent(event);
 		_preview_panel->handleEvent(event);
+		_player_panel->handleEvent(event);
 
 	}
 
@@ -71,8 +74,8 @@ namespace ModelsEditor {
 		_name_panel->update();
 		_list_panel->update();
 		_actions_panel->update();
-		_sprite_sheet_panel->update();
 		_preview_panel->update();
+		_player_panel->update();
 
 	}
 
@@ -84,8 +87,8 @@ namespace ModelsEditor {
 		_name_panel->draw();
 		_list_panel->draw();
 		_actions_panel->draw();
-		_sprite_sheet_panel->draw();
-		_preview_panel->draw();	
+		_preview_panel->draw();
+		_player_panel->draw();
 
 		_main_menu->draw();
 	}

@@ -35,7 +35,6 @@ namespace PrefabsEditor {
 
 		void create();
 
-
 		void cursorHover();
 		void handleEvent(const sf::Event& event);
 		void update();

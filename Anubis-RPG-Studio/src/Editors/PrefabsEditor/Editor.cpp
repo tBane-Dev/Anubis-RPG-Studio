@@ -36,6 +36,8 @@ namespace PrefabsEditor {
 
 	void Editor::cursorHover() {
 
+		Main::Editor::cursorHover();
+
 		if(Main::windows_manager->get_back())
 			return;
 
@@ -43,7 +45,6 @@ namespace PrefabsEditor {
 			_main_menu->cursorHover();
 			return;
 		}
-
 		
 		_animation_panel->cursorHover();
 		_collider_panel->cursorHover();

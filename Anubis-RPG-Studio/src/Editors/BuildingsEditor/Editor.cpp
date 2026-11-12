@@ -31,6 +31,8 @@ namespace BuildingsEditor {
 
 	void Editor::cursorHover() {
 
+		Main::Editor::cursorHover();
+
 		if(Main::windows_manager->get_back())
 			return;
 		

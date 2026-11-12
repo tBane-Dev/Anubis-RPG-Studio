@@ -29,6 +29,7 @@ namespace Anubis {
 		float _scale;
 		float _windStrength;
 		bool _isSelectable;
+		bool _isAnimating;
 
 		Quaternion _rotationDelta;
 		float _rotationSpeed;

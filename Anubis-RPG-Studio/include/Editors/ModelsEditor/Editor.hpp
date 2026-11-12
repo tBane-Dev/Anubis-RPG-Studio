@@ -5,8 +5,8 @@
 #include "Editors/ModelsEditor/NamePanel.hpp"
 #include "Editors/ModelsEditor/ModelsListPanel.hpp"
 #include "Editors/ModelsEditor/ActionsPanel.hpp"
-#include "Editors/ModelsEditor/SpriteSheetPanel.hpp"
 #include "Editors/ModelsEditor/PreviewPanel.hpp"
+#include "Editors/ModelsEditor/PlayerPanel.hpp"
 
 namespace ModelsEditor {
 	class Editor : public Main::Editor {
@@ -20,8 +20,8 @@ namespace ModelsEditor {
 		std::shared_ptr<NamePanel> _name_panel;
 		std::shared_ptr<ModelsListPanel> _list_panel;
 		std::shared_ptr<ActionsPanel> _actions_panel;
-		std::shared_ptr<SpriteSheetPanel> _sprite_sheet_panel;
 		std::shared_ptr<PreviewPanel> _preview_panel;
+		std::shared_ptr<PlayerPanel> _player_panel;
 
 		Editor();
 		~Editor();

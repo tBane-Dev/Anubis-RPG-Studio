@@ -65,6 +65,8 @@ namespace Anubis {
 		_panPlaneY = 0.f;
 		_cameraIsMoving = false;
 
+		_viewport = sf::IntRect(sf::Vector2i(0, 0), sf::Vector2i(0, 0));
+
 		_pickingFBO = 0;
 		_pickingColor = 0;
 		_pickingDepth = 0;
@@ -154,17 +156,29 @@ namespace Anubis {
 		return true;
 	}
 
+	sf::IntRect Scene::getViewport() {
+
+		if (_viewport.size.x > 0 && _viewport.size.y > 0)
+			return _viewport;
+
+		return sf::IntRect(sf::Vector2i(0, 0), sf::Vector2i(render_window->getSize()));
+	}
+
 	void Scene::setViewport() {
-		glViewport(0, 0, Anubis::render_window->getSize().x, Anubis::render_window->getSize().y);
+		sf::IntRect viewport = getViewport();
+		int glY = (int)render_window->getSize().y - (viewport.position.y + viewport.size.y);
+		glViewport(viewport.position.x, glY, viewport.size.x, viewport.size.y);
 	}
 
 	void Scene::setProjection() {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 
+		sf::IntRect viewport = getViewport();
+
 		gluPerspective(
 			_fovY,
-			(float)render_window->getSize().x / (float)render_window->getSize().y,
+			(float)viewport.size.x / (float)viewport.size.y,
 			_nearPlane,
 			_farPlane
 		);
@@ -454,17 +468,22 @@ namespace Anubis {
 		if (!createShadowBuffer())
 			return;
 
-		sf::Vector2u size = render_window->getSize();
+		sf::IntRect viewport = getViewport();
 
-		if (size.x == 0 || size.y == 0)
+		if (viewport.size.x == 0 || viewport.size.y == 0)
 			return;
 
 		setProjection();
 		setCamera();
 
-		// 1. Ground area visible on the screen: rays through the screen corners and the center hit the plane y = 0.
+		// 1. Ground area visible on the screen: rays through the viewport corners and the center hit the plane y = 0.
+		int left = viewport.position.x;
+		int top = viewport.position.y;
+		int right = viewport.position.x + viewport.size.x - 1;
+		int bottom = viewport.position.y + viewport.size.y - 1;
+
 		sf::Vector2i pixels[] = {
-			{ 0, 0 }, { (int)size.x - 1, 0 }, { 0, (int)size.y - 1 }, { (int)size.x - 1, (int)size.y - 1 }, { (int)size.x / 2, (int)size.y / 2 }
+			{ left, top }, { right, top }, { left, bottom }, { right, bottom }, { left + viewport.size.x / 2, top + viewport.size.y / 2 }
 		};
 
 		float minX = 1e30f, maxX = -1e30f, minZ = 1e30f, maxZ = -1e30f;
@@ -669,17 +688,17 @@ namespace Anubis {
 	}
 
 	bool Scene::screenToRay(sf::Vector2f pixel, sf::Vector3f& origin, sf::Vector3f& dir) {
-		sf::Vector2u size = render_window->getSize();
+		sf::IntRect viewport = getViewport();
 
-		if (size.x == 0 || size.y == 0 || !_camera)
+		if (viewport.size.x == 0 || viewport.size.y == 0 || !_camera)
 			return false;
 
 		float tanHalfFov = std::tan(_fovY * 0.5f * 3.14159265f / 180.f);
-		float aspect = (float)size.x / (float)size.y;
+		float aspect = (float)viewport.size.x / (float)viewport.size.y;
 
 		// Normalized device coordinates.
-		float ndcX = 2.f * pixel.x / (float)size.x - 1.f;
-		float ndcY = 1.f - 2.f * pixel.y / (float)size.y;
+		float ndcX = 2.f * (pixel.x - (float)viewport.position.x) / (float)viewport.size.x - 1.f;
+		float ndcY = 1.f - 2.f * (pixel.y - (float)viewport.position.y) / (float)viewport.size.y;
 
 		// Ray direction in camera space (camera looks along -Z, eye z = -1).
 		sf::Vector3f eye(ndcX * tanHalfFov * aspect, ndcY * tanHalfFov, -1.f);
@@ -698,9 +717,9 @@ namespace Anubis {
 	}
 
 	bool Scene::worldToScreen(sf::Vector3f point, sf::Vector2f& pixel) {
-		sf::Vector2u size = render_window->getSize();
+		sf::IntRect viewport = getViewport();
 
-		if (size.x == 0 || size.y == 0 || !_camera)
+		if (viewport.size.x == 0 || viewport.size.y == 0 || !_camera)
 			return false;
 
 		// view = R * T(-position), column-major: R(i, j) = m[j * 4 + i]
@@ -716,13 +735,13 @@ namespace Anubis {
 			return false;
 
 		float tanHalfFov = std::tan(_fovY * 0.5f * 3.14159265f / 180.f);
-		float aspect = (float)size.x / (float)size.y;
+		float aspect = (float)viewport.size.x / (float)viewport.size.y;
 
 		float ndcX = eyeX / (-eyeZ * tanHalfFov * aspect);
 		float ndcY = eyeY / (-eyeZ * tanHalfFov);
 
-		pixel.x = (ndcX + 1.f) * 0.5f * (float)size.x;
-		pixel.y = (1.f - ndcY) * 0.5f * (float)size.y;
+		pixel.x = (float)viewport.position.x + (ndcX + 1.f) * 0.5f * (float)viewport.size.x;
+		pixel.y = (float)viewport.position.y + (1.f - ndcY) * 0.5f * (float)viewport.size.y;
 		return true;
 	}
 
@@ -1038,6 +1057,9 @@ namespace Anubis {
 
 		_hovered.clear();
 
+		if (!getViewport().contains(cursor->_position))
+			return;
+
 		if (cursor->_rect.size.x == 0 && cursor->_rect.size.y == 0) {
 			int id = getHoveredModelId();
 
@@ -1117,8 +1139,8 @@ namespace Anubis {
 			pixelDelta.x -= step;
 
 		if (pixelDelta.x != 0.f || pixelDelta.y != 0.f) {
-			sf::Vector2u size = render_window->getSize();
-			sf::Vector2f center((float)size.x * 0.5f, (float)size.y * 0.5f);
+			sf::IntRect viewport = getViewport();
+			sf::Vector2f center((float)viewport.position.x + (float)viewport.size.x * 0.5f, (float)viewport.position.y + (float)viewport.size.y * 0.5f);
 			panByPixels(center, pixelDelta);
 		}
 

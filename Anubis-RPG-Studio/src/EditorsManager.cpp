@@ -1,5 +1,6 @@
 #include "EditorsManager.hpp"
 #include <iostream>
+#include "Cursor.hpp"
 
 namespace Main {
 
@@ -16,7 +17,7 @@ namespace Main {
 	}
 
 	void Editor::cursorHover() {
-
+		Anubis::cursor->update();
 	}
 
 	void Editor::handleEvent(const sf::Event& event) {
