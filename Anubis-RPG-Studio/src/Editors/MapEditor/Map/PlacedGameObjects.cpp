@@ -15,9 +15,6 @@ namespace MapEditor {
 
 	PlacedGameObjects::PlacedGameObjects() {
 		_visiblePlacedGameObjects.clear();
-		_hoveredPlacedGameObject = std::weak_ptr<PlacedGameObject>();
-
-
 	}
 
 	PlacedGameObjects::~PlacedGameObjects() {
@@ -366,64 +363,10 @@ namespace MapEditor {
 
 	}
 
-	void PlacedGameObjects::cursorHover() {
-		for (auto& object : _visiblePlacedGameObjects) {
-			object->cursorHover();
-		}
-
-	}
-
 	void PlacedGameObjects::update() {
 
 		for (auto& object : _visiblePlacedGameObjects) {
 			object->update();
-		}
-	}
-
-	void PlacedGameObjects::draw() {
-
-		MapEditor::editor->_scene->setViewport();
-		MapEditor::editor->_scene->setProjection();
-		MapEditor::editor->_scene->setCamera();
-
-		sf::Shader::bind(nullptr);
-
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LESS);
-		glDepthMask(GL_TRUE);
-
-		glDisable(GL_LIGHTING);
-		glDisable(GL_FOG);
-		glDisable(GL_CULL_FACE);
-
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.01f);
-
-		Anubis::GL::activeTexture(0x84C0); // GL_TEXTURE0
-
-		glEnable(GL_TEXTURE_2D);
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-		GLfloat view[16];
-		glGetFloatv(GL_MODELVIEW_MATRIX, view);
-
-		_billboard = {
-			view[0], view[4], view[8],  0.f,
-			view[1], view[5], view[9],  0.f,
-			view[2], view[6], view[10], 0.f,
-			0.f,     0.f,     0.f,      1.f
-		};
-
-		_boundTexture = nullptr;
-
-		for (auto& object : _visiblePlacedGameObjects) {
-			if (object) {
-				object->draw();
-			}
 		}
 	}
 }

@@ -29,6 +29,4 @@ public:
 	virtual void setPosition(sf::Vector2f position);
 
 	virtual void update();
-
-	virtual void draw();
 };

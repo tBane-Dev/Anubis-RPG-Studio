@@ -6,7 +6,6 @@ namespace BuildingsEditor {
     class PlacedGameObjects {
     public:
         std::vector<std::shared_ptr<PlacedGameObject>> _visiblePlacedGameObjects;
-        std::weak_ptr<PlacedGameObject> _hoveredPlacedGameObject;
 
         PlacedGameObjects();
         ~PlacedGameObjects();
@@ -14,9 +13,7 @@ namespace BuildingsEditor {
         void addGameObject(std::weak_ptr<PlacedGameObject> placedGameObjectOn);
         void removeGameObject(std::weak_ptr<PlacedGameObject> placedGameObject);
 
-        virtual void cursorHover();
         virtual void update();
-        virtual void draw();
     };
 
 }

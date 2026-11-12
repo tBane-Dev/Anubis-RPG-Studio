@@ -109,9 +109,6 @@ namespace MapEditor {
 			return;
 		}
 
-		_game_objects->_hoveredPlacedGameObject = std::weak_ptr<PlacedGameObject>();
-		_game_objects->cursorHover();
-
 		_map->cursorHover();
 		_palette->cursorHover();
 		_main_menu->cursorHover();
@@ -212,8 +209,6 @@ namespace MapEditor {
 		_scene->setCamera();
 
 		_scene->draw();
-
-		_game_objects->draw();
 
 		Anubis::render_window->resetGLStates();
 

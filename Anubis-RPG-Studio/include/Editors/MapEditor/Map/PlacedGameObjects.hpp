@@ -12,7 +12,6 @@ namespace MapEditor {
         const sf::Texture* _boundTexture = nullptr;
 
         std::vector<std::shared_ptr<PlacedGameObject>> _visiblePlacedGameObjects;
-        std::weak_ptr<PlacedGameObject> _hoveredPlacedGameObject;
 
         PlacedGameObjects();
         ~PlacedGameObjects();
@@ -33,9 +32,7 @@ namespace MapEditor {
         void saveFromProject(std::ofstream& file);
         void loadFromProject(std::ifstream& file, std::shared_ptr<Anubis::Loader>& loader);
 
-        virtual void cursorHover();
         virtual void update();
-        virtual void draw();
     };
 
 

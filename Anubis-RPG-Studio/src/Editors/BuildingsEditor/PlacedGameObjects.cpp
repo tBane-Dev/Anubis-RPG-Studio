@@ -8,7 +8,6 @@ namespace BuildingsEditor {
 
 	PlacedGameObjects::PlacedGameObjects() {
 		_visiblePlacedGameObjects.clear();
-		_hoveredPlacedGameObject = std::weak_ptr<PlacedGameObject>();
 	}
 
 	PlacedGameObjects::~PlacedGameObjects() {
@@ -32,23 +31,11 @@ namespace BuildingsEditor {
 			});
 	}
 
-	void PlacedGameObjects::cursorHover() {
-
-		for (auto& object : _visiblePlacedGameObjects) {
-			object->cursorHover();
-		}
-	}
 
 	void PlacedGameObjects::update() {
 
 		for (auto& object : _visiblePlacedGameObjects) {
 			object->update();
-		}
-	}
-
-	void PlacedGameObjects::draw() {
-		for (auto& object : _visiblePlacedGameObjects) {
-			object->draw();
 		}
 	}
 }

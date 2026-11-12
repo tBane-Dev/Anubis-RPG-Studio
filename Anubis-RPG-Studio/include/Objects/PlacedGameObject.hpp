@@ -17,12 +17,8 @@ public:
 	PlacedGameObject(std::weak_ptr<GameObject> prefab, bool play = true);
 	~PlacedGameObject();
 
-	void drawFrame(sf::Color color = sf::Color(127+64, 30, 45));
-
 	virtual sf::Vector2f getPosition();
 	virtual void setPosition(sf::Vector2f position);
 
-	virtual void cursorHover();
 	virtual void update();
-	virtual void draw();
 };
