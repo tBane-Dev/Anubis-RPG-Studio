@@ -51,8 +51,8 @@ void TerrainSlot::draw() {
 		return;
 
 	sf::RenderStates states;
-	states.shader = &*terrain2D_shader;
-	terrain2D_shader->setUniform("startPos", sf::Vector2f(_rect.position));
+	states.shader = &*Anubis::shaders_manager->terrain2D_shader;
+	Anubis::shaders_manager->terrain2D_shader->setUniform("startPos", sf::Vector2f(_rect.position));
 	std::shared_ptr<Texture> texture = textures_manager->getTexture(L"assets\\tex\\tileset.png");
 
 	sf::Vector2f size(132.f, 132.f);

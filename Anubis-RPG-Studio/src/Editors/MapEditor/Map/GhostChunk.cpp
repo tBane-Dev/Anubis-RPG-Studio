@@ -128,13 +128,13 @@ namespace MapEditor {
 		float fov = 60.0f;
 		float distance = (size.y * 0.5f) / std::tan(fov * 0.5f * 3.14159265f / 180.0f);
 		sf::Vector2f position = sf::Vector2f(_rect.position);
-		ghost_chunk_shader->setUniform("cameraCenter", view.getCenter());
-		ghost_chunk_shader->setUniform("cameraDistance", distance);
-		ghost_chunk_shader->setUniform("cameraAngle", MapEditor::editor->_camera->_angle);
-		ghost_chunk_shader->setUniform("aspect", aspect);
-		ghost_chunk_shader->setUniform("position", position);
+		Anubis::shaders_manager->ghost_chunk_shader->setUniform("cameraCenter", view.getCenter());
+		Anubis::shaders_manager->ghost_chunk_shader->setUniform("cameraDistance", distance);
+		Anubis::shaders_manager->ghost_chunk_shader->setUniform("cameraAngle", MapEditor::editor->_camera->_angle);
+		Anubis::shaders_manager->ghost_chunk_shader->setUniform("aspect", aspect);
+		Anubis::shaders_manager->ghost_chunk_shader->setUniform("position", position);
 		states.texture = &*texture->_texture;
-		states.shader = &*ghost_chunk_shader;
+		states.shader = &*Anubis::shaders_manager->ghost_chunk_shader;
 
 		sf::Sprite sprite(*texture->_texture);
 		Anubis::render_window->draw(sprite, states);
@@ -378,9 +378,9 @@ namespace MapEditor {
 
 		int borderWidth = 4;
 		sf::Vector2f position = sf::Vector2f(_rect.position.x + borderWidth, _rect.position.y + borderWidth);
-		ghost_chunk_shader->setUniform("position", position);
+		Anubis::shaders_manager->ghost_chunk_shader->setUniform("position", position);
 		sf::RenderStates states;
-		states.shader = &*ghost_chunk_shader;
+		states.shader = &*Anubis::shaders_manager->ghost_chunk_shader;
 
 		sf::RectangleShape rect(sf::Vector2f(Chunk::tilesCols * Tile::tileSize - 2 * borderWidth, Chunk::tilesRows * Tile::tileSize - 2 * borderWidth));
 		rect.setPosition(sf::Vector2f(0,0));

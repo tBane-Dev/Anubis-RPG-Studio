@@ -132,8 +132,8 @@ namespace PrefabsEditor {
 		rect.setPosition(sf::Vector2f(spriteRect.position));
 
 		sf::RenderStates states;
-		states.shader = &*checkerboard_shader;
-		checkerboard_shader->setUniform("rectPos", sf::Vector2f(spriteRect.position));
+		states.shader = &*Anubis::shaders_manager->checkerboard_shader;
+		Anubis::shaders_manager->checkerboard_shader->setUniform("rectPos", sf::Vector2f(spriteRect.position));
 		Anubis::render_window->draw(rect, states);
 
 		// texts labels

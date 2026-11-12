@@ -242,8 +242,8 @@ namespace AnimationsEditor {
 		rect.setFillColor(sf::Color::White);
 		rect.setPosition(sf::Vector2f(getPosition().x + 32, getPosition().y + _title->getFont().getLineSpacing(20) + 24 + 16));
 		sf::RenderStates states;
-		states.shader = &*checkerboard_shader;
-		checkerboard_shader->setUniform("rectPos", rect.getPosition());
+		states.shader = &*Anubis::shaders_manager->checkerboard_shader;
+		Anubis::shaders_manager->checkerboard_shader->setUniform("rectPos", rect.getPosition());
 		Anubis::render_window->draw(rect, states);
 
 		// draw sprite sheet
@@ -266,24 +266,24 @@ namespace AnimationsEditor {
 		if (size_rect.x > 512 - (_x->getNumber() >= 0 ? (float)_x->getNumber() * scale : 0)) size_rect.x = 512 - (_x->getNumber() >= 0 ? (float)_x->getNumber() * scale : 0);
 		if (size_rect.y > 512 - (_y->getNumber() >= 0 ? (float)_y->getNumber() * scale : 0)) size_rect.y = 512 - (_y->getNumber() >= 0 ? (float)_y->getNumber() * scale : 0);
 		//
-
-		grid2_shader->setUniform("rectPosition", position_rect);
-		grid2_shader->setUniform("rectSize", size_rect);
-		grid2_shader->setUniform("gridSize", sf::Vector2f(16.0f * scale, 16.0f * scale));
-		grid2_shader->setUniform("chunkSize", 
+		std::shared_ptr<sf::Shader> shader = Anubis::shaders_manager->grid2_shader;
+		shader->setUniform("rectPosition", position_rect);
+		shader->setUniform("rectSize", size_rect);
+		shader->setUniform("gridSize", sf::Vector2f(16.0f * scale, 16.0f * scale));
+		shader->setUniform("chunkSize", 
 			sf::Vector2f(
 				// TO-DO
 				(editor->_sprite_sheet_panel->_w->getNumber() > 0) ? (float)editor->_sprite_sheet_panel->_w->getNumber() * scale : 128,
 				(editor->_sprite_sheet_panel->_h->getNumber() > 0) ? (float)editor->_sprite_sheet_panel->_h->getNumber() * scale : 128
 			)
 		);
-		grid2_shader->setUniform("gridWidth", gridWidth);
-		grid2_shader->setUniform("mainGridMultiplier", mainGridMultiplier);
-		grid2_shader->setUniform("gridMainColor", sf::Glsl::Vec4(sf::Color(127, 7, 7, 255)));
-		grid2_shader->setUniform("gridSecondColor", sf::Glsl::Vec4(sf::Color(47, 47, 47, 255)));
+		shader->setUniform("gridWidth", gridWidth);
+		shader->setUniform("mainGridMultiplier", mainGridMultiplier);
+		shader->setUniform("gridMainColor", sf::Glsl::Vec4(sf::Color(127, 7, 7, 255)));
+		shader->setUniform("gridSecondColor", sf::Glsl::Vec4(sf::Color(47, 47, 47, 255)));
 
 		sf::RenderStates rs;
-		rs.shader = &*grid2_shader;
+		rs.shader = &*shader;
 
 		sf::RectangleShape gridRect(size_rect);
 		gridRect.setPosition(position_rect);

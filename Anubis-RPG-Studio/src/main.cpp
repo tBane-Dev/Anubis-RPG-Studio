@@ -212,10 +212,9 @@ int main() {
     loadTheme(); // TO-DO - must be a shared_ptr
     
     textures_manager = std::make_shared<TexturesManager>();
+    Anubis::shaders_manager = std::make_shared<Anubis::ShadersManager>();
     Anubis::models_manager = std::make_shared<Anubis::ModelsManager>();
     Anubis::prefabs_manager = std::make_shared<Anubis::PrefabsManager>();
-
-    loadShaders(); // TO-DO - must be a shared_ptr
 
     Cursors::cursor = std::make_shared<Cursors::Cursor>();
     

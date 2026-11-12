@@ -255,10 +255,10 @@ namespace MapEditor {
 		sf::Vector2f position(_coords.x * tilesCols * Tile::tileSize + padding, _coords.y * tilesRows * Tile::tileSize + padding);
 
 		_coordsText->setPosition(sf::Vector2f(0.f, 0.f));
-		ghost_chunk_shader->setUniform("position", position);
+		Anubis::shaders_manager->ghost_chunk_shader->setUniform("position", position);
 
 		sf::RenderStates states;
-		states.shader = &*ghost_chunk_shader;
+		states.shader = &*Anubis::shaders_manager->ghost_chunk_shader;
 
 		Anubis::render_window->draw(*_coordsText, states);
 	}

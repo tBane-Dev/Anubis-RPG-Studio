@@ -508,8 +508,8 @@ void Slots::draw() {
 	Anubis::render_window->setView(view);
 
 	if (MapEditor::editor->_palette->_slots->_type == ObjectType::Terrain ) {
-		terrain2D_shader->setUniform("resolution", sf::Vector2f(Anubis::render_window->getSize()));
-		terrain2D_shader->setUniform("time", Anubis::currentTime.asSeconds());
+		Anubis::shaders_manager->terrain2D_shader->setUniform("resolution", sf::Vector2f(Anubis::render_window->getSize()));
+		Anubis::shaders_manager->terrain2D_shader->setUniform("time", Anubis::currentTime.asSeconds());
 	}
 
 	for (auto& slot : _slots) {

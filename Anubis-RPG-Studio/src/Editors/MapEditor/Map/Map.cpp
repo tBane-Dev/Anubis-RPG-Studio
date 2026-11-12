@@ -354,7 +354,7 @@ namespace MapEditor {
 
 		auto scene = MapEditor::editor ? MapEditor::editor->_scene : nullptr;
 
-		if (!scene || !terrain3D_shader || terrain3D_shader->getNativeHandle() == 0)
+		if (!scene || !Anubis::shaders_manager->terrain3D_shader || Anubis::shaders_manager->terrain3D_shader->getNativeHandle() == 0)
 			return false;
 
 		if (!Anubis::GL::bindVertexArray || !Anubis::GL::bindFramebuffer)
@@ -393,8 +393,8 @@ namespace MapEditor {
 		glGetFloatv(GL_MODELVIEW_MATRIX, viewMatrix);
 		glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix);
 
-		terrain3D_shader->setUniform("uView", sf::Glsl::Mat4(viewMatrix));
-		terrain3D_shader->setUniform("uProjection", sf::Glsl::Mat4(projectionMatrix));
+		Anubis::shaders_manager->terrain3D_shader->setUniform("uView", sf::Glsl::Mat4(viewMatrix));
+		Anubis::shaders_manager->terrain3D_shader->setUniform("uProjection", sf::Glsl::Mat4(projectionMatrix));
 
 		// Only the depth of the pixel under the cursor is needed.
 		glEnable(GL_SCISSOR_TEST);
@@ -412,7 +412,7 @@ namespace MapEditor {
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 		// Terrain only - models are not drawn, so the cursor reaches the ground behind them.
-		sf::Shader::bind(terrain3D_shader.get());
+		sf::Shader::bind(Anubis::shaders_manager->terrain3D_shader.get());
 
 		for (auto& chunk : _visibleChunks)
 			chunk->draw();
@@ -444,7 +444,7 @@ namespace MapEditor {
 
 		auto scene = MapEditor::editor ? MapEditor::editor->_scene : nullptr;
 
-		if (!scene || !tileOverlay3D_shader || tileOverlay3D_shader->getNativeHandle() == 0)
+		if (!scene || !Anubis::shaders_manager->tileOverlay3D_shader || Anubis::shaders_manager->tileOverlay3D_shader->getNativeHandle() == 0)
 			return;
 
 		if (!Anubis::GL::bindVertexArray)
@@ -472,15 +472,16 @@ namespace MapEditor {
 		glGetFloatv(GL_MODELVIEW_MATRIX, viewMatrix);
 		glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix);
 
-		tileOverlay3D_shader->setUniform("uView", sf::Glsl::Mat4(viewMatrix));
-		tileOverlay3D_shader->setUniform("uProjection", sf::Glsl::Mat4(projectionMatrix));
-		tileOverlay3D_shader->setUniform("uTileSize", float(Tile::tileSize));
-		tileOverlay3D_shader->setUniform("uFirstTile", sf::Glsl::Vec2(float(firstTile.x), float(firstTile.y)));
-		tileOverlay3D_shader->setUniform("uWidth", size.x);
-		tileOverlay3D_shader->setUniform("uHeight", size.y);
-		tileOverlay3D_shader->setUniformArray("uMask", mask.data(), std::size_t(size.x * size.y));
-		tileOverlay3D_shader->setUniform("uColor", sf::Glsl::Vec4(color));
-		tileOverlay3D_shader->setUniform("uGridWidth", 1.f);
+		std::shared_ptr<sf::Shader> shader = Anubis::shaders_manager->tileOverlay3D_shader;
+		shader->setUniform("uView", sf::Glsl::Mat4(viewMatrix));
+		shader->setUniform("uProjection", sf::Glsl::Mat4(projectionMatrix));
+		shader->setUniform("uTileSize", float(Tile::tileSize));
+		shader->setUniform("uFirstTile", sf::Glsl::Vec2((float)firstTile.x, (float)firstTile.y));
+		shader->setUniform("uWidth", size.x);
+		shader->setUniform("uHeight", size.y);
+		shader->setUniformArray("uMask", mask.data(), std::size_t(size.x * size.y));
+		shader->setUniform("uColor", sf::Glsl::Vec4(color));
+		shader->setUniform("uGridWidth", 1.f);
 
 		// Same geometry as the terrain, drawn slightly in front of it; models still cover it.
 		glEnable(GL_DEPTH_TEST);
@@ -494,7 +495,7 @@ namespace MapEditor {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		sf::Shader::bind(tileOverlay3D_shader.get());
+		sf::Shader::bind(Anubis::shaders_manager->tileOverlay3D_shader.get());
 
 		for (auto& chunk : _visibleChunks)
 			chunk->draw();
@@ -557,7 +558,7 @@ namespace MapEditor {
 		if (!map_editor || !map_editor->_scene || !map_editor->_camera)
 			return;
 
-		if (!_texture || !_texture->_texture || !terrain3D_shader || terrain3D_shader->getNativeHandle() == 0)
+		if (!_texture || !_texture->_texture || !Anubis::shaders_manager->terrain3D_shader || Anubis::shaders_manager->terrain3D_shader->getNativeHandle() == 0)
 			return;
 
 		if (!Anubis::GL::bindVertexArray || !Anubis::GL::activeTexture)
@@ -580,16 +581,18 @@ namespace MapEditor {
 		glGetFloatv(GL_MODELVIEW_MATRIX, viewMatrix);
 		glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix);
 
-		terrain3D_shader->setUniform("uView", sf::Glsl::Mat4(viewMatrix));
-		terrain3D_shader->setUniform("uProjection", sf::Glsl::Mat4(projectionMatrix));
-		terrain3D_shader->setUniform("uTexture", 0);
-		terrain3D_shader->setUniform("resolution", sf::Vector2f(windowSize));
-		terrain3D_shader->setUniform("time", Anubis::currentTime.asSeconds());
-		terrain3D_shader->setUniform("startPos", sf::Vector2f(0.f, 0.f));
-		terrain3D_shader->setUniform("uLightViewProjection", sf::Glsl::Mat4(map_editor->_scene->_lightViewProjection.data()));
-		terrain3D_shader->setUniform("uShadowMap", 1);
-		terrain3D_shader->setUniform("uShadowStrength", 0.45f);
-		terrain3D_shader->setUniform("uShadowSamples", map_editor->_scene->_shadowSamples);
+		std::shared_ptr<sf::Shader> shader = Anubis::shaders_manager->terrain3D_shader;
+		shader->setUniform("uView", sf::Glsl::Mat4(viewMatrix));
+		shader->setUniform("uProjection", sf::Glsl::Mat4(projectionMatrix));
+		shader->setUniform("uTexture", 0);
+		shader->setUniform("resolution", sf::Vector2f(windowSize));
+		shader->setUniform("time", Anubis::currentTime.asSeconds());
+		shader->setUniform("startPos", sf::Vector2f(0.f, 0.f));
+		shader->setUniform("uLightViewProjection", sf::Glsl::Mat4(map_editor->_scene->_lightViewProjection.data()));
+		shader->setUniform("uShadowMap", 1);
+		shader->setUniform("uShadowStrength", 0.45f);
+		shader->setUniform("uShadowSamples", map_editor->_scene->_shadowSamples);
+
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 		glDepthMask(GL_TRUE);
@@ -603,7 +606,7 @@ namespace MapEditor {
 
 		Anubis::GL::activeTexture(0x84C0); // GL_TEXTURE0
 		glBindTexture(GL_TEXTURE_2D, _texture->_texture->getNativeHandle());
-		sf::Shader::bind(terrain3D_shader.get());
+		sf::Shader::bind(shader.get());
 
 		for (auto& chunk : _visibleChunks) {
 			chunk->draw();
@@ -620,8 +623,8 @@ namespace MapEditor {
 		// SFML draws editor overlays using the same captured 3D matrices.
 		Anubis::render_window->resetGLStates();
 
-		ghost_chunk_shader->setUniform("uView", sf::Glsl::Mat4(viewMatrix));
-		ghost_chunk_shader->setUniform("uProjection", sf::Glsl::Mat4(projectionMatrix));
+		Anubis::shaders_manager->ghost_chunk_shader->setUniform("uView", sf::Glsl::Mat4(viewMatrix));
+		Anubis::shaders_manager->ghost_chunk_shader->setUniform("uProjection", sf::Glsl::Mat4(projectionMatrix));
 
 		if (map_editor->_main_menu->_render_chunks_info->_checkbox->_value == 1) {
 
@@ -629,18 +632,19 @@ namespace MapEditor {
 			sf::Vector2f size_rect(mapRect.size);
 			sf::Vector2f position_rect(mapRect.position);
 
-			grid_shader->setUniform("uView", sf::Glsl::Mat4(viewMatrix));
-			grid_shader->setUniform("uProjection", sf::Glsl::Mat4(projectionMatrix));
-			grid_shader->setUniform("rectPosition", position_rect);
-			grid_shader->setUniform("gridSize", float(Tile::tileSize));
-			grid_shader->setUniform("chunkSize", float(Chunk::tilesCols));
-			grid_shader->setUniform("gridWidth", 2.f);
-			grid_shader->setUniform("gridMainColor", sf::Glsl::Vec4(sf::Color(7, 7, 7, 255)));
-			grid_shader->setUniform("gridSecondColor", sf::Glsl::Vec4(sf::Color(47, 47, 47, 255)));
-			grid_shader->setUniform("position", position_rect);
+			std::shared_ptr<sf::Shader> shader = Anubis::shaders_manager->grid_shader;
+			shader->setUniform("uView", sf::Glsl::Mat4(viewMatrix));
+			shader->setUniform("uProjection", sf::Glsl::Mat4(projectionMatrix));
+			shader->setUniform("rectPosition", position_rect);
+			shader->setUniform("gridSize", float(Tile::tileSize));
+			shader->setUniform("chunkSize", float(Chunk::tilesCols));
+			shader->setUniform("gridWidth", 2.f);
+			shader->setUniform("gridMainColor", sf::Glsl::Vec4(sf::Color(7, 7, 7, 255)));
+			shader->setUniform("gridSecondColor", sf::Glsl::Vec4(sf::Color(47, 47, 47, 255)));
+			shader->setUniform("position", position_rect);
 
 			sf::RenderStates states;
-			states.shader = grid_shader.get();
+			states.shader = shader.get();
 
 			sf::RectangleShape rect(size_rect);
 			rect.setFillColor(sf::Color(127, 47, 47, 127));

@@ -288,8 +288,8 @@ namespace AnimationsEditor {
 		rect.setPosition(sf::Vector2f(getPosition().x + (getSize().x - 256) / 2, getPosition().y + _title->getFont().getLineSpacing(20) + 24 + 16));
 
 		sf::RenderStates states;
-		states.shader = &*checkerboard_shader;
-		checkerboard_shader->setUniform("rectPos", rect.getPosition());
+		states.shader = &*Anubis::shaders_manager->checkerboard_shader;
+		Anubis::shaders_manager->checkerboard_shader->setUniform("rectPos", rect.getPosition());
 		Anubis::render_window->draw(rect, states);
 
 		

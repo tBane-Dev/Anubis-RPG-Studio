@@ -1,13 +1,20 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 
-extern std::shared_ptr<sf::Shader> terrain3D_shader;
-extern std::shared_ptr<sf::Shader> terrain2D_shader;
-extern std::shared_ptr<sf::Shader> ghost_chunk_shader;
-extern std::shared_ptr<sf::Shader> grid_shader;
-extern std::shared_ptr<sf::Shader> grid2_shader;
-extern std::shared_ptr<sf::Shader> checkerboard_shader;
-extern std::shared_ptr<sf::Shader> sprite25D_shader;
-extern std::shared_ptr<sf::Shader> tileOverlay3D_shader;
+namespace Anubis {
+	class ShadersManager {
+	public:
+		std::shared_ptr<sf::Shader> terrain3D_shader;
+		std::shared_ptr<sf::Shader> terrain2D_shader;
+		std::shared_ptr<sf::Shader> ghost_chunk_shader;
+		std::shared_ptr<sf::Shader> grid_shader;
+		std::shared_ptr<sf::Shader> grid2_shader;
+		std::shared_ptr<sf::Shader> checkerboard_shader;
+		std::shared_ptr<sf::Shader> tileOverlay3D_shader;
 
-void loadShaders();
+		ShadersManager();
+		~ShadersManager();
+	};
+
+	extern std::shared_ptr<ShadersManager> shaders_manager;
+}
