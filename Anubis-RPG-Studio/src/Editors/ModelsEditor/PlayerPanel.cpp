@@ -9,7 +9,7 @@
 
 namespace ModelsEditor {
 
-	PlayerPanel::PlayerPanel(sf::Vector2i margin) : Panel(sf::Vector2i(520, 256), sf::Vector2i(1332 + margin.x, ModelsEditor::editor->_main_menu->getSize().y + margin.y)) {
+	PlayerPanel::PlayerPanel(sf::Vector2i margin) : Panel(sf::Vector2i(520, 256), sf::Vector2i(1332 + margin.x, ModelsEditor::editor->_main_menu->getSize().y + margin.y + 192)) {
 
 		_title = std::make_unique<sf::Text>(basicFont, L"Player", 20);
 		_title->setFillColor(basic_text_color);

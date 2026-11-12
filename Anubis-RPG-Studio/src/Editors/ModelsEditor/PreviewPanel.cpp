@@ -19,45 +19,7 @@ namespace ModelsEditor {
 		_title->setFillColor(basic_text_color);
 		_title->setPosition(sf::Vector2f(_rect.position.x + 16, _rect.position.y + 16));
 	
-		//_loadBtn = std::make_shared<ButtonWithTextAndSprite>(
-		//	L"Load Spritesheet",
-		//	textures_manager->getTexture(L"assets\\tex\\editors_ui\\mediumButton.png"),
-		//	textures_manager->getTexture(L"assets\\tex\\editors_ui\\mediumButton_hover.png"),
-		//	textures_manager->getTexture(L"assets\\tex\\editors_ui\\mediumButton_press.png"),
-		//	textures_manager->getTexture(L"assets\\tex\\editors_ui\\mediumButton_inactive.png"),
-		//	sf::Vector2i(_rect.position.x + 512 + 64, _rect.position.y + 48)
-		//);
-		//
-		//_loadBtn->_onclick_func = [this]() {
-		//
-		//	std::shared_ptr<FileDialog> fileDialog = std::make_shared<FileDialog>(L"Load Spritesheet", L"Load");
-		//	fileDialog->setPosition(sf::Vector2i(256, 192));
-		//
-		//	std::function<void()> function = [this, fileDialog]() {
-		//
-		//		std::shared_ptr<sf::Image> image = std::make_shared<sf::Image>();
-		//		
-		//		if (!image->loadFromFile(fileDialog->getPathFile())) {
-		//			DebugError(L"Nie udało się wczytać obrazka: " + fileDialog->getPathFile());
-		//			return;
-		//		}
-		//
-		//	
-		//		ModelsEditor::editor->_sprite_sheet_panel->setTextInputsRange();
-		//		ModelsEditor::editor->_sprite_sheet_panel->loadModel();
-		//		ModelsEditor::editor->_actions_panel->setButtonsActivity();
-		//		ModelsEditor::editor->_actions_panel->setTooltips();
-		//		ModelsEditor::editor->_preview_panel->loadAnimations();
-		//		ModelsEditor::editor->_preview_panel->setButtonsActivity();
-		//		ModelsEditor::editor->_preview_panel->setTooltips();
-		//
-		//
-		//		
-		//	};
-		//
-		//	fileDialog->setFunction(function);
-		//	Main::windows_manager->push_back(fileDialog);
-		//};
+		
 
 		_sceneRect.size = sf::Vector2i(512 + 256 + 64, 512 + 128 + 32);
 		_sceneRect.position = sf::Vector2i(getPosition().x + 32, getPosition().y + _title->getFont().getLineSpacing(20) + 24 + 16);
@@ -291,7 +253,6 @@ namespace ModelsEditor {
 		if (const auto* moved = event.getIf<sf::Event::MouseMoved>(); moved && _scene->_isPressedMiddle) {
 			sf::Vector2i delta = moved->position - _scene->_lastCameraMouse;
 
-			// world units per pixel at the distance of the model, so the model follows the cursor
 			float distance = _scene->_cameraRadius / _scene->_cameraZoom;
 			float unitsPerPixel = 2.f * distance * std::tan(_scene->_fovY * 0.5f * 3.14159265f / 180.f) / (float)_scene->getViewport().size.y;
 
