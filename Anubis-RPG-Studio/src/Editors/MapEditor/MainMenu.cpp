@@ -1,6 +1,6 @@
 #include "Editors/MapEditor/MainMenu.hpp"
 #include "Components/MainMenu/MenuButton.hpp"
-#include "Editors/AnimationsEditor/Editor.hpp"
+#include "Editors/ModelsEditor/Editor.hpp"
 #include "Editors/PrefabsEditor/Editor.hpp"
 #include "Editors/BuildingsEditor/Editor.hpp"
 #include "WindowsManager.hpp" // TO-DO - to delete
@@ -213,17 +213,17 @@ namespace MapEditor {
 		_tool_palette = std::make_shared<OptionWithCheckbox>(L"Palette", textures_manager->getTexture(L"assets\\tex\\checked.png"), textures_manager->getTexture(L"assets\\tex\\checked_hover.png"));
 		_tool_palette->addValue(textures_manager->getTexture(L"assets\\tex\\unchecked.png"), textures_manager->getTexture(L"assets\\tex\\unchecked_hover.png"));
 
-		_tool_animations_editor = std::make_shared<OptionWithIcon>(
-			L"Animations editor",
+		_tool_models_editor = std::make_shared<OptionWithIcon>(
+			L"Models editor",
 			nullptr,
 			nullptr
 		);
-		_tool_animations_editor->_onclick_func = [this]() {
-			if (AnimationsEditor::editor == nullptr) {
+		_tool_models_editor->_onclick_func = [this]() {
+			if (ModelsEditor::editor == nullptr) {
 				closeMenu();
-				AnimationsEditor::editor = std::make_shared<AnimationsEditor::Editor>();
-				AnimationsEditor::editor->create();
-				Main::editor_manager->push_back(AnimationsEditor::editor);
+				ModelsEditor::editor = std::make_shared<ModelsEditor::Editor>();
+				ModelsEditor::editor->create();
+				Main::editor_manager->push_back(ModelsEditor::editor);
 			}
 			};
 
@@ -256,7 +256,7 @@ namespace MapEditor {
 			};
 
 		_tools->addOption(_tool_palette);
-		_tools->addOption(_tool_animations_editor);
+		_tools->addOption(_tool_models_editor);
 		_tools->addOption(_tool_prefabs_editor);
 		_tools->addOption(_tool_buildings_editor);	
 

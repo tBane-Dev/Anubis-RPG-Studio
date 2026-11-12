@@ -1,14 +1,14 @@
-#include "Editors/AnimationsEditor/NamePanel.hpp"
-#include "Editors/AnimationsEditor/Editor.hpp"
+#include "Editors/ModelsEditor/NamePanel.hpp"
+#include "Editors/ModelsEditor/Editor.hpp"
 #include "Theme.hpp"
 #include "RenderWindow.hpp"
 #include "DebugLog.hpp"
 #include "Objects/Monster.hpp"
 #include "PrefabsManager.hpp"
 
-namespace AnimationsEditor {
+namespace ModelsEditor {
 
-	NamePanel::NamePanel(sf::Vector2i margin) : Panel(sf::Vector2i(912, 128), sf::Vector2i(420 + margin.x, AnimationsEditor::editor->_main_menu->getSize().y + margin.y)) {
+	NamePanel::NamePanel(sf::Vector2i margin) : Panel(sf::Vector2i(912, 128), sf::Vector2i(420 + margin.x, ModelsEditor::editor->_main_menu->getSize().y + margin.y)) {
 
 		_nameText = std::make_unique<sf::Text>(basicFont, L"Name", 20);
 		_nameText->setFillColor(basic_text_color);

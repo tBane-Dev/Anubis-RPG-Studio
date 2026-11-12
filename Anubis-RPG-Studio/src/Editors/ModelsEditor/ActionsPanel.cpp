@@ -1,5 +1,5 @@
-#include "Editors/AnimationsEditor/ActionsPanel.hpp"
-#include "Editors/AnimationsEditor/Editor.hpp"
+#include "Editors/ModelsEditor/ActionsPanel.hpp"
+#include "Editors/ModelsEditor/Editor.hpp"
 #include "Theme.hpp"
 #include "RenderWindow.hpp"
 #include "DebugLog.hpp"
@@ -7,11 +7,11 @@
 #include "PrefabsManager.hpp"
 #include "Editors/MapEditor/Editor.hpp"
 
-namespace AnimationsEditor {
+namespace ModelsEditor {
 	
 	ActionsPanel::ActionsPanel(sf::Vector2i margin) : Panel(
 		sf::Vector2i(420, 300), 
-		sf::Vector2i(AnimationsEditor::editor->_list_panel->getPosition().x, AnimationsEditor::editor->_list_panel->getPosition().y + AnimationsEditor::editor->_list_panel->getSize().y + 4)) {
+		sf::Vector2i(ModelsEditor::editor->_list_panel->getPosition().x, ModelsEditor::editor->_list_panel->getPosition().y + ModelsEditor::editor->_list_panel->getSize().y + 4)) {
 
 		// title
 		_title = std::make_unique<sf::Text>(basicFont, L"Actions", 20);
@@ -25,7 +25,7 @@ namespace AnimationsEditor {
 		int marginBetweenButtons = 8;
 
 		_saveBtn = std::make_shared<ButtonWithTextAndSprite>(
-			L"Save Animations",
+			L"Save Model",
 			textures_manager->getTexture(L"assets\\tex\\editors_ui\\largeButton.png"),
 			textures_manager->getTexture(L"assets\\tex\\editors_ui\\largeButton_hover.png"),
 			textures_manager->getTexture(L"assets\\tex\\editors_ui\\largeButton_press.png"),
@@ -34,7 +34,7 @@ namespace AnimationsEditor {
 		);
 
 		_addBtn = std::make_shared<ButtonWithTextAndSprite>(
-			L"Add Animations",
+			L"Add Model",
 			textures_manager->getTexture(L"assets\\tex\\editors_ui\\largeButton.png"),
 			textures_manager->getTexture(L"assets\\tex\\editors_ui\\largeButton_hover.png"),
 			textures_manager->getTexture(L"assets\\tex\\editors_ui\\largeButton_press.png"),
@@ -43,7 +43,7 @@ namespace AnimationsEditor {
 		);
 
 		_removeBtn = std::make_shared<ButtonWithTextAndSprite>(
-			L"Remove Animations",
+			L"Remove Model",
 			textures_manager->getTexture(L"assets\\tex\\editors_ui\\largeButton.png"),
 			textures_manager->getTexture(L"assets\\tex\\editors_ui\\largeButton_hover.png"),
 			textures_manager->getTexture(L"assets\\tex\\editors_ui\\largeButton_press.png"),
@@ -78,9 +78,9 @@ namespace AnimationsEditor {
 	}
 
 	void ActionsPanel::setTooltips() {
-		_saveBtn->setTooltip(256, L"Save Animations", L"Saves the current animations to the selected animations");
-		_addBtn->setTooltip(256, L"Add Animations", L"Adds a new animations to the list");
-		_removeBtn->setTooltip(256, L"Remove Animations", L"Removes the selected animations from the list");
+		_saveBtn->setTooltip(256, L"Save Model", L"Saves the current model to the selected model");
+		_addBtn->setTooltip(256, L"Add Model", L"Adds a new model to the list");
+		_removeBtn->setTooltip(256, L"Remove Model", L"Removes the selected model from the list");
 	}
 
 	void ActionsPanel::cursorHover() {

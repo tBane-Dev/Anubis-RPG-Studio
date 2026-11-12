@@ -3,7 +3,7 @@
 #include "Controls/TextInput.hpp"
 #include "Controls/ButtonWithTextAndSprite.hpp"
 
-namespace AnimationsEditor {
+namespace ModelsEditor {
 	class NamePanel : public Components::Panel {
 	public:
 

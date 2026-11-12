@@ -4,7 +4,7 @@
 #include "Controls/RealInput.hpp"
 #include "Controls/ButtonWithTextAndSprite.hpp"
 
-namespace AnimationsEditor {
+namespace ModelsEditor {
 	class SpriteSheetPanel : public Components::Panel {
 	public:
 		

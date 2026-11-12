@@ -1,5 +1,5 @@
-#include "Editors/AnimationsEditor/PreviewPanel.hpp"
-#include "Editors/AnimationsEditor/Editor.hpp"
+#include "Editors/ModelsEditor/PreviewPanel.hpp"
+#include "Editors/ModelsEditor/Editor.hpp"
 #include "Theme.hpp"
 #include "RenderWindow.hpp"
 #include "DebugLog.hpp"
@@ -7,9 +7,9 @@
 #include "PrefabsManager.hpp"
 #include "ShadersManager.hpp"
 
-namespace AnimationsEditor {
+namespace ModelsEditor {
 
-	PreviewPanel::PreviewPanel(sf::Vector2i margin) : Panel(sf::Vector2i(520, 900), sf::Vector2i(1332 + margin.x, AnimationsEditor::editor->_main_menu->getSize().y + margin.y)) {
+	PreviewPanel::PreviewPanel(sf::Vector2i margin) : Panel(sf::Vector2i(520, 900), sf::Vector2i(1332 + margin.x, ModelsEditor::editor->_main_menu->getSize().y + margin.y)) {
 
 		_title = std::make_unique<sf::Text>(basicFont, L"Preview", 20);
 		_title->setFillColor(basic_text_color);
@@ -128,45 +128,64 @@ namespace AnimationsEditor {
 			),
 			sf::Vector2i(
 				_anim_next->getPosition().x + _anim_next->getSize().x - _anim_prev->getPosition().x + 32,
-				5 * (basicFont.getLineSpacing(basic_text_size) + m) + m)
+				8 * (basicFont.getLineSpacing(basic_text_size) + m) + m)
 		);
 
-		_animations_current_label = std::make_unique<sf::Text>(basicFont, L"Current Anim", basic_text_size);
-		_animations_count_label = std::make_unique<sf::Text>(basicFont, L"Anim Count", basic_text_size);
-		_frame_label = std::make_unique<sf::Text>(basicFont, L"Current Frame", basic_text_size);
-		_frames_count_label = std::make_unique<sf::Text>(basicFont, L"Frames Count", basic_text_size);
-		_frame_size_label = std::make_unique<sf::Text>(basicFont, L"Frame Size", basic_text_size);
+		_animations_label = std::make_unique<sf::Text>(basicFont, L"Animations", basic_text_size);
+		_triangles_label = std::make_unique<sf::Text>(basicFont, L"Triangles", basic_text_size);
+		_meshes_label = std::make_unique<sf::Text>(basicFont, L"Meshes", basic_text_size);
+		_nodes_label = std::make_unique<sf::Text>(basicFont, L"Nodes", basic_text_size);
+		_skins_label = std::make_unique<sf::Text>(basicFont, L"Skins", basic_text_size);
+		_joints_label = std::make_unique<sf::Text>(basicFont, L"Joints", basic_text_size);
+		_textures_label = std::make_unique<sf::Text>(basicFont, L"Textures", basic_text_size);
+		_size_label = std::make_unique<sf::Text>(basicFont, L"Size", basic_text_size);
 
-		_animations_current_label->setFillColor(basic_text_color);
-		_animations_count_label->setFillColor(basic_text_color);
-		_frame_label->setFillColor(basic_text_color);
-		_frames_count_label->setFillColor(basic_text_color);
-		_frame_size_label->setFillColor(basic_text_color);
+		_animations_label->setFillColor(basic_text_color);
+		_triangles_label->setFillColor(basic_text_color);
+		_meshes_label->setFillColor(basic_text_color);
+		_nodes_label->setFillColor(basic_text_color);
+		_skins_label->setFillColor(basic_text_color);
+		_joints_label->setFillColor(basic_text_color);
+		_textures_label->setFillColor(basic_text_color);
+		_size_label->setFillColor(basic_text_color);
 
-		_animations_current_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m));
-		_animations_count_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 1 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_frame_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 2 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_frames_count_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 3 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_frame_size_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 4 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_animations_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m));
 
-		_animations_current = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
-		_animations_count = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
-		_frame = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
-		_frames_count = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
-		_frame_size = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
+		_triangles_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 1 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_meshes_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 2 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_nodes_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 3 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_skins_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 4 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_joints_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 5 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_textures_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 6 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_size_label->setPosition(sf::Vector2f(_statsRect.position.x + m, _statsRect.position.y + m + 7 * (basicFont.getLineSpacing(basic_text_size) + m)));
 
-		_animations_current->setFillColor(basic_text_color);
-		_animations_count->setFillColor(basic_text_color);
-		_frame->setFillColor(basic_text_color);
-		_frames_count->setFillColor(basic_text_color);
-		_frame_size->setFillColor(basic_text_color);
+		_animations = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
+		_triangles = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
+		_meshes = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
+		_nodes = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
+		_skins = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
+		_joints = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
+		_textures = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
+		_size = std::make_unique<sf::Text>(basicFont, L"--", basic_text_size);
+
+		_animations->setFillColor(basic_text_color);
+		_triangles->setFillColor(basic_text_color);
+		_meshes->setFillColor(basic_text_color);
+		_nodes->setFillColor(basic_text_color);
+		_skins->setFillColor(basic_text_color);
+		_joints->setFillColor(basic_text_color);
+		_textures->setFillColor(basic_text_color);
+		_size->setFillColor(basic_text_color);
 
 		int s = _statsRect.position.x + _statsRect.size.x;
-		_animations_current->setPosition(sf::Vector2f(s - _animations_current->getGlobalBounds().size.x - m, _statsRect.position.y + m));
-		_animations_count->setPosition(sf::Vector2f(s - _animations_count->getGlobalBounds().size.x - m, _statsRect.position.y + m + 1 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_frame->setPosition(sf::Vector2f(s - _frames_count->getGlobalBounds().size.x - m, _statsRect.position.y + m + 2 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_frames_count->setPosition(sf::Vector2f(s - _frames_count->getGlobalBounds().size.x - m, _statsRect.position.y + m + 3 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_frame_size->setPosition(sf::Vector2f(s - _frame_size->getGlobalBounds().size.x - m, _statsRect.position.y + m + 4 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_animations->setPosition(sf::Vector2f(s - _animations->getGlobalBounds().size.x - m, _statsRect.position.y + m));
+		_triangles->setPosition(sf::Vector2f(s - _triangles->getGlobalBounds().size.x - m, _statsRect.position.y + m + 1 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_meshes->setPosition(sf::Vector2f(s - _meshes->getGlobalBounds().size.x - m, _statsRect.position.y + m + 2 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_nodes->setPosition(sf::Vector2f(s - _nodes->getGlobalBounds().size.x - m, _statsRect.position.y + m + 3 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_skins->setPosition(sf::Vector2f(s - _skins->getGlobalBounds().size.x - m, _statsRect.position.y + m + 4 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_joints->setPosition(sf::Vector2f(s - _joints->getGlobalBounds().size.x - m, _statsRect.position.y + m + 5 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_textures->setPosition(sf::Vector2f(s - _textures->getGlobalBounds().size.x - m, _statsRect.position.y + m + 6 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_size->setPosition(sf::Vector2f(s - _size->getGlobalBounds().size.x - m, _statsRect.position.y + m + 7 * (basicFont.getLineSpacing(basic_text_size) + m)));
 
 		loadAnimations();	// TO-DO - must be a loadModel
 
@@ -180,19 +199,25 @@ namespace AnimationsEditor {
 
 	void PreviewPanel::loadAnimations() {
 
-		_animations_current->setString(L"--");
-		_animations_count->setString(L"--");
-		_frame->setString(L"--");
-		_frames_count->setString(L"--");
-		_frame_size->setString(L"--");
+		_animations->setString(L"--");
+		_triangles->setString(L"--");
+		_meshes->setString(L"--");
+		_nodes->setString(L"--");
+		_skins->setString(L"--");
+		_joints->setString(L"--");
+		_textures->setString(L"--");
+		_size->setString(L"--");
 
 		int m = 8;
 		int s = _statsRect.position.x + _statsRect.size.x;
-		_animations_current->setPosition(sf::Vector2f(s - _animations_current->getGlobalBounds().size.x - m, _statsRect.position.y + m));
-		_animations_count->setPosition(sf::Vector2f(s - _animations_count->getGlobalBounds().size.x - m, _statsRect.position.y + m + 1 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_frame->setPosition(sf::Vector2f(s - _frames_count->getGlobalBounds().size.x - m, _statsRect.position.y + m + 2 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_frames_count->setPosition(sf::Vector2f(s - _frames_count->getGlobalBounds().size.x - m, _statsRect.position.y + m + 3 * (basicFont.getLineSpacing(basic_text_size) + m)));
-		_frame_size->setPosition(sf::Vector2f(s - _frame_size->getGlobalBounds().size.x - m, _statsRect.position.y + m + 4 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_animations->setPosition(sf::Vector2f(s - _animations->getGlobalBounds().size.x - m, _statsRect.position.y + m));
+		_triangles->setPosition(sf::Vector2f(s - _triangles->getGlobalBounds().size.x - m, _statsRect.position.y + m + 1 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_meshes->setPosition(sf::Vector2f(s - _meshes->getGlobalBounds().size.x - m, _statsRect.position.y + m + 2 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_nodes->setPosition(sf::Vector2f(s - _nodes->getGlobalBounds().size.x - m, _statsRect.position.y + m + 3 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_skins->setPosition(sf::Vector2f(s - _skins->getGlobalBounds().size.x - m, _statsRect.position.y + m + 4 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_joints->setPosition(sf::Vector2f(s - _joints->getGlobalBounds().size.x - m, _statsRect.position.y + m + 5 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_textures->setPosition(sf::Vector2f(s - _textures->getGlobalBounds().size.x - m, _statsRect.position.y + m + 6 * (basicFont.getLineSpacing(basic_text_size) + m)));
+		_size->setPosition(sf::Vector2f(s - _size->getGlobalBounds().size.x - m, _statsRect.position.y + m + 7 * (basicFont.getLineSpacing(basic_text_size) + m)));
 
 		
 	}
@@ -314,18 +339,24 @@ namespace AnimationsEditor {
 		Anubis::render_window->draw(statsRectShape);
 
 		// texts labels
-		Anubis::render_window->draw(*_animations_current_label);
-		Anubis::render_window->draw(*_animations_count_label);
-		Anubis::render_window->draw(*_frame_label);
-		Anubis::render_window->draw(*_frames_count_label);
-		Anubis::render_window->draw(*_frame_size_label);
+		Anubis::render_window->draw(*_animations_label);
+		Anubis::render_window->draw(*_triangles_label);
+		Anubis::render_window->draw(*_meshes_label);
+		Anubis::render_window->draw(*_nodes_label);
+		Anubis::render_window->draw(*_skins_label);
+		Anubis::render_window->draw(*_joints_label);
+		Anubis::render_window->draw(*_textures_label);
+		Anubis::render_window->draw(*_size_label);
 
 		// text inputs
-		Anubis::render_window->draw(*_animations_current);
-		Anubis::render_window->draw(*_animations_count);
-		Anubis::render_window->draw(*_frame);
-		Anubis::render_window->draw(*_frames_count);
-		Anubis::render_window->draw(*_frame_size);
+		Anubis::render_window->draw(*_animations);
+		Anubis::render_window->draw(*_triangles);
+		Anubis::render_window->draw(*_meshes);
+		Anubis::render_window->draw(*_nodes);
+		Anubis::render_window->draw(*_skins);
+		Anubis::render_window->draw(*_joints);
+		Anubis::render_window->draw(*_textures);
+		Anubis::render_window->draw(*_size);
 
 		
 	}

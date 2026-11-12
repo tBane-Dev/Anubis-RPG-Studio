@@ -2,7 +2,7 @@
 #include "Components/MainMenu/MainMenu.hpp"
 #include "Controls/OptionWithIcon.hpp"
 
-namespace AnimationsEditor {
+namespace ModelsEditor {
 	class MainMenu : public Components::MainMenu {
 	public:
 

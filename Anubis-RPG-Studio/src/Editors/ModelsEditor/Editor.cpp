@@ -1,14 +1,14 @@
-#include "Editors/AnimationsEditor/Editor.hpp"
+#include "Editors/ModelsEditor/Editor.hpp"
 #include "DebugLog.hpp"
 #include "Theme.hpp"
 #include "RenderWindow.hpp"
 #include "WindowsManager.hpp"
 
-namespace AnimationsEditor {
+namespace ModelsEditor {
 	Editor::Editor() {
 		_margin = sf::Vector2i(32, 64);
 
-		_title = std::make_unique<sf::Text>(basicFont, L"Animations Editor", 28);
+		_title = std::make_unique<sf::Text>(basicFont, L"Models Editor", 28);
 		_title->setFillColor(basic_text_color);
 		_title->setPosition(sf::Vector2f(32, 48));
 
@@ -22,7 +22,7 @@ namespace AnimationsEditor {
 	void Editor::create() {
 		_main_menu = std::make_shared<MainMenu>();
 
-		_list_panel = std::make_shared<AnimationsListPanel>(_margin);
+		_list_panel = std::make_shared<ModelsListPanel>(_margin);
 		_name_panel = std::make_shared<NamePanel>(_margin);
 		_sprite_sheet_panel = std::make_shared<SpriteSheetPanel>(_margin);
 		_actions_panel = std::make_shared<ActionsPanel>(_margin);

@@ -1,12 +1,11 @@
-#include "Editors/AnimationsEditor/MainMenu.hpp"
+#include "Editors/ModelsEditor/MainMenu.hpp"
 #include "Components/MainMenu/MenuButton.hpp"
 #include "Controls/OptionWithIcon.hpp"
 #include "EditorsManager.hpp"
-#include "Editors/AnimationsEditor/Editor.hpp"
+#include "Editors/ModelsEditor/Editor.hpp"
 #include "Editors/MapEditor/Editor.hpp"
 
-namespace AnimationsEditor {
-
+namespace ModelsEditor {
 
 	MainMenu::MainMenu() : Components::MainMenu() {
 		_file = std::make_shared<Components::MenuButton>(std::make_shared<MainMenu>(*this), L"File");
@@ -36,7 +35,7 @@ namespace AnimationsEditor {
 
 		_file_back_to_map_editor->_onclick_func = []() {
 			Main::editor_manager->pop_back();
-			AnimationsEditor::editor = nullptr;
+			ModelsEditor::editor = nullptr;
 			
 			MapEditor::editor->createPalette();
 			};

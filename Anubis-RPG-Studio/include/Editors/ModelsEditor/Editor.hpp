@@ -1,14 +1,14 @@
 #pragma once
 #include "EditorsManager.hpp"
-#include "Editors/AnimationsEditor/MainMenu.hpp"
+#include "Editors/ModelsEditor/MainMenu.hpp"
 #include "Components/Panel.hpp"
-#include "Editors/AnimationsEditor/NamePanel.hpp"
-#include "Editors/AnimationsEditor/AnimationsListPanel.hpp"
-#include "Editors/AnimationsEditor/ActionsPanel.hpp"
-#include "Editors/AnimationsEditor/SpriteSheetPanel.hpp"
-#include "Editors/AnimationsEditor/PreviewPanel.hpp"
+#include "Editors/ModelsEditor/NamePanel.hpp"
+#include "Editors/ModelsEditor/ModelsListPanel.hpp"
+#include "Editors/ModelsEditor/ActionsPanel.hpp"
+#include "Editors/ModelsEditor/SpriteSheetPanel.hpp"
+#include "Editors/ModelsEditor/PreviewPanel.hpp"
 
-namespace AnimationsEditor {
+namespace ModelsEditor {
 	class Editor : public Main::Editor {
 	public:
 
@@ -18,7 +18,7 @@ namespace AnimationsEditor {
 		std::shared_ptr<MainMenu> _main_menu;
 
 		std::shared_ptr<NamePanel> _name_panel;
-		std::shared_ptr<AnimationsListPanel> _list_panel;
+		std::shared_ptr<ModelsListPanel> _list_panel;
 		std::shared_ptr<ActionsPanel> _actions_panel;
 		std::shared_ptr<SpriteSheetPanel> _sprite_sheet_panel;
 		std::shared_ptr<PreviewPanel> _preview_panel;

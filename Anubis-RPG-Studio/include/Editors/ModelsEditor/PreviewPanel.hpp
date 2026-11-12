@@ -3,7 +3,7 @@
 #include "Controls/TextInput.hpp"
 #include "Controls/ButtonWithTextAndSprite.hpp"
 
-namespace AnimationsEditor {
+namespace ModelsEditor {
 	class PreviewPanel : public Components::Panel {
 	public:
 
@@ -20,17 +20,23 @@ namespace AnimationsEditor {
 		std::shared_ptr<ButtonWithSprite> _anim_next;
 
 		sf::IntRect _statsRect;
-		std::unique_ptr<sf::Text> _animations_current_label;
-		std::unique_ptr<sf::Text> _animations_count_label;
-		std::unique_ptr<sf::Text> _frame_label;
-		std::unique_ptr<sf::Text> _frames_count_label;
-		std::unique_ptr<sf::Text> _frame_size_label;
+		std::unique_ptr<sf::Text> _animations_label;
+		std::unique_ptr<sf::Text> _triangles_label;
+		std::unique_ptr<sf::Text> _meshes_label;
+		std::unique_ptr<sf::Text> _nodes_label;
+		std::unique_ptr<sf::Text> _skins_label;
+		std::unique_ptr<sf::Text> _joints_label;
+		std::unique_ptr<sf::Text> _textures_label;
+		std::unique_ptr<sf::Text> _size_label;
 
-		std::unique_ptr<sf::Text> _animations_current;
-		std::unique_ptr<sf::Text> _animations_count;
-		std::unique_ptr<sf::Text> _frame;
-		std::unique_ptr<sf::Text> _frames_count;
-		std::unique_ptr<sf::Text> _frame_size;
+		std::unique_ptr<sf::Text> _animations;
+		std::unique_ptr<sf::Text> _triangles;
+		std::unique_ptr<sf::Text> _meshes;
+		std::unique_ptr<sf::Text> _nodes;
+		std::unique_ptr<sf::Text> _skins;
+		std::unique_ptr<sf::Text> _joints;
+		std::unique_ptr<sf::Text> _textures;
+		std::unique_ptr<sf::Text> _size;
 
 		PreviewPanel(sf::Vector2i margin);
 		~PreviewPanel();

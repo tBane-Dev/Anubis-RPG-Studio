@@ -1,5 +1,5 @@
-﻿#include "Editors/AnimationsEditor/SpriteSheetPanel.hpp"
-#include "Editors/AnimationsEditor/Editor.hpp"
+﻿#include "Editors/ModelsEditor/SpriteSheetPanel.hpp"
+#include "Editors/ModelsEditor/Editor.hpp"
 #include "Theme.hpp"
 #include "RenderWindow.hpp"
 #include "DebugLog.hpp"
@@ -8,9 +8,9 @@
 #include "Windows/FileDialog/FileDialog.hpp"
 #include "ShadersManager.hpp"
 
-namespace AnimationsEditor {
+namespace ModelsEditor {
 
-	SpriteSheetPanel::SpriteSheetPanel(sf::Vector2i margin) : Panel(sf::Vector2i(912, 712 + 60), sf::Vector2i(420 + margin.x, AnimationsEditor::editor->_main_menu->getSize().y + margin.y + 128)) {
+	SpriteSheetPanel::SpriteSheetPanel(sf::Vector2i margin) : Panel(sf::Vector2i(912, 712 + 60), sf::Vector2i(420 + margin.x, ModelsEditor::editor->_main_menu->getSize().y + margin.y + 128)) {
 
 		_title = std::make_unique<sf::Text>(basicFont, L"Sprite Sheet", 20);
 		_title->setFillColor(basic_text_color);
@@ -40,13 +40,13 @@ namespace AnimationsEditor {
 				}
 
 			
-				AnimationsEditor::editor->_sprite_sheet_panel->setTextInputsRange();
-				AnimationsEditor::editor->_sprite_sheet_panel->loadAnimations();
-				AnimationsEditor::editor->_actions_panel->setButtonsActivity();
-				AnimationsEditor::editor->_actions_panel->setTooltips();
-				AnimationsEditor::editor->_preview_panel->loadAnimations();
-				AnimationsEditor::editor->_preview_panel->setButtonsActivity();
-				AnimationsEditor::editor->_preview_panel->setTooltips();
+				ModelsEditor::editor->_sprite_sheet_panel->setTextInputsRange();
+				ModelsEditor::editor->_sprite_sheet_panel->loadAnimations();
+				ModelsEditor::editor->_actions_panel->setButtonsActivity();
+				ModelsEditor::editor->_actions_panel->setTooltips();
+				ModelsEditor::editor->_preview_panel->loadAnimations();
+				ModelsEditor::editor->_preview_panel->setButtonsActivity();
+				ModelsEditor::editor->_preview_panel->setTooltips();
 
 
 				

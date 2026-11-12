@@ -2,7 +2,7 @@
 #include "Components/Panel.hpp"
 #include "Controls/ButtonWithTextAndSprite.hpp"
 
-namespace AnimationsEditor {
+namespace ModelsEditor {
 
 
 	class ActionsPanel : public Components::Panel {
