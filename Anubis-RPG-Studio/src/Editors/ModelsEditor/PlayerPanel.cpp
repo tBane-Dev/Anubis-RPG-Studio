@@ -131,12 +131,20 @@ namespace ModelsEditor {
 			_anim_prev->setActive(false);
 			_anim_next->setActive(false);
 		}
-		
-		_prev->setActive(true);
-		_play->setActive(true);
-		_pause->setActive(true);
-		_next->setActive(true);
-		
+	
+		if (ModelsEditor::editor->_preview_panel->_model && !ModelsEditor::editor->_preview_panel->_model->_animations.empty()) {
+			_prev->setActive(true);
+			_play->setActive(true);
+			_pause->setActive(true);
+			_next->setActive(true);
+		}
+		else {
+			_prev->setActive(false);
+			_play->setActive(false);
+			_pause->setActive(false);
+			_next->setActive(false);
+		}
+
 	}
 
 	void PlayerPanel::setTooltips() {
@@ -158,11 +166,25 @@ namespace ModelsEditor {
 			_anim_next->setTooltip(256, L"Next Animation", L"Set the next Animation");
 		}
 
+		if (!ModelsEditor::editor->_preview_panel->_model) {
+			_prev->setTooltip(256, L"- 0.1s", L"Model is not loaded");
+			_play->setTooltip(256, L"Play Animation", L"Model is not loaded");
+			_pause->setTooltip(256, L"Pause Animation", L"Model is not loaded");
+			_next->setTooltip(256, L"+ 0.1s", L"Model is not loaded");
+		}
+		else if (ModelsEditor::editor->_preview_panel->_model->_animations.empty()) {
+			_prev->setTooltip(256, L"- 0.1s", L"Model has no animations");
+			_play->setTooltip(256, L"Play Animation", L"Model has no animations");
+			_pause->setTooltip(256, L"Pause Animation", L"Model has no animations");
+			_next->setTooltip(256, L"+ 0.1s", L"Model has no animations");
+		}  
+		else {
+			_prev->setTooltip(256, L"- 0.1s", L"");
+			_play->setTooltip(256, L"Play Animation", L"");
+			_pause->setTooltip(256, L"Pause Animation", L"");
+			_next->setTooltip(256, L"+ 0.1s", L"");
+		}
 		
-		_prev->setTooltip(256, L"- 0.1s", L"");
-		_play->setTooltip(256, L"Play Animation", L"");
-		_pause->setTooltip(256, L"Pause Animation", L"");
-		_next->setTooltip(256, L"+ 0.1s", L"");
 		
 	}
 
@@ -177,8 +199,7 @@ namespace ModelsEditor {
 		bool hasAnimations = modelExists && !ModelsEditor::editor->_preview_panel->_model->_animations.empty();
 		bool activeAnimation = hasAnimations && ModelsEditor::editor->_preview_panel->_model->_player._index != -1;
 		bool isStoped = activeAnimation && ModelsEditor::editor->_preview_panel->_model->_isAnimating == false;
-
-		(isStoped) ? _play->cursorHover() : _pause->cursorHover();
+		(!modelExists || !hasAnimations || isStoped) ? _play->cursorHover() : _pause->cursorHover();
 		
 		_next->cursorHover();
 		_anim_next->cursorHover();
@@ -197,7 +218,7 @@ namespace ModelsEditor {
 		bool activeAnimation = hasAnimations && ModelsEditor::editor->_preview_panel->_model->_player._index != -1;
 		bool isStoped = activeAnimation && ModelsEditor::editor->_preview_panel->_model->_isAnimating == false;
 
-		(isStoped) ? _play->handleEvent(event) : _pause->handleEvent(event);
+		(!modelExists || !hasAnimations || isStoped) ? _play->handleEvent(event) : _pause->handleEvent(event);
 
 		_next->handleEvent(event);
 		_anim_next->handleEvent(event);
@@ -233,7 +254,7 @@ namespace ModelsEditor {
 		bool activeAnimation = hasAnimations && ModelsEditor::editor->_preview_panel->_model->_player._index != -1;
 		bool isStoped = activeAnimation && ModelsEditor::editor->_preview_panel->_model->_isAnimating == false;
 		
-		(isStoped) ? _play->draw() : _pause->draw();
+		(!modelExists || !hasAnimations || isStoped) ? _play->draw() : _pause->draw();
 
 		_next->draw();
 		_anim_next->draw();

@@ -31,7 +31,11 @@ namespace ModelsEditor {
 				_items[i]->setName(Anubis::models_manager->_models[index]->_name);
 				_items[i]->_onclick_func = [this, index]() { 
 					selectItem(index); 
-					ModelsEditor::editor->_preview_panel->loadModel(Anubis::models_manager->_models[index]);
+					std::shared_ptr<Anubis::Model3D> model = Anubis::models_manager->_models[index];
+					ModelsEditor::editor->_preview_panel->loadModel(model);
+					ModelsEditor::editor->_player_panel->setButtonsActivity();
+					ModelsEditor::editor->_player_panel->setTooltips();
+					ModelsEditor::editor->_statistics_panel->loadModel(model);
 					};
 			}
 			else {

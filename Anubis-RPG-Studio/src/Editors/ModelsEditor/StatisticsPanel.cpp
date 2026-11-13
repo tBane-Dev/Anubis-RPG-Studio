@@ -63,14 +63,14 @@ namespace ModelsEditor {
 		_textures->setFillColor(basic_text_color);
 		_size->setFillColor(basic_text_color);
 
-		loadModel();
+		loadModel(nullptr);
 	}
 
 	StatisticsPanel::~StatisticsPanel() {
 
 	}
 
-	void StatisticsPanel::loadModel() {
+	void StatisticsPanel::loadModel(std::shared_ptr<Anubis::Model3D> model) {
 
 		_animations->setString(L"--");
 		_triangles->setString(L"--");
@@ -92,9 +92,7 @@ namespace ModelsEditor {
 		_textures->setPosition(sf::Vector2f(s - _textures->getGlobalBounds().size.x - m, _statsRect.position.y + m + 6 * (basicFont.getLineSpacing(basic_text_size) + m)));
 		_size->setPosition(sf::Vector2f(s - _size->getGlobalBounds().size.x - m, _statsRect.position.y + m + 7 * (basicFont.getLineSpacing(basic_text_size) + m)));
 
-		if (ModelsEditor::editor && ModelsEditor::editor->_preview_panel && ModelsEditor::editor->_preview_panel->_model) {
-
-			std::shared_ptr<Anubis::Model3D> model = ModelsEditor::editor->_preview_panel->_model;
+		if (ModelsEditor::editor && ModelsEditor::editor->_preview_panel && model) {
 
 			int triangles = 0;
 			std::vector<std::shared_ptr<Texture>> textures;

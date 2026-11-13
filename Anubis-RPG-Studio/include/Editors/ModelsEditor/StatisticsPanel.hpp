@@ -2,6 +2,7 @@
 #include "Components/Panel.hpp"
 #include "Controls/TextInput.hpp"
 #include "Controls/ButtonWithTextAndSprite.hpp"
+#include "3D/Model3D.hpp"
 
 namespace ModelsEditor {
 	class StatisticsPanel : public Components::Panel {
@@ -31,7 +32,7 @@ namespace ModelsEditor {
 		StatisticsPanel(sf::Vector2i margin);
 		~StatisticsPanel();
 
-		void loadModel();
+		void loadModel(std::shared_ptr<Anubis::Model3D> model);
 
 		void cursorHover();
 		void handleEvent(const sf::Event& event);
