@@ -22,7 +22,7 @@ namespace ModelsEditor {
 		PreviewPanel(sf::Vector2i margin);
 		~PreviewPanel();
 
-		void loadModel();
+		void loadModel(std::shared_ptr<Anubis::Model3D> model);
 		void drawModel();
 		void setTextInputsRange();
 

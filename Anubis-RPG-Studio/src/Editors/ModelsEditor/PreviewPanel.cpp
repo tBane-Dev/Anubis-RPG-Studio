@@ -33,14 +33,14 @@ namespace ModelsEditor {
 		_scene->_viewport = _scenePixelRect;
 
 
-		loadModel(); // TO-DO - must be the laodModel
+		loadModel(nullptr); // TO-DO - must be the laodModel
 	}
 
 	PreviewPanel::~PreviewPanel() {
 
 	}
 
-	void PreviewPanel::loadModel() {
+	void PreviewPanel::loadModel(std::shared_ptr<Anubis::Model3D> model) {
 
 		// TO-DO
 		//std::ostringstream ss;
@@ -55,8 +55,7 @@ namespace ModelsEditor {
 		_modelRadius = 1.f;
 
 		if (Anubis::prefabs_manager->_prefabs.empty()) return;
-
-		std::shared_ptr<Anubis::Model3D> model = std::make_shared<Anubis::Model3D>(*Anubis::prefabs_manager->getPrefab(L"dziobak")->_model.lock());
+		if (!model) return;
 
 		sf::Vector3f boundsMin;
 		sf::Vector3f boundsMax;
@@ -147,7 +146,7 @@ namespace ModelsEditor {
 
 		_model->_position = -center;
 
-		float distance = _modelRadius * 0.6f / std::sin(_scene->_fovY * 0.5f * 3.14159265f / 180.f);
+		float distance = _modelRadius * 1.1f / std::sin(_scene->_fovY * 0.5f * 3.14159265f / 180.f);
 
 		float cameraXAngle = 15.0f;
 		_scene->_camera->_rotation = Anubis::Quaternion(
@@ -270,7 +269,9 @@ namespace ModelsEditor {
 		//_loadBtn->update();
 
 		_scene->update();
-		_model->update();
+		if (_model) {
+			_model->update();
+		}
 
 	}
 

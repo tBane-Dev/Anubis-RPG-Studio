@@ -173,12 +173,12 @@ namespace ModelsEditor {
 		_prev->cursorHover();
 		
 		bool previewExists = ModelsEditor::editor->_preview_panel != nullptr;
-		bool modelExists = ModelsEditor::editor->_preview_panel->_model != nullptr;
-		bool hasAnimations = !ModelsEditor::editor->_preview_panel->_model->_animations.empty();
-		bool activeAnimation = ModelsEditor::editor->_preview_panel->_model->_player._index != -1;
-		bool isStoped = ModelsEditor::editor->_preview_panel->_model->_isAnimating == false;
+		bool modelExists = previewExists && ModelsEditor::editor->_preview_panel->_model != nullptr;
+		bool hasAnimations = modelExists && !ModelsEditor::editor->_preview_panel->_model->_animations.empty();
+		bool activeAnimation = hasAnimations && ModelsEditor::editor->_preview_panel->_model->_player._index != -1;
+		bool isStoped = activeAnimation && ModelsEditor::editor->_preview_panel->_model->_isAnimating == false;
 
-		(previewExists && modelExists && hasAnimations && activeAnimation && isStoped) ? _play->cursorHover() : _pause->cursorHover();
+		(isStoped) ? _play->cursorHover() : _pause->cursorHover();
 		
 		_next->cursorHover();
 		_anim_next->cursorHover();
@@ -192,12 +192,12 @@ namespace ModelsEditor {
 		_prev->handleEvent(event);
 
 		bool previewExists = ModelsEditor::editor->_preview_panel != nullptr;
-		bool modelExists = ModelsEditor::editor->_preview_panel->_model != nullptr;
-		bool hasAnimations = !ModelsEditor::editor->_preview_panel->_model->_animations.empty();
-		bool activeAnimation = ModelsEditor::editor->_preview_panel->_model->_player._index != -1;
-		bool isStoped = ModelsEditor::editor->_preview_panel->_model->_isAnimating == false;
+		bool modelExists = previewExists && ModelsEditor::editor->_preview_panel->_model != nullptr;
+		bool hasAnimations = modelExists && !ModelsEditor::editor->_preview_panel->_model->_animations.empty();
+		bool activeAnimation = hasAnimations && ModelsEditor::editor->_preview_panel->_model->_player._index != -1;
+		bool isStoped = activeAnimation && ModelsEditor::editor->_preview_panel->_model->_isAnimating == false;
 
-		(previewExists && modelExists && hasAnimations && activeAnimation && isStoped) ? _play->handleEvent(event) : _pause->handleEvent(event);
+		(isStoped) ? _play->handleEvent(event) : _pause->handleEvent(event);
 
 		_next->handleEvent(event);
 		_anim_next->handleEvent(event);
@@ -228,12 +228,12 @@ namespace ModelsEditor {
 		_prev->draw();
 
 		bool previewExists = ModelsEditor::editor->_preview_panel != nullptr;
-		bool modelExists = ModelsEditor::editor->_preview_panel->_model != nullptr;
-		bool hasAnimations = !ModelsEditor::editor->_preview_panel->_model->_animations.empty();
-		bool activeAnimation = ModelsEditor::editor->_preview_panel->_model->_player._index != -1;
-		bool isStoped = ModelsEditor::editor->_preview_panel->_model->_isAnimating == false;
+		bool modelExists = previewExists && ModelsEditor::editor->_preview_panel->_model != nullptr;
+		bool hasAnimations = modelExists && !ModelsEditor::editor->_preview_panel->_model->_animations.empty();
+		bool activeAnimation = hasAnimations && ModelsEditor::editor->_preview_panel->_model->_player._index != -1;
+		bool isStoped = activeAnimation && ModelsEditor::editor->_preview_panel->_model->_isAnimating == false;
 		
-		(previewExists && modelExists && hasAnimations && activeAnimation && isStoped) ? _play->draw() : _pause->draw();
+		(isStoped) ? _play->draw() : _pause->draw();
 
 		_next->draw();
 		_anim_next->draw();

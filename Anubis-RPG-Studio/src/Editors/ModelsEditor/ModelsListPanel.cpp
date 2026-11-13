@@ -29,7 +29,10 @@ namespace ModelsEditor {
 			int index = first + i;
 			if (index < models_count) {
 				_items[i]->setName(Anubis::models_manager->_models[index]->_name);
-				_items[i]->_onclick_func = [this, index]() { selectItem(index); };
+				_items[i]->_onclick_func = [this, index]() { 
+					selectItem(index); 
+					ModelsEditor::editor->_preview_panel->loadModel(Anubis::models_manager->_models[index]);
+					};
 			}
 			else {
 				_items[i]->setName(L"");
