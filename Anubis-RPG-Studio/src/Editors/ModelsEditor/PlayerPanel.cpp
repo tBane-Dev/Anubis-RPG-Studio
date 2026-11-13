@@ -9,18 +9,19 @@
 
 namespace ModelsEditor {
 
-	PlayerPanel::PlayerPanel(sf::Vector2i margin) : Panel(sf::Vector2i(520, 256), sf::Vector2i(1332 + margin.x, ModelsEditor::editor->_main_menu->getSize().y + margin.y + 192)) {
+	PlayerPanel::PlayerPanel(sf::Vector2i margin) : Panel(sf::Vector2i(520, 192), sf::Vector2i(1332 + margin.x, ModelsEditor::editor->_main_menu->getSize().y + margin.y + 192)) {
 
 		_title = std::make_unique<sf::Text>(basicFont, L"Player", 20);
 		_title->setFillColor(basic_text_color);
 		_title->setPosition(sf::Vector2f(_rect.position.x + 16, _rect.position.y + 16));
 	
 		// buttons
-		_first = std::make_shared<ButtonWithSprite>(
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\first.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\first_hover.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\first_press.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\first_inactive.png"));
+
+		_anim_prev = std::make_shared<ButtonWithSprite>(
+			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_prev.png"),
+			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_prev_hover.png"),
+			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_prev_press.png"),
+			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_prev_inactive.png"));
 
 		_prev = std::make_shared<ButtonWithSprite>(
 			textures_manager->getTexture(L"assets\\tex\\editors_ui\\prev.png"),
@@ -46,18 +47,6 @@ namespace ModelsEditor {
 			textures_manager->getTexture(L"assets\\tex\\editors_ui\\next_press.png"),
 			textures_manager->getTexture(L"assets\\tex\\editors_ui\\next_inactive.png"));
 
-		_last = std::make_shared<ButtonWithSprite>(
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\last.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\last_hover.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\last_press.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\last_inactive.png"));
-
-		_anim_prev = std::make_shared<ButtonWithSprite>(
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_prev.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_prev_hover.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_prev_press.png"),
-			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_prev_inactive.png"));
-
 		_anim_next = std::make_shared<ButtonWithSprite>(
 			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_next.png"),
 			textures_manager->getTexture(L"assets\\tex\\editors_ui\\anim_next_hover.png"),
@@ -67,33 +56,27 @@ namespace ModelsEditor {
 		int padding = 10;
 		int total_width = _rect.size.x - padding * 2;
 		int btn_w = 64;
-		int buttons_count = 5;
-		int buttons_width = buttons_count * btn_w;
-		int margin_between_buttons = (total_width - buttons_width) / buttons_count / 4;
-		int all_width = buttons_width + margin_between_buttons * (buttons_count - 1);
+		int big_btn_w = 80;
+		int visible_count = 5;
+		int buttons_width = (visible_count - 2) * btn_w + 2 * big_btn_w;
+		int margin_between_buttons = 8;
+		int all_width = buttons_width + margin_between_buttons * (visible_count - 1);
 
 		sf::Vector2f startPosition;
 		startPosition.x = _rect.position.x + padding + (total_width - all_width) / 2;
 		startPosition.y = _rect.position.y + _title->getFont().getLineSpacing(20) + 24 + 16 + 16;
 
-		_first->setPosition(sf::Vector2i(startPosition.x, startPosition.y));
-		_prev->setPosition(sf::Vector2i(_first->getPosition().x + btn_w + margin_between_buttons, _first->getPosition().y));
+		_anim_prev->setPosition(sf::Vector2i(startPosition.x, startPosition.y));
+		_prev->setPosition(sf::Vector2i(_anim_prev->getPosition().x + 80 + margin_between_buttons, _anim_prev->getPosition().y));
 		_play->setPosition(sf::Vector2i(_prev->getPosition().x + btn_w + margin_between_buttons, _prev->getPosition().y));
 		_pause->setPosition(sf::Vector2i(_play->getPosition().x, _play->getPosition().y));
 		_next->setPosition(sf::Vector2i(_pause->getPosition().x + btn_w + margin_between_buttons, _pause->getPosition().y));
-		_last->setPosition(sf::Vector2i(_next->getPosition().x + btn_w + margin_between_buttons, _next->getPosition().y));
-
-		_anim_prev->setPosition(sf::Vector2i(_first->getPosition().x, _first->getPosition().y + btn_w + margin_between_buttons));
-		_anim_next->setPosition(sf::Vector2i(_last->getPosition().x + btn_w - 80, _anim_prev->getPosition().y));
-
-		_first->_onclick_func = [this]() {
-
-		};
+		_anim_next->setPosition(sf::Vector2i(_next->getPosition().x + btn_w + margin_between_buttons, _next->getPosition().y));
 
 		_prev->_onclick_func = [this]() {
-			
+			ModelsEditor::editor->_preview_panel->_model->_player._time -= 0.1f;
+			ModelsEditor::editor->_preview_panel->_model->updateAnimation(-0.1f);
 		};
-
 
 		_play->_onclick_func = [this]() {
 			ModelsEditor::editor->_preview_panel->_model->_isAnimating = true;
@@ -104,11 +87,8 @@ namespace ModelsEditor {
 		};
 
 		_next->_onclick_func = [this]() {
-			
-		};
-
-		_last->_onclick_func = [this]() {
-		
+			ModelsEditor::editor->_preview_panel->_model->_player._time += 0.1f;
+			ModelsEditor::editor->_preview_panel->_model->updateAnimation(0.1f);
 		};
 
 		_anim_prev->_onclick_func = [this]() {
@@ -268,32 +248,28 @@ namespace ModelsEditor {
 
 	void PlayerPanel::setButtonsActivity() {
 
-		_first->setActive(true);
+		_anim_prev->setActive(true);
 		_prev->setActive(true);
 		_play->setActive(true);
 		_pause->setActive(true);
 		_next->setActive(true);
-		_last->setActive(true);
-		_anim_prev->setActive(true);
 		_anim_next->setActive(true);
 	}
 
 	void PlayerPanel::setTooltips() {
 
-		_first->setTooltip(256, L"First Frame", L"");
-		_prev->setTooltip(256, L"Previous Frame", L"");
+		_anim_prev->setTooltip(256, L"Previous Animation", L"");
+		_prev->setTooltip(256, L"- 0.1s", L"");
 		_play->setTooltip(256, L"Play Animation", L"");
 		_pause->setTooltip(256, L"Pause Animation", L"");
-		_next->setTooltip(256, L"Next Frame", L"");
-		_last->setTooltip(256, L"Last Frame", L"");
-		_anim_prev->setTooltip(256, L"Previous Animation", L"");
+		_next->setTooltip(256, L"+ 0.1s", L"");
 		_anim_next->setTooltip(256, L"Next Animation", L"");
 	}
 
 	void PlayerPanel::cursorHover() {
 		Components::Panel::cursorHover();
 
-		_first->cursorHover();
+		_anim_prev->cursorHover();
 		_prev->cursorHover();
 		
 		bool previewExists = ModelsEditor::editor->_preview_panel != nullptr;
@@ -305,9 +281,6 @@ namespace ModelsEditor {
 		(previewExists && modelExists && hasAnimations && activeAnimation && isStoped) ? _play->cursorHover() : _pause->cursorHover();
 		
 		_next->cursorHover();
-		_last->cursorHover();
-
-		_anim_prev->cursorHover();
 		_anim_next->cursorHover();
 
 	}
@@ -315,7 +288,7 @@ namespace ModelsEditor {
 	void PlayerPanel::handleEvent(const sf::Event& event) {
 		Components::Panel::handleEvent(event);
 
-		_first->handleEvent(event);
+		_anim_prev->handleEvent(event);
 		_prev->handleEvent(event);
 
 		bool previewExists = ModelsEditor::editor->_preview_panel != nullptr;
@@ -327,9 +300,6 @@ namespace ModelsEditor {
 		(previewExists && modelExists && hasAnimations && activeAnimation && isStoped) ? _play->handleEvent(event) : _pause->handleEvent(event);
 
 		_next->handleEvent(event);
-		_last->handleEvent(event);
-
-		_anim_prev->handleEvent(event);
 		_anim_next->handleEvent(event);
 	}
 
@@ -340,14 +310,12 @@ namespace ModelsEditor {
 
 		Components::Panel::update();
 
-		_first->update();
+		_anim_prev->update();
+
 		_prev->update();
 		_play->update();
 		_pause->update();
 		_next->update();
-		_last->update();
-
-		_anim_prev->update();
 		_anim_next->update();
 	}
 
@@ -356,7 +324,7 @@ namespace ModelsEditor {
 
 		Anubis::render_window->draw(*_title);
 		
-		_first->draw();
+		_anim_prev->draw();
 		_prev->draw();
 
 		bool previewExists = ModelsEditor::editor->_preview_panel != nullptr;
@@ -368,9 +336,6 @@ namespace ModelsEditor {
 		(previewExists && modelExists && hasAnimations && activeAnimation && isStoped) ? _play->draw() : _pause->draw();
 
 		_next->draw();
-		_last->draw();
-
-		_anim_prev->draw();
 		_anim_next->draw();
 
 		// draw stats rect

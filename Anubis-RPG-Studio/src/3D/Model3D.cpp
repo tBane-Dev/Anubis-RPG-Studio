@@ -228,9 +228,6 @@ namespace Anubis {
 
 	bool Model3D::updateAnimation(float deltaSeconds) {
 
-		if (!_isAnimating)
-			return true;
-
 		if (_player._index < 0)
 			return true;
 
@@ -239,7 +236,7 @@ namespace Anubis {
 			return false;
 		}
 
-		if (!std::isfinite(deltaSeconds) || deltaSeconds < 0.f || !std::isfinite(_player._speed) || !std::isfinite(_player._time)) {
+		if (!std::isfinite(deltaSeconds) || !std::isfinite(_player._speed) || !std::isfinite(_player._time)) {
 			DebugError(L"Invalid animation playback time or speed");
 			return false;
 		}
@@ -345,7 +342,7 @@ namespace Anubis {
 
 	void Model3D::update() {
 
-		if (!updateAnimation(Anubis::deltaTime.asSeconds())) {
+		if (_isAnimating && !updateAnimation(Anubis::deltaTime.asSeconds())) {
 			_player._index = -1;
 			return;
 		}

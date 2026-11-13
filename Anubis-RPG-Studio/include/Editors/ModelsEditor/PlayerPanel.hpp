@@ -9,14 +9,11 @@ namespace ModelsEditor {
 
 		std::unique_ptr<sf::Text> _title;
 
-		std::shared_ptr<ButtonWithSprite> _first;
+		std::shared_ptr<ButtonWithSprite> _anim_prev;
 		std::shared_ptr<ButtonWithSprite> _prev;
 		std::shared_ptr<ButtonWithSprite> _play;
 		std::shared_ptr<ButtonWithSprite> _pause;
 		std::shared_ptr<ButtonWithSprite> _next;
-		std::shared_ptr<ButtonWithSprite> _last;
-
-		std::shared_ptr<ButtonWithSprite> _anim_prev;
 		std::shared_ptr<ButtonWithSprite> _anim_next;
 
 		sf::IntRect _statsRect;
