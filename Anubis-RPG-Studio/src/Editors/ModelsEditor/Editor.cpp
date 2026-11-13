@@ -29,6 +29,7 @@ namespace ModelsEditor {
 		_actions_panel = std::make_shared<ActionsPanel>(_margin);
 		_model_panel = std::make_shared<ModelPanel>(_margin);
 		_player_panel = std::make_shared<PlayerPanel>(_margin);
+		_statistics_panel = std::make_shared<StatisticsPanel>(_margin);
 	}
 
 	void Editor::cursorHover() {
@@ -49,6 +50,7 @@ namespace ModelsEditor {
 		_preview_panel->cursorHover();
 		_model_panel->cursorHover();
 		_player_panel->cursorHover();
+		_statistics_panel->cursorHover();
 		_main_menu->cursorHover();
 
 	}
@@ -68,6 +70,7 @@ namespace ModelsEditor {
 		_preview_panel->handleEvent(event);
 		_model_panel->handleEvent(event);
 		_player_panel->handleEvent(event);
+		_statistics_panel->handleEvent(event);
 
 	}
 
@@ -80,6 +83,7 @@ namespace ModelsEditor {
 		_preview_panel->update();
 		_model_panel->update();
 		_player_panel->update();
+		_statistics_panel->update();
 
 	}
 
@@ -94,6 +98,7 @@ namespace ModelsEditor {
 		_preview_panel->draw();
 		_model_panel->draw();
 		_player_panel->draw();
+		_statistics_panel->draw();
 
 		_main_menu->draw();
 	}

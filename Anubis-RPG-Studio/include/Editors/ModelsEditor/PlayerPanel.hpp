@@ -16,25 +16,6 @@ namespace ModelsEditor {
 		std::shared_ptr<ButtonWithSprite> _next;
 		std::shared_ptr<ButtonWithSprite> _anim_next;
 
-		sf::IntRect _statsRect;
-		std::unique_ptr<sf::Text> _animations_label;
-		std::unique_ptr<sf::Text> _triangles_label;
-		std::unique_ptr<sf::Text> _meshes_label;
-		std::unique_ptr<sf::Text> _nodes_label;
-		std::unique_ptr<sf::Text> _skins_label;
-		std::unique_ptr<sf::Text> _joints_label;
-		std::unique_ptr<sf::Text> _textures_label;
-		std::unique_ptr<sf::Text> _size_label;
-
-		std::unique_ptr<sf::Text> _animations;
-		std::unique_ptr<sf::Text> _triangles;
-		std::unique_ptr<sf::Text> _meshes;
-		std::unique_ptr<sf::Text> _nodes;
-		std::unique_ptr<sf::Text> _skins;
-		std::unique_ptr<sf::Text> _joints;
-		std::unique_ptr<sf::Text> _textures;
-		std::unique_ptr<sf::Text> _size;
-
 		PlayerPanel(sf::Vector2i margin);
 		~PlayerPanel();
 
