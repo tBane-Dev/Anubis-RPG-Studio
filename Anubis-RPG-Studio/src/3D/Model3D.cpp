@@ -282,10 +282,11 @@ namespace Anubis {
 		if (size.x == 0 || size.y == 0)
 			return;
 
-		std::shared_ptr<Camera> camera = _scene->_camera;
-
-		float sinAngle = std::sin(_scene->_cameraYAngle);
-		float cosAngle = std::cos(_scene->_cameraYAngle);
+		std::shared_ptr<Scene> scene = _scene.lock();
+		std::shared_ptr<Camera> camera = scene->_camera;
+		
+		float sinAngle = std::sin(scene->_cameraYAngle);
+		float cosAngle = std::cos(scene->_cameraYAngle);
 
 		float relativeX = _position.x - camera->_position.x;
 		float relativeY = _position.y - camera->_position.y;
@@ -303,20 +304,20 @@ namespace Anubis {
 		float mouseX = (2.f * mouse.x / size.x - 1.f) * halfWidth;
 		float mouseY = (1.f - 2.f * mouse.y / size.y) * halfHeight;
 
-		std::vector<std::shared_ptr<Model3D>>::iterator hovered = std::find(_scene->_hovered.begin(), _scene->_hovered.end(), this->shared_from_this());
-		std::vector<std::shared_ptr<Model3D>>::iterator pressed = std::find(_scene->_pressed.begin(), _scene->_pressed.end(), this->shared_from_this());
+		std::vector<std::shared_ptr<Model3D>>::iterator hovered = std::find(scene->_hovered.begin(), scene->_hovered.end(), this->shared_from_this());
+		std::vector<std::shared_ptr<Model3D>>::iterator pressed = std::find(scene->_pressed.begin(), scene->_pressed.end(), this->shared_from_this());
 
-		if (hovered != _scene->_hovered.end()) {
+		if (hovered != scene->_hovered.end()) {
 			if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Left) {
 
-				if (std::find(_scene->_pressed.begin(), _scene->_pressed.end(), this->shared_from_this()) == _scene->_pressed.end())
-					_scene->_pressed.push_back(this->shared_from_this());
+				if (std::find(scene->_pressed.begin(), scene->_pressed.end(), this->shared_from_this()) == scene->_pressed.end())
+					scene->_pressed.push_back(this->shared_from_this());
 			}
 		}
 
-		pressed = std::find(_scene->_pressed.begin(), _scene->_pressed.end(), this->shared_from_this());
+		pressed = std::find(scene->_pressed.begin(), scene->_pressed.end(), this->shared_from_this());
 
-		if (pressed != _scene->_pressed.end()) {
+		if (pressed != scene->_pressed.end()) {
 			if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp) {
 				if (mbp->button == sf::Mouse::Button::Left) {
 					offset.x = mouseX - modelViewX;
@@ -328,7 +329,7 @@ namespace Anubis {
 			}
 		}
 
-		if (pressed != _scene->_pressed.end()) {
+		if (pressed != scene->_pressed.end()) {
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && cursor->_isDragging) {
 				float viewX = mouseX - offset.x;
 				float viewY = mouseY - offset.y;
@@ -363,9 +364,11 @@ namespace Anubis {
 		if (!_isSelectable)
 			return;
 
-		std::vector<std::shared_ptr<Model3D>>::iterator pressed = std::find(_scene->_pressed.begin(), _scene->_pressed.end(), this->shared_from_this());
+		std::shared_ptr<Scene> scene = _scene.lock();
 
-		if (pressed != _scene->_pressed.end() && sf::Mouse::isButtonPressed(sf::Mouse::Button::Right)) {
+		std::vector<std::shared_ptr<Model3D>>::iterator pressed = std::find(scene->_pressed.begin(), scene->_pressed.end(), this->shared_from_this());
+
+		if (pressed != scene->_pressed.end() && sf::Mouse::isButtonPressed(sf::Mouse::Button::Right)) {
 			sf::Vector2f delta = sf::Vector2f(Anubis::cursor->_position) - _lastRotationMouse;
 			_lastRotationMouse = sf::Vector2f(Anubis::cursor->_position);
 
@@ -379,8 +382,8 @@ namespace Anubis {
 				float halfAngle = length * sensitivity * toRadians * 0.5f;
 				float s = std::sin(halfAngle) / length;
 
-				float sinAngle = std::sin(_scene->_cameraYAngle);
-				float cosAngle = std::cos(_scene->_cameraYAngle);
+				float sinAngle = std::sin(scene->_cameraYAngle);
+				float cosAngle = std::cos(scene->_cameraYAngle);
 
 				Quaternion deltaRotation{
 					std::cos(halfAngle),

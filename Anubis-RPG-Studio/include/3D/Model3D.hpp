@@ -34,7 +34,7 @@ namespace Anubis {
 		Quaternion _rotationDelta;
 		float _rotationSpeed;
 
-		std::shared_ptr<Scene> _scene;
+		std::weak_ptr<Scene> _scene;
 		std::vector<std::shared_ptr<Mesh3D>> _meshes;
 
 		std::vector<Node3D> _nodes;
