@@ -2,6 +2,7 @@
 #include "Components/Panel.hpp"
 #include "Controls/TextInput.hpp"
 #include "Controls/ButtonWithTextAndSprite.hpp"
+#include "3D/Model3D.hpp"
 
 namespace ModelsEditor {
 	class PlayerPanel : public Components::Panel {
@@ -19,7 +20,6 @@ namespace ModelsEditor {
 		PlayerPanel(sf::Vector2i margin);
 		~PlayerPanel();
 
-		void loadModel();
 		void setButtonsActivity();
 		void setTooltips();
 

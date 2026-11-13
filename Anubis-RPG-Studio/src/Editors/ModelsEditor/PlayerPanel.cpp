@@ -108,16 +108,11 @@ namespace ModelsEditor {
 
 		};
 
-		loadModel();
 		setButtonsActivity();
 		setTooltips();
 	}
 
 	PlayerPanel::~PlayerPanel() {
-
-	}
-
-	void PlayerPanel::loadModel() {
 
 	}
 

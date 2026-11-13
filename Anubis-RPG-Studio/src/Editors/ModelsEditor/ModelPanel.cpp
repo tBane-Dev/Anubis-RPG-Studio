@@ -7,6 +7,8 @@
 #include "PrefabsManager.hpp"
 #include "ShadersManager.hpp"
 #include "Windows/FileDialog/FileDialog.hpp"
+#include <filesystem>
+#include "ModelsManager.hpp"
 
 namespace ModelsEditor {
 
@@ -32,21 +34,25 @@ namespace ModelsEditor {
 
 			std::function<void()> function = [this, fileDialog]() {
 
-				std::shared_ptr<sf::Image> image = std::make_shared<sf::Image>();
+				std::shared_ptr<Anubis::Model3D> model = Anubis::openModel3DFromFile(fileDialog->getPathFile());
 
-				if (!image->loadFromFile(fileDialog->getPathFile())) {
-					DebugError(L"Nie udało się wczytać obrazka: " + fileDialog->getPathFile());
+				if (!model) {
+					DebugError(L"Cant load model: " + fileDialog->getPathFile());
 					return;
 				}
 
-				// TO-DO
-				//ModelsEditor::editor->_sprite_sheet_panel->setTextInputsRange();
-				//ModelsEditor::editor->_sprite_sheet_panel->loadModel();
-				//ModelsEditor::editor->_actions_panel->setButtonsActivity();
-				//ModelsEditor::editor->_actions_panel->setTooltips();
-				//ModelsEditor::editor->_preview_panel->loadAnimations();
-				//ModelsEditor::editor->_preview_panel->setButtonsActivity();
-				//ModelsEditor::editor->_preview_panel->setTooltips();
+				std::filesystem::path path(fileDialog->getPathFile());
+				ModelsEditor::editor->_model_panel->loadModel(model);
+
+				ModelsEditor::editor->_name_panel->_name->setText(path.filename().wstring());
+				ModelsEditor::editor->_list_panel->selectItem(-1);
+				ModelsEditor::editor->_actions_panel->setButtonsActivity();
+				ModelsEditor::editor->_actions_panel->setTooltips();
+				ModelsEditor::editor->_preview_panel->loadModel(model);
+				ModelsEditor::editor->_player_panel->setButtonsActivity();
+				ModelsEditor::editor->_player_panel->setTooltips();
+				ModelsEditor::editor->_statistics_panel->loadModel(model);
+				
 			};
 
 			fileDialog->setFunction(function);
@@ -58,8 +64,8 @@ namespace ModelsEditor {
 
 	}
 
-	void ModelPanel::loadModel() {
-
+	void ModelPanel::loadModel(std::shared_ptr<Anubis::Model3D> model) {
+		_model = model;
 	}
 
 	void ModelPanel::cursorHover() {
