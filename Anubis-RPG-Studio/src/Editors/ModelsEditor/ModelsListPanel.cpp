@@ -29,13 +29,18 @@ namespace ModelsEditor {
 			int index = first + i;
 			if (index < models_count) {
 				_items[i]->setName(Anubis::models_manager->_models[index]->_name);
-				_items[i]->_onclick_func = [this, index]() { 
+				_items[i]->_onclick_func = [this, index, i]() { 
 					selectItem(index); 
 					std::shared_ptr<Anubis::Model3D> model = Anubis::models_manager->_models[index];
-					ModelsEditor::editor->_preview_panel->loadModel(model);
+					std::shared_ptr<Anubis::Model3D> tempModel = std::make_shared<Anubis::Model3D>(*model);
+					ModelsEditor::editor->_name_panel->_name->setText(model->_name);
+					ModelsEditor::editor->_model_panel->loadModel(tempModel);
+					ModelsEditor::editor->_actions_panel->setButtonsActivity();
+					ModelsEditor::editor->_actions_panel->setTooltips();
+					ModelsEditor::editor->_preview_panel->loadModel(tempModel);
 					ModelsEditor::editor->_player_panel->setButtonsActivity();
 					ModelsEditor::editor->_player_panel->setTooltips();
-					ModelsEditor::editor->_statistics_panel->loadModel(model);
+					ModelsEditor::editor->_statistics_panel->loadModel(tempModel);
 					};
 			}
 			else {

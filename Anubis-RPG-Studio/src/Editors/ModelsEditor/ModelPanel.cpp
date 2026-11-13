@@ -27,24 +27,27 @@ namespace ModelsEditor {
 			sf::Vector2i(getPosition().x + (getSize().x - 300) / 2, getPosition().y + (getSize().y - 64) / 2 + 16)
 		);
 
-		_btn->_onclick_func = [this]() {
-
-			std::shared_ptr<FileDialog> fileDialog = std::make_shared<FileDialog>(L"Load Spritesheet", L"Load");
+		_btn->_onclick_func = []() {
+			std::shared_ptr<FileDialog> fileDialog = std::make_shared<FileDialog>(L"Load Model", L"Load");
 			fileDialog->setPosition(sf::Vector2i(256, 192));
 
-			std::function<void()> function = [this, fileDialog]() {
+			std::weak_ptr<FileDialog> weakDialog = fileDialog;
 
-				std::shared_ptr<Anubis::Model3D> model = Anubis::openModel3DFromFile(fileDialog->getPathFile());
+			std::function<void()> function = [weakDialog]() {
+				std::shared_ptr<FileDialog> dialog = weakDialog.lock();
+				if (!dialog) return;
+
+				std::wstring pathFile = dialog->getPathFile();
+				std::shared_ptr<Anubis::Model3D> model = Anubis::openModel3DFromFile(pathFile);
 
 				if (!model) {
-					DebugError(L"Cant load model: " + fileDialog->getPathFile());
+					DebugError(L"Cant load model: " + pathFile);
 					return;
 				}
 
-				std::filesystem::path path(fileDialog->getPathFile());
+				std::filesystem::path path(pathFile);
 				ModelsEditor::editor->_model_panel->loadModel(model);
-
-				ModelsEditor::editor->_name_panel->_name->setText(path.filename().wstring());
+				ModelsEditor::editor->_name_panel->_name->setText(path.stem().wstring());
 				ModelsEditor::editor->_list_panel->selectItem(-1);
 				ModelsEditor::editor->_actions_panel->setButtonsActivity();
 				ModelsEditor::editor->_actions_panel->setTooltips();
@@ -52,12 +55,13 @@ namespace ModelsEditor {
 				ModelsEditor::editor->_player_panel->setButtonsActivity();
 				ModelsEditor::editor->_player_panel->setTooltips();
 				ModelsEditor::editor->_statistics_panel->loadModel(model);
-				
+
 			};
 
 			fileDialog->setFunction(function);
 			Main::windows_manager->push_back(fileDialog);
-			};
+		};
+
 	}
 
 	ModelPanel::~ModelPanel() {

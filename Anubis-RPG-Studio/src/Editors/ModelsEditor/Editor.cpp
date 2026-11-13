@@ -23,11 +23,11 @@ namespace ModelsEditor {
 	void Editor::create() {
 		_main_menu = std::make_shared<MainMenu>();
 
+		_model_panel = std::make_shared<ModelPanel>(_margin);
 		_list_panel = std::make_shared<ModelsListPanel>(_margin);
 		_name_panel = std::make_shared<NamePanel>(_margin);
 		_preview_panel = std::make_shared<PreviewPanel>(_margin);
 		_actions_panel = std::make_shared<ActionsPanel>(_margin);
-		_model_panel = std::make_shared<ModelPanel>(_margin);
 		_player_panel = std::make_shared<PlayerPanel>(_margin);
 		_statistics_panel = std::make_shared<StatisticsPanel>(_margin);
 	}

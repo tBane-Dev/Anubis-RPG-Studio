@@ -51,13 +51,30 @@ namespace ModelsEditor {
 			sf::Vector2i(startPosition.x + 16, _addBtn->getPosition().y + _addBtn->getSize().y + marginBetweenButtons)
 		);
 
-		_saveBtn->_onclick_func = []() {
-			};
+		_saveBtn->_onclick_func = [this]() {
+			int index = ModelsEditor::editor->_list_panel->_selectedItemIndex;
+			if (index < 0) return;
+
+			std::shared_ptr<Anubis::Model3D> model = ModelsEditor::editor->_model_panel->_model;
+			model->_name = ModelsEditor::editor->_name_panel->_name->getText();
+			Anubis::models_manager->_models[index] = model;
+
+			ModelsEditor::editor->_model_panel->_model = std::make_shared<Anubis::Model3D>(*model);
+			ModelsEditor::editor->_list_panel->loadList();
+			ModelsEditor::editor->_list_panel->selectItem(index);
+
+		};
 
 		_addBtn->_onclick_func = []() {
+			if (!ModelsEditor::editor->_model_panel->_model)
+				return;
 
+			std::shared_ptr<Anubis::Model3D> model = std::make_shared<Anubis::Model3D>(*ModelsEditor::editor->_model_panel->_model);
+			model->_name = ModelsEditor::editor->_name_panel->_name->getText();
+			Anubis::models_manager->addModel(model);
 			ModelsEditor::editor->_list_panel->loadList();
-		};
+			ModelsEditor::editor->_list_panel->selectItem(Anubis::models_manager->getModelsCount() - 1);
+			};
 
 		_removeBtn->_onclick_func = []() {
 		};
@@ -72,17 +89,69 @@ namespace ModelsEditor {
 
 	void ActionsPanel::setButtonsActivity() {
 
+		_saveBtn->setActive(false);
+		_addBtn->setActive(false);
+		_removeBtn->setActive(false);;
+
+		if (!ModelsEditor::editor || !ModelsEditor::editor->_model_panel)
+			return;
+
+		if (ModelsEditor::editor->_model_panel->_model && !ModelsEditor::editor->_name_panel->_name->getText().empty() && ModelsEditor::editor->_list_panel->_selectedItemIndex >= 0) {
+			_saveBtn->setActive(true);
+		}
+
+		if (ModelsEditor::editor->_model_panel->_model && !ModelsEditor::editor->_name_panel->_name->getText().empty()) {
+			_addBtn->setActive(true);
+		}
+
+		if (ModelsEditor::editor->_list_panel->_selectedItemIndex >= 0) {
+			_removeBtn->setActive(true);
+		}
 		
-		_saveBtn->setActive(true);
-		_addBtn->setActive(true);
-		_removeBtn->setActive(true);
+		
 
 	}
 
 	void ActionsPanel::setTooltips() {
+
 		_saveBtn->setTooltip(256, L"Save Model", L"Saves the current model to the selected model");
 		_addBtn->setTooltip(256, L"Add Model", L"Adds a new model to the list");
-		_removeBtn->setTooltip(256, L"Remove Model", L"Removes the selected model from the list");
+		_removeBtn->setTooltip(256, L"Remove Model", L"Removes the selected item from the list");
+
+		if (!ModelsEditor::editor || !ModelsEditor::editor->_model_panel)
+			return;
+
+		// btn to save
+		if (ModelsEditor::editor->_model_panel->_model && !ModelsEditor::editor->_name_panel->_name->getText().empty() && ModelsEditor::editor->_list_panel->_selectedItemIndex >= 0) {
+			// no edit
+		}
+		else if(!ModelsEditor::editor->_model_panel->_model){
+			_saveBtn->setTooltip(256, L"Save Model", L"Model has not loaded");
+		}
+		else if (ModelsEditor::editor->_name_panel->_name->getText().empty()) {
+			_saveBtn->setTooltip(256, L"Save Model", L"Not setted model name");
+		}
+		else {
+			_saveBtn->setTooltip(256, L"Save Model", L"Not selected item from list");
+		}
+
+		// btn to add
+		if (ModelsEditor::editor->_model_panel->_model && !ModelsEditor::editor->_name_panel->_name->getText().empty()) {
+			// no edit
+		}
+		else if (!ModelsEditor::editor->_model_panel->_model) {
+			_addBtn->setTooltip(256, L"Add Model", L"Model has not loaded");
+		}
+		else if (ModelsEditor::editor->_name_panel->_name->getText().empty()) {
+			_addBtn->setTooltip(256, L"Add Model", L"Not setted model name");
+		}
+
+		// btn to remove
+		if (ModelsEditor::editor->_list_panel->_selectedItemIndex >= 0) {
+			// no edit
+		} else {
+			_removeBtn->setTooltip(256, L"Remove Model", L"Not selected item from list to remove");
+		}
 	}
 
 	void ActionsPanel::cursorHover() {
