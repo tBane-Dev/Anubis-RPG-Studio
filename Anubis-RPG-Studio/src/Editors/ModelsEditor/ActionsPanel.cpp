@@ -55,6 +55,8 @@ namespace ModelsEditor {
 			};
 
 		_addBtn->_onclick_func = []() {
+
+			ModelsEditor::editor->_list_panel->loadList();
 		};
 
 		_removeBtn->_onclick_func = []() {
