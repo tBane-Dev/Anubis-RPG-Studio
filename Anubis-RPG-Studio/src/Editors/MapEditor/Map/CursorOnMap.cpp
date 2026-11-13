@@ -720,13 +720,15 @@ namespace MapEditor {
 		if (_previewPrefab.lock() != prefab) {
 			_previewPrefab = prefab;
 			_previewModel = PlacedGameObjects::createModel(prefab);
-
-			if (_previewModel) {
-				_previewModel->setScene(scene);
-				_previewModel->_isSelectable = false; // never picked, it is not in Scene::_models
-			}
 		}
 
+		if (prefab->_model.expired()) 
+			_previewModel = nullptr;
+
+		if (!_previewModel) return;
+
+		_previewModel->setScene(scene);
+		_previewModel->_isSelectable = false; // never picked, it is not in Scene::_models
 		_previewModel->_scale = PlacedGameObjects::getModelScale(prefab);
 		_previewModel->_position = anchor;
 
@@ -766,7 +768,6 @@ namespace MapEditor {
 		glMatrixMode(previousMatrixMode);
 		glPopAttrib();
 	}
-
 	void CursorOnMap::draw() {
 		if (!(GUI_manager->Element_pressed == MapEditor::editor->_map || GUI_manager->Element_hovered == MapEditor::editor->_map || GUI_manager->Element_hovered == nullptr))
 			return;

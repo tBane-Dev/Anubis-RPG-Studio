@@ -77,6 +77,42 @@ namespace ModelsEditor {
 			};
 
 		_removeBtn->_onclick_func = []() {
+			int index = ModelsEditor::editor->_list_panel->_selectedItemIndex;
+			if (index < 0 || index >= Anubis::models_manager->getModelsCount())
+				return;
+
+			std::shared_ptr<Anubis::Model3D> oldModel = Anubis::models_manager->getModel(index).lock();
+
+			for (auto& prefab : Anubis::prefabs_manager->getAllPrefabs()) {
+				if (prefab->_model.lock() != oldModel)
+					continue;
+
+				if (MapEditor::editor->_cursor_on_map->_object.lock() == prefab)
+					MapEditor::editor->_cursor_on_map->_object = std::weak_ptr<GameObject>();
+
+				MapEditor::editor->_cursor_on_map->removeFromSelected(prefab);
+				MapEditor::editor->_map->removeGameObjectsFromChunksByPrefab(prefab);
+				MapEditor::editor->_game_objects->removeGameObjectsByPrefab(prefab);
+				prefab->_model.reset();
+			}
+
+			Anubis::models_manager->_models.erase(Anubis::models_manager->_models.begin() + index);
+			MapEditor::editor->setVisibleChunks();
+
+			int count = Anubis::models_manager->getModelsCount();
+			if (index >= count) index = count - 1;
+
+			std::shared_ptr<Anubis::Model3D> model = Anubis::models_manager->getModel(index).lock();
+			ModelsEditor::editor->_name_panel->_name->setText((model) ? model->_name : L"");
+			ModelsEditor::editor->_model_panel->loadModel(model);
+			ModelsEditor::editor->_list_panel->loadList();
+			ModelsEditor::editor->_list_panel->selectItem(index);
+			ModelsEditor::editor->_actions_panel->setButtonsActivity();
+			ModelsEditor::editor->_actions_panel->setTooltips();
+			ModelsEditor::editor->_preview_panel->loadModel(model);
+			ModelsEditor::editor->_player_panel->setButtonsActivity();
+			ModelsEditor::editor->_player_panel->setTooltips();
+			ModelsEditor::editor->_statistics_panel->loadModel(model);
 		};
 
 		setButtonsActivity();
