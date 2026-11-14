@@ -12,7 +12,6 @@ namespace ModelsEditor {
 		
 		std::unique_ptr<sf::Text> _title;
 
-		std::shared_ptr<ButtonWithTextAndSprite> _loadBtn;
 		sf::IntRect _sceneRect;
 		sf::IntRect _scenePixelRect;
 		float _modelRadius;

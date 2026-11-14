@@ -19,9 +19,13 @@ namespace Anubis {
 		float _cameraYAngle;
 		float _cameraRadius;
 		float _cameraZoom = 1.0f;
+		float _cameraSpeed = 400.f;	// WASD / arrows, pixels per second
+
 		sf::Vector2i _lastCameraMouse;
 		bool _isPressedMiddle = false;
+		bool _isPressedRight = false;
 		float _panPlaneY = 0.f;		// height of the grabbed terrain point while panning with the middle button
+		bool _cameraCanMove = false;
 		bool _cameraIsMoving = false;
 
 		std::vector<std::shared_ptr<Model3D>> _models;
@@ -44,8 +48,6 @@ namespace Anubis {
 		float _fovY = 60.f;
 		float _nearPlane = 0.1f;
 		float _farPlane = 10000.f;
-
-		float _cameraSpeed = 400.f;	// WASD / arrows, pixels per second
 
 		// Shadow map of the sun (directional light)
 		int _shadowMapSize = 512;
@@ -87,12 +89,14 @@ namespace Anubis {
 		~Scene();
 
 		bool initializeModel3DShaders();
+		void setCameraCanMove(bool canMove);
 
 		sf::IntRect getViewport();
 		void setViewport();
 		void setProjection();
 		void setCamera();
 		void lookAt(sf::Vector3f target);
+		void updateCameraRotation();
 
 		void addModel(std::shared_ptr<Model3D> model);
 		void removeModel(std::shared_ptr<Model3D> model);
@@ -114,6 +118,7 @@ namespace Anubis {
 		bool screenToRay(sf::Vector2f pixel, sf::Vector3f& origin, sf::Vector3f& dir);
 		bool worldToScreen(sf::Vector3f point, sf::Vector2f& pixel);
 		bool panByPixels(sf::Vector2f anchorPixel, sf::Vector2f pixelDelta);
+		bool rotateByPixels(sf::Vector2i pixelDelta);
 		bool unprojectDepth(sf::Vector2i pixel, float depth, sf::Vector3f& hit);
 		std::vector<std::shared_ptr<Model3D>> getModelsInRect(sf::IntRect rect);
 

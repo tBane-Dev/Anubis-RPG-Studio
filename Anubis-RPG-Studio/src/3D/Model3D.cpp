@@ -315,6 +315,9 @@ namespace Anubis {
 			}
 		}
 
+		if (!_scene.expired() && _scene.lock()->_cameraCanMove == false)
+			return;
+
 		pressed = std::find(scene->_pressed.begin(), scene->_pressed.end(), this->shared_from_this());
 
 		if (pressed != scene->_pressed.end()) {

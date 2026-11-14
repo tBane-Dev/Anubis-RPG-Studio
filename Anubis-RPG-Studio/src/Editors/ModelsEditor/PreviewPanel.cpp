@@ -18,22 +18,20 @@ namespace ModelsEditor {
 		_title = std::make_unique<sf::Text>(basicFont, L"Preview", 20);
 		_title->setFillColor(basic_text_color);
 		_title->setPosition(sf::Vector2f(_rect.position.x + 16, _rect.position.y + 16));
-	
-		
 
 		_sceneRect.size = sf::Vector2i(512 + 256 + 64, 512 + 128 + 32);
 		_sceneRect.position = sf::Vector2i(getPosition().x + 32, getPosition().y + _title->getFont().getLineSpacing(20) + 24 + 16);
 		
 		_scene = std::make_shared<Anubis::Scene>();
 		_scene->initializeModel3DShaders();
+		_scene->setCameraCanMove(false);
 
 		sf::Vector2i topLeft = Anubis::render_window->mapCoordsToPixel(sf::Vector2f(_sceneRect.position));
 		sf::Vector2i bottomRight = Anubis::render_window->mapCoordsToPixel(sf::Vector2f(_sceneRect.position + _sceneRect.size));
 		_scenePixelRect = sf::IntRect(topLeft, bottomRight - topLeft);
 		_scene->_viewport = _scenePixelRect;
 
-
-		loadModel(nullptr); // TO-DO - must be the laodModel
+		loadModel(nullptr);
 	}
 
 	PreviewPanel::~PreviewPanel() {
@@ -50,7 +48,7 @@ namespace ModelsEditor {
 		//_i->setText(intervalText);
 
 		_scene->_models.clear();
-
+		
 		_model = nullptr;
 		_modelRadius = 1.f;
 
@@ -148,13 +146,9 @@ namespace ModelsEditor {
 
 		float distance = _modelRadius * 1.1f / std::sin(_scene->_fovY * 0.5f * 3.14159265f / 180.f);
 
-		float cameraXAngle = 15.0f;
-		_scene->_camera->_rotation = Anubis::Quaternion(
-			std::cos(cameraXAngle * 3.14159265f / 180.f * 0.5f),
-			std::sin(cameraXAngle * 3.14159265f / 180.f * 0.5f),
-			0.f,
-			0.f
-		);
+		_scene->_cameraXAngle = 15.f;
+		_scene->_cameraYAngle = 0.f;
+		_scene->updateCameraRotation();
 
 		std::array<float, 16> m = _scene->_camera->_rotation.matrix();
 
@@ -208,7 +202,6 @@ namespace ModelsEditor {
 	void PreviewPanel::cursorHover() {
 		Components::Panel::cursorHover();
 
-		//_loadBtn->cursorHover();
 		_scene->cursorHover();
 
 	}
@@ -216,59 +209,15 @@ namespace ModelsEditor {
 	void PreviewPanel::handleEvent(const sf::Event& event) {
 		Components::Panel::handleEvent(event);
 
-		//_loadBtn->handleEvent(event);
+		
+		_scene->handleEvent(event);
 
-		std::array<float, 16> m = _scene->_camera->_rotation.matrix();
-		sf::Vector3f right(m[0], m[4], m[8]);
-		sf::Vector3f up(m[1], m[5], m[9]);
-		sf::Vector3f back(m[2], m[6], m[10]);
-
-		bool isOnPreview = _scene->getViewport().contains(Anubis::cursor->_position);
-
-		if (const auto* scroll = event.getIf<sf::Event::MouseWheelScrolled>(); scroll && isOnPreview) {
-			float oldDistance = _scene->_cameraRadius / _scene->_cameraZoom;
-
-			if (scroll->delta > 0 && _scene->_cameraZoom < 4.0f) _scene->_cameraZoom += 0.25f;
-			if (scroll->delta < 0 && _scene->_cameraZoom > 0.25f) _scene->_cameraZoom -= 0.25f;
-
-			float distance = _scene->_cameraRadius / _scene->_cameraZoom;
-
-			_scene->_camera->_position += back * (distance - oldDistance);
-			_scene->_cameraIsMoving = true;
-			return;
-		}
-
-		if (const auto* pressed = event.getIf<sf::Event::MouseButtonPressed>(); pressed && pressed->button == sf::Mouse::Button::Middle && isOnPreview) {
-			_scene->_lastCameraMouse = pressed->position;
-			_scene->_isPressedMiddle = true;
-			return;
-		}
-
-		if (const auto* released = event.getIf<sf::Event::MouseButtonReleased>(); released && released->button == sf::Mouse::Button::Middle) {
-			_scene->_isPressedMiddle = false;
-			return;
-		}
-
-		if (const auto* moved = event.getIf<sf::Event::MouseMoved>(); moved && _scene->_isPressedMiddle) {
-			sf::Vector2i delta = moved->position - _scene->_lastCameraMouse;
-
-			float distance = _scene->_cameraRadius / _scene->_cameraZoom;
-			float unitsPerPixel = 2.f * distance * std::tan(_scene->_fovY * 0.5f * 3.14159265f / 180.f) / (float)_scene->getViewport().size.y;
-
-			_scene->_camera->_position -= right * ((float)delta.x * unitsPerPixel);
-			_scene->_camera->_position += up * ((float)delta.y * unitsPerPixel);
-
-			_scene->_lastCameraMouse = moved->position;
-			_scene->_cameraIsMoving = true;
-			return;
-		}
 	}
 	void PreviewPanel::update() {
 		Components::Panel::update();
 
-		//_loadBtn->update();
-
 		_scene->update();
+
 		if (_model) {
 			_model->update();
 		}
@@ -280,9 +229,6 @@ namespace ModelsEditor {
 		
 		// draw title
 		Anubis::render_window->draw(*_title);
-
-		// draw load button
-		//_loadBtn->draw();
 
 		// draw checkerboard
 		sf::RectangleShape rect(sf::Vector2f(_sceneRect.size));

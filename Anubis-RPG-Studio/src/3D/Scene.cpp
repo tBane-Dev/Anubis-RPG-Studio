@@ -38,6 +38,9 @@ namespace Anubis {
 	}
 
 	Scene::Scene() {
+
+		_cameraCanMove = true;
+
 		_cameraXAngle = 45.f;
 		_cameraYAngle = 0.f;
 		_cameraRadius = 500.f;
@@ -60,8 +63,11 @@ namespace Anubis {
 		_camera->_position.z = std::cos(_cameraYAngle) * horizontalRadius;
 
 		_cameraZoom = 1.0f;
+		_cameraSpeed = 400.f;
 
 		_isPressedMiddle = false;
+		_isPressedRight = false;
+
 		_panPlaneY = 0.f;
 		_cameraIsMoving = false;
 
@@ -77,7 +83,7 @@ namespace Anubis {
 		_nearPlane = 0.1f;
 		_farPlane = 10000.f;
 
-		_cameraSpeed = 400.f;
+		
 
 		_shadowMapSize = 2048;
 		_shadowDepthComponent = 0x81A7;
@@ -156,6 +162,10 @@ namespace Anubis {
 		return true;
 	}
 
+	void Scene::setCameraCanMove(bool canMove) {
+		_cameraCanMove = canMove;
+	}
+
 	sf::IntRect Scene::getViewport() {
 
 		if (_viewport.size.x > 0 && _viewport.size.y > 0)
@@ -205,6 +215,18 @@ namespace Anubis {
 
 		_panPlaneY = target.y;
 		_cameraIsMoving = true;
+	}
+
+	void Scene::updateCameraRotation() {
+		float xHalf = _cameraXAngle * 3.14159265f / 180.f * 0.5f;
+		float yHalf = _cameraYAngle * 3.14159265f / 180.f * 0.5f;
+
+		float cx = std::cos(xHalf);
+		float sx = std::sin(xHalf);
+		float cy = std::cos(yHalf);
+		float sy = std::sin(yHalf);
+
+		_camera->_rotation = Quaternion(cx * cy, sx * cy, -cx * sy, -sx * sy);
 	}
 
 	void Scene::addModel(std::shared_ptr<Model3D> model) {
@@ -771,6 +793,41 @@ namespace Anubis {
 		return true;
 	}
 
+	bool Scene::rotateByPixels(sf::Vector2i pixelDelta) {
+		sf::IntRect viewport = getViewport();
+		sf::Vector2f center(
+			(float)viewport.position.x + (float)viewport.size.x * 0.5f,
+			(float)viewport.position.y + (float)viewport.size.y * 0.5f
+		);
+
+		sf::Vector3f origin;
+		sf::Vector3f dir;
+		if (!screenToRay(center, origin, dir)) return false;
+		if (std::abs(dir.y) < 0.0001f) return false;
+
+		float distance = (_panPlaneY - origin.y) / dir.y;
+		if (distance < 0.f) return false;
+
+		sf::Vector3f pivot = origin + dir * distance;
+
+		float angle = -(float)pixelDelta.x * 0.3f;
+		float half = angle * 3.14159265f / 180.f * 0.5f;
+		float w = std::cos(half);
+		float s = std::sin(half);
+
+		sf::Vector3f axis(0.f, s, 0.f);
+		sf::Vector3f offset = _camera->_position - pivot;
+		sf::Vector3f turn = shadowCross(axis, offset) * 2.f;
+		_camera->_position = pivot + offset + turn * w + shadowCross(axis, turn);
+
+		_cameraYAngle += angle;
+		updateCameraRotation();
+
+		_cameraIsMoving = true;
+
+		return true;
+	}
+
 	bool Scene::unprojectDepth(sf::Vector2i pixel, float depth, sf::Vector3f& hit) {
 
 		// depth == 1 means nothing was drawn under the pixel.
@@ -1088,11 +1145,50 @@ namespace Anubis {
 			float distance = _cameraRadius / _cameraZoom;
 			float distanceDelta = distance - oldDistance;
 
-
-			_camera->_position.y += std::sin(_cameraXAngle * 3.14159265f / 180.f) * distanceDelta;
-			_camera->_position.z += std::cos(_cameraXAngle * 3.14159265f / 180.f) * distanceDelta;
+			std::array<float, 16> m = _camera->_rotation.matrix();
+			_camera->_position += sf::Vector3f(m[2], m[6], m[10]) * distanceDelta;
 			_cameraIsMoving = true;
 			return;
+		}
+
+		if (const auto* pressed = event.getIf<sf::Event::MouseButtonPressed>(); pressed && pressed->button == sf::Mouse::Button::Right) {
+			_lastCameraMouse = pressed->position;
+			_isPressedRight = true;
+			return;
+		}
+
+		if (const auto* released = event.getIf<sf::Event::MouseButtonReleased>(); released && released->button == sf::Mouse::Button::Right) {
+			_isPressedRight = false;
+			return;
+		}
+
+		if (const auto* moved = event.getIf<sf::Event::MouseMoved>(); moved && _isPressedRight) {
+			rotateByPixels(moved->position - _lastCameraMouse);
+			_lastCameraMouse = moved->position;
+			return;
+		}
+
+		if (!_cameraCanMove) {
+			// if camera cant move then click any button do rotate
+			if (const auto* pressed = event.getIf<sf::Event::MouseButtonPressed>(); pressed && (pressed->button == sf::Mouse::Button::Left || pressed->button == sf::Mouse::Button::Middle)) {
+				_lastCameraMouse = pressed->position;
+				_isPressedMiddle = true;
+				return;
+			}
+
+			if (const auto* released = event.getIf<sf::Event::MouseButtonReleased>(); released && (released->button == sf::Mouse::Button::Left || released->button == sf::Mouse::Button::Middle)) {
+				_isPressedMiddle = false;
+				return;
+			}
+
+			if (const auto* moved = event.getIf<sf::Event::MouseMoved>(); moved && _isPressedMiddle) {
+				rotateByPixels(moved->position - _lastCameraMouse);
+				_lastCameraMouse = moved->position;
+				return;
+			}
+
+			return;
+
 		}
 
 		if (const auto* pressed = event.getIf<sf::Event::MouseButtonPressed>(); pressed && pressed->button == sf::Mouse::Button::Middle) {
@@ -1112,7 +1208,6 @@ namespace Anubis {
 			panByPixels(last, sf::Vector2f(moved->position - _lastCameraMouse));
 
 			_lastCameraMouse = moved->position;
-			return;
 		}
 
 		// Selecting and moving models is handled by MapEditor::CursorOnMap.
@@ -1121,6 +1216,11 @@ namespace Anubis {
 	void Scene::update() {
 
 		_cameraIsMoving = false;
+
+		if (!_cameraCanMove) {
+			return;
+		}
+			
 
 		// WASD / arrows: the map moves by a constant number of pixels per second at every zoom level.
 		sf::Vector2f pixelDelta(0.f, 0.f);
