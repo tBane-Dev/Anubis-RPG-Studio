@@ -248,13 +248,13 @@ namespace Components {
 
 		sf::FloatRect vp(
 			sf::Vector2f(
-				slotsRect.position.x / GUI_manager->_view.getSize().x,
-				slotsRect.position.y / GUI_manager->_view.getSize().y
+				slotsRect.position.x / Anubis::GUI_manager->_view.getSize().x,
+				slotsRect.position.y / Anubis::GUI_manager->_view.getSize().y
 			),
 
 			sf::Vector2f(
-				slotsRect.size.x / GUI_manager->_view.getSize().x,
-				slotsRect.size.y / GUI_manager->_view.getSize().y
+				slotsRect.size.x / Anubis::GUI_manager->_view.getSize().x,
+				slotsRect.size.y / Anubis::GUI_manager->_view.getSize().y
 			)
 		);
 

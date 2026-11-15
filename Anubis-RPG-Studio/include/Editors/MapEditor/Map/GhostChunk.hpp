@@ -14,7 +14,7 @@ namespace MapEditor {
 			virtual void draw();
 	};
 
-	class GhostChunk : public Element {
+	class GhostChunk : public Anubis::Element {
 	public:
 
 		bool _isVisible = false;

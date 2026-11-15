@@ -209,12 +209,12 @@ void NumberInput::positioningCursorByMouse() {
 
 void NumberInput::cursorHover() {
 	if (_rect.contains(Cursors::cursor->_position)) {
-		GUI_manager->Element_hovered = this->shared_from_this();
+		Anubis::GUI_manager->Element_hovered = this->shared_from_this();
 		return;
 	}
 
 	if (_editState == NumberInputEditState::Selecting) {
-		GUI_manager->Element_hovered = this->shared_from_this();
+		Anubis::GUI_manager->Element_hovered = this->shared_from_this();
 		return;
 	}
 
@@ -261,7 +261,7 @@ void NumberInput::handleEvent(const sf::Event& event) {
 				
 			}
 
-			GUI_manager->Element_pressed = this->shared_from_this();
+			Anubis::GUI_manager->Element_pressed = this->shared_from_this();
 		}
 		else if(_editState != NumberInputEditState::None) {
 			_editState = NumberInputEditState::None;
@@ -272,16 +272,16 @@ void NumberInput::handleEvent(const sf::Event& event) {
 			setValidatedText(_textStr);
 			_cursorPosition = std::min(_cursorPosition, (int)_textStr.length());
 
-			if(GUI_manager->Element_pressed.get() == this)
-				GUI_manager->Element_pressed = nullptr;
+			if(Anubis::GUI_manager->Element_pressed.get() == this)
+				Anubis::GUI_manager->Element_pressed = nullptr;
 		}
 		_lastCLickTime = Anubis::currentTime;
 		return;
 	}
 
 	if(const auto* mr = event.getIf<sf::Event::MouseButtonReleased>(); mr) {
-		if (GUI_manager->Element_pressed.get() == this) {
-			GUI_manager->Element_pressed = nullptr;
+		if (Anubis::GUI_manager->Element_pressed.get() == this) {
+			Anubis::GUI_manager->Element_pressed = nullptr;
 		}
 
 		if(_editState == NumberInputEditState::Selecting)
@@ -538,7 +538,7 @@ void NumberInput::update() {
 	
 	}
 	
-	if (GUI_manager->Element_hovered.get() == this) {
+	if (Anubis::GUI_manager->Element_hovered.get() == this) {
 		_state = NumberInputState::Hover;
 	}
 	else {

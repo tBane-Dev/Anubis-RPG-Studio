@@ -23,8 +23,8 @@ namespace MapEditor {
 
 	void GhostChunkButton::cursorHover() {
 
-		if (GUI_manager->Element_pressed != nullptr) {
-			if (GUI_manager->Element_pressed.get() != this)
+		if (Anubis::GUI_manager->Element_pressed != nullptr) {
+			if (Anubis::GUI_manager->Element_pressed.get() != this)
 				return;
 		}
 
@@ -91,7 +91,7 @@ namespace MapEditor {
 		if (!_isActive)
 			return;
 
-		GUI_manager->Element_hovered = this->shared_from_this();
+		Anubis::GUI_manager->Element_hovered = this->shared_from_this();
 	}
 
 
@@ -333,11 +333,11 @@ namespace MapEditor {
 			};
 
 			if (sf::FloatRect(_rect).contains(mapPosition)) {
-				GUI_manager->Element_hovered = shared_from_this();
+				Anubis::GUI_manager->Element_hovered = shared_from_this();
 
 				// Manual cursor hover for button.
 				if (sf::FloatRect(_button->_rect).contains(mapPosition)) {
-					GUI_manager->Element_hovered = _button;
+					Anubis::GUI_manager->Element_hovered = _button;
 				}
 			}
 		}
@@ -351,9 +351,9 @@ namespace MapEditor {
 
 	void GhostChunk::update() {
 
-		if (GUI_manager->Element_pressed != nullptr &&
-			GUI_manager->Element_pressed != _button &&
-			GUI_manager->Element_pressed != MapEditor::editor->_map
+		if (Anubis::GUI_manager->Element_pressed != nullptr &&
+			Anubis::GUI_manager->Element_pressed != _button &&
+			Anubis::GUI_manager->Element_pressed != MapEditor::editor->_map
 			) {
 			_isVisible = false;
 			return;
@@ -364,7 +364,7 @@ namespace MapEditor {
 			return;
 		}
 
-		_isVisible = (GUI_manager->Element_hovered.get() == this || GUI_manager->Element_hovered == _button);
+		_isVisible = (Anubis::GUI_manager->Element_hovered.get() == this || Anubis::GUI_manager->Element_hovered == _button);
 
 		if (_isVisible)
 			_button->update();

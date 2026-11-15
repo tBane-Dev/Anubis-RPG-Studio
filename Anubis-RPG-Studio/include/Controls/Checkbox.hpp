@@ -6,7 +6,7 @@
 
 enum class CheckboxState { Idle, Hover, Pressed };
 
-class Checkbox : public Element {
+class Checkbox : public Anubis::Element {
 public:
 	int _value;
 	sf::IntRect _rect;

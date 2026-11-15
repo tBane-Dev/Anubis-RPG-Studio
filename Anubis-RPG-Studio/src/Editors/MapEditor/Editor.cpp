@@ -216,7 +216,7 @@ namespace MapEditor {
 
 		_cursor_on_map->draw();
 
-		GUI_manager->setView();
+		Anubis::GUI_manager->setView();
 		_main_menu->draw();
 		_palette->draw();
 	}

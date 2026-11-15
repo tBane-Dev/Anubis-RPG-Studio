@@ -89,7 +89,7 @@ namespace ModelsEditor {
 
 	void Editor::draw() {
 
-		GUI_manager->setView();
+		Anubis::GUI_manager->setView();
 
 		Anubis::render_window->draw(*_title);
 		_name_panel->draw();

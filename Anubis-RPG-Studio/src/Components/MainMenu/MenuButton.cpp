@@ -103,8 +103,8 @@ namespace Components {
 
 
 		if (const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Left) {
-			if (GUI_manager->Element_pressed.get() == this) {
-				GUI_manager->Element_pressed = nullptr;
+			if (Anubis::GUI_manager->Element_pressed.get() == this) {
+				Anubis::GUI_manager->Element_pressed = nullptr;
 			}
 
 			bool clicked_in_menu = false;
@@ -121,31 +121,31 @@ namespace Components {
 				_isSelected = false;
 		}
 
-		if (GUI_manager->Element_hovered.get() == this) {
+		if (Anubis::GUI_manager->Element_hovered.get() == this) {
 
 			if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Left) {
-				GUI_manager->Element_pressed = this->shared_from_this();
+				Anubis::GUI_manager->Element_pressed = this->shared_from_this();
 				_state = ButtonState::Pressed;
 				_isSelected = true;
 				return;
 
 			}
 			else if (const auto* mm = event.getIf<sf::Event::MouseMoved>(); mm && _menu->_open_menu_button) {
-				GUI_manager->Element_pressed = this->shared_from_this();
+				Anubis::GUI_manager->Element_pressed = this->shared_from_this();
 				_state = ButtonState::Pressed;
 				_isSelected = true;
 				return;
 			}else if (const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Left) {
-				if (GUI_manager->Element_pressed.get() == this) {
-					GUI_manager->Element_pressed = nullptr;
+				if (Anubis::GUI_manager->Element_pressed.get() == this) {
+					Anubis::GUI_manager->Element_pressed = nullptr;
 					_isSelected = true;
 				}
 
 			}
 		}
 		else if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Left) {
-			if (GUI_manager->Element_pressed.get() == this) {
-				GUI_manager->Element_pressed = nullptr;
+			if (Anubis::GUI_manager->Element_pressed.get() == this) {
+				Anubis::GUI_manager->Element_pressed = nullptr;
 				_state = ButtonState::Idle;
 				_isSelected = false;
 				return;
@@ -171,7 +171,7 @@ namespace Components {
 				unclick();
 			}
 		}
-		else if (GUI_manager->Element_hovered.get() == this) {
+		else if (Anubis::GUI_manager->Element_hovered.get() == this) {
 			hover();
 		}
 		else

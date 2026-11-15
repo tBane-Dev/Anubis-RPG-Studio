@@ -33,7 +33,7 @@ namespace MapEditor {
 	void CameraOnMap::handleEvent(const sf::Event& event) {
 		if (const auto* ms = event.getIf<sf::Event::MouseWheelScrolled>()) {
 			
-			if (GUI_manager->Element_hovered == editor->_map) {
+			if (Anubis::GUI_manager->Element_hovered == editor->_map) {
 
 				float oldScale = _zoom;
 				sf::Vector2f oldPosition = sf::Vector2f(_position);

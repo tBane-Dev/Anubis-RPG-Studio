@@ -10,7 +10,7 @@ bool isInteger(std::wstring text);
 std::wstring deleteStartZeros(std::wstring text);
 std::wstring clamp(std::wstring numberStr, int min, int max);
 
-class NumberInput : public Element {
+class NumberInput : public Anubis::Element {
 public:
 
 	sf::IntRect _rect;

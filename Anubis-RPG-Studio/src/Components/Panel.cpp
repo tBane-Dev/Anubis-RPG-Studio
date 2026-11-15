@@ -32,7 +32,7 @@ namespace Components {
 	void Panel::cursorHover() {
 
 		if (_rect.contains(Cursors::cursor->_position)) {
-			GUI_manager->Element_hovered = shared_from_this();
+			Anubis::GUI_manager->Element_hovered = shared_from_this();
 		}
 
 
@@ -40,15 +40,15 @@ namespace Components {
 
 	void Panel::handleEvent(const sf::Event& event) {
 
-		if (GUI_manager->Element_hovered.get() == this) {
+		if (Anubis::GUI_manager->Element_hovered.get() == this) {
 			if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Left) {
-				GUI_manager->Element_pressed = shared_from_this();
+				Anubis::GUI_manager->Element_pressed = shared_from_this();
 			}
 		}
 
-		if (GUI_manager->Element_pressed.get() == this) {
+		if (Anubis::GUI_manager->Element_pressed.get() == this) {
 			if (const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Left) {
-				GUI_manager->Element_pressed = nullptr;
+				Anubis::GUI_manager->Element_pressed = nullptr;
 			}
 		}
 
@@ -60,7 +60,7 @@ namespace Components {
 
 	void Panel::draw() {
 
-		GUI_manager->setView();
+		Anubis::GUI_manager->setView();
 
 		int border = 2;
 		sf::RectangleShape background(sf::Vector2f(_rect.size.x - 2 * border, _rect.size.y - 2 * border));

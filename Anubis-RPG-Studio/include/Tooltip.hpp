@@ -6,7 +6,7 @@ namespace Main {
 	class Tooltip {
 	public:
 
-		std::weak_ptr<Element> _element;
+		std::weak_ptr<Anubis::Element> _element;
 		sf::Time _timer;
 
 		std::wstring _title;
@@ -18,7 +18,7 @@ namespace Main {
 		Tooltip();
 		~Tooltip();
 
-		void setElement(std::weak_ptr<Element> element, int width);
+		void setElement(std::weak_ptr<Anubis::Element> element, int width);
 		float getHeightOfTitleAndDescription();
 
 		void update();

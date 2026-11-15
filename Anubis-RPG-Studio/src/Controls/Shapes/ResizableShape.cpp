@@ -1,7 +1,7 @@
 ﻿#include "Controls/Shapes/ResizableShape.hpp"
 #include "Cursor.hpp"
 
-ResizableShape::ResizableShape() : Element() {
+ResizableShape::ResizableShape() : Anubis::Element() {
 
 	int size = 256;
 
@@ -178,7 +178,7 @@ void ResizableShape::cursorHover() {
 	sf::IntRect rect = sf::IntRect(getPosition(), getSize());
 
 	if (rect.contains(Cursors::cursor->_position)) {
-		GUI_manager->Element_hovered = this->shared_from_this();
+		Anubis::GUI_manager->Element_hovered = this->shared_from_this();
 	}
 
 	for (auto& point : _edgePoints) { 
@@ -191,17 +191,17 @@ void ResizableShape::handleEvent(const sf::Event& event) {
 	for (auto& point : _edgePoints) {
 		point->handleEvent(event);
 
-		if(point == GUI_manager->Element_pressed) {
+		if(point == Anubis::GUI_manager->Element_pressed) {
 			resize(point);
 			return;
 		}
 	}
 
 	if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Middle) {
-		if(GUI_manager->Element_hovered.get() == this) {
+		if(Anubis::GUI_manager->Element_hovered.get() == this) {
 			_state = ResizableShapeState::Moving;
 			_offset = Cursors::cursor->_position - getPosition();
-			GUI_manager->Element_pressed = nullptr;
+			Anubis::GUI_manager->Element_pressed = nullptr;
 		}
 	}
 
@@ -209,8 +209,8 @@ void ResizableShape::handleEvent(const sf::Event& event) {
 	if (const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Middle) {
 		_state = ResizableShapeState::Idle;
 		_offset = sf::Vector2i(0, 0);
-		if(GUI_manager->Element_pressed.get() == this)
-			GUI_manager->Element_pressed = nullptr;
+		if(Anubis::GUI_manager->Element_pressed.get() == this)
+			Anubis::GUI_manager->Element_pressed = nullptr;
 	}
 }
 

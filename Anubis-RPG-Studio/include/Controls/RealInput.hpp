@@ -10,7 +10,7 @@ bool haveDot(std::wstring text);
 bool isFloat(std::wstring text);
 std::wstring clamp(std::wstring numberStr, float min, float max);
 
-class RealInput : public Element {
+class RealInput : public Anubis::Element {
 public:
 
 	sf::IntRect _rect;

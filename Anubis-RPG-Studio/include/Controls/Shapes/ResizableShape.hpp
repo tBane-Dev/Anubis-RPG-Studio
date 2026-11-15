@@ -5,7 +5,7 @@
 #include <functional>
 
 enum class ResizableShapeState { Idle, Moving };
-class ResizableShape : public Element{
+class ResizableShape : public Anubis::Element{
 public:
 
 	sf::IntRect	_rect;

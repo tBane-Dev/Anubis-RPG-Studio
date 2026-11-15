@@ -82,7 +82,7 @@ namespace BuildingsEditor {
 
 	void Editor::draw() {
 
-		GUI_manager->setView();
+		Anubis::GUI_manager->setView();
 
 		Anubis::render_window->draw(*_title);
 

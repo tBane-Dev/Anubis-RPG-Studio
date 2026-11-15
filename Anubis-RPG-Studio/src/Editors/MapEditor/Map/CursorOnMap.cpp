@@ -124,7 +124,7 @@ namespace MapEditor {
 		if (_isDragging || _isSelecting || !_object.expired())
 			return;
 
-		if (GUI_manager->Element_hovered != MapEditor::editor->_map)
+		if (Anubis::GUI_manager->Element_hovered != MapEditor::editor->_map)
 			return;
 
 		int id = scene->getHoveredModelId(_position);
@@ -222,7 +222,7 @@ namespace MapEditor {
 					_selectionRect.position = sf::Vector2i(startPixel);
 			}
 
-			if (GUI_manager->Element_pressed == MapEditor::editor->_map)
+			if (Anubis::GUI_manager->Element_pressed == MapEditor::editor->_map)
 				_selectionRect.size = _position - _selectionRect.position;
 
 			if (!(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LControl) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift))) {
@@ -343,7 +343,7 @@ namespace MapEditor {
 			}
 
 			// A click on the empty background (outside the terrain, not on GUI) also deselects.
-			if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Left && GUI_manager->Element_hovered == nullptr) {
+			if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Left && Anubis::GUI_manager->Element_hovered == nullptr) {
 
 				bool ctrl = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LControl);
 				bool shift = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift);
@@ -358,7 +358,7 @@ namespace MapEditor {
 				}
 			}
 
-			if (GUI_manager->Element_pressed == MapEditor::editor->_map) {
+			if (Anubis::GUI_manager->Element_pressed == MapEditor::editor->_map) {
 
 				if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Left) {
 
@@ -507,7 +507,7 @@ namespace MapEditor {
 
 		}
 
-		if (!(GUI_manager->Element_pressed == nullptr || GUI_manager->Element_pressed == MapEditor::editor->_map))
+		if (!(Anubis::GUI_manager->Element_pressed == nullptr || Anubis::GUI_manager->Element_pressed == MapEditor::editor->_map))
 			return;
 
 		if (_object.lock()->_type == ObjectType::Terrain) {
@@ -515,7 +515,7 @@ namespace MapEditor {
 			std::shared_ptr<ToolsTerrain> tools = std::dynamic_pointer_cast<ToolsTerrain>(MapEditor::editor->_palette->_tools);
 
 			bool conditionToDraw =
-				GUI_manager->Element_hovered == MapEditor::editor->_map &&
+				Anubis::GUI_manager->Element_hovered == MapEditor::editor->_map &&
 				_isOnTerrain &&
 				sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) &&
 				MapEditor::editor->_map->getChunkByGlobalPosition() != nullptr &&
@@ -614,7 +614,7 @@ namespace MapEditor {
 
 		if (const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Left) {
 
-			if (GUI_manager->Element_pressed == MapEditor::editor->_map) {
+			if (Anubis::GUI_manager->Element_pressed == MapEditor::editor->_map) {
 				std::shared_ptr<GameObject> prefab = std::dynamic_pointer_cast<GameObject>(_object.lock());
 				if (!prefab || !_isOnTerrain)
 					return;
@@ -769,7 +769,7 @@ namespace MapEditor {
 		glPopAttrib();
 	}
 	void CursorOnMap::draw() {
-		if (!(GUI_manager->Element_pressed == MapEditor::editor->_map || GUI_manager->Element_hovered == MapEditor::editor->_map || GUI_manager->Element_hovered == nullptr))
+		if (!(Anubis::GUI_manager->Element_pressed == MapEditor::editor->_map || Anubis::GUI_manager->Element_hovered == MapEditor::editor->_map || Anubis::GUI_manager->Element_hovered == nullptr))
 			return;
 
 		if (MapEditor::editor->_main_menu->_state != Components::MainMenuStates::Closed)

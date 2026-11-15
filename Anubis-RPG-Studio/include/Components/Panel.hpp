@@ -3,7 +3,7 @@
 
 namespace Components {
 
-	class Panel : public Element {
+	class Panel : public Anubis::Element {
 	public:
 		static int _margin;
 		sf::IntRect _rect;

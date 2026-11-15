@@ -80,7 +80,7 @@ namespace Components {
 	void MainMenu::cursorHover() {
 
 		if (_rect.contains(Cursors::cursor->_position)) {
-			GUI_manager->Element_hovered = this->shared_from_this();
+			Anubis::GUI_manager->Element_hovered = this->shared_from_this();
 		}
 
 		for (auto& mb : _menu_boxes)
@@ -143,7 +143,7 @@ namespace Components {
 
 		if (_state == MainMenuStates::Opened) {
 			std::shared_ptr<MenuButton> hoverBox =
-				std::dynamic_pointer_cast<MenuButton>(GUI_manager->Element_hovered);
+				std::dynamic_pointer_cast<MenuButton>(Anubis::GUI_manager->Element_hovered);
 
 			if (hoverBox != nullptr && _open_menu_button != hoverBox) {
 				hideMenu();

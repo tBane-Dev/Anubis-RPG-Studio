@@ -9,7 +9,7 @@ namespace Main {
 
 	enum class WindowState { Idle, Moving };
 
-	class Window : public Element {
+	class Window : public Anubis::Element {
 	public:
 
 		static int border;

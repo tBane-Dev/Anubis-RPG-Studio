@@ -149,7 +149,7 @@ namespace Components {
 	void Palette::cursorHover() {
 		
 		if (_rect.contains(Cursors::cursor->_position)) {
-			GUI_manager->Element_hovered = shared_from_this();
+			Anubis::GUI_manager->Element_hovered = shared_from_this();
 		}
 
 		_categories->cursorHover();
@@ -163,15 +163,15 @@ namespace Components {
 
 	void Palette::handleEvent(const sf::Event& event) {
 
-		if (GUI_manager->Element_hovered.get() == this) {
+		if (Anubis::GUI_manager->Element_hovered.get() == this) {
 			if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Left) {
-				GUI_manager->Element_pressed = shared_from_this();
+				Anubis::GUI_manager->Element_pressed = shared_from_this();
 			}
 		}
 
-		if (GUI_manager->Element_pressed.get() == this) {
+		if (Anubis::GUI_manager->Element_pressed.get() == this) {
 			if (const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Left) {
-				GUI_manager->Element_pressed = nullptr;
+				Anubis::GUI_manager->Element_pressed = nullptr;
 			}
 		}
 
@@ -197,7 +197,7 @@ namespace Components {
 
 	void Palette::draw() {
 
-		GUI_manager->setView();
+		Anubis::GUI_manager->setView();
 
 		sf::RectangleShape rect(sf::Vector2f(_rect.size));
 		rect.setFillColor(sf::Color(31, 31, 31));
@@ -209,7 +209,7 @@ namespace Components {
 			_tools->draw();
 		_slots->draw();
 
-		GUI_manager->setView();
+		Anubis::GUI_manager->setView();
 
 	}
 

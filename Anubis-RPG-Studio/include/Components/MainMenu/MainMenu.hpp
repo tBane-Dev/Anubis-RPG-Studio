@@ -7,7 +7,7 @@ namespace Components {
 
 	class MenuButton;
 
-	class MainMenu : public Element {
+	class MainMenu : public Anubis::Element {
 	public:
 
 		sf::IntRect _rect;

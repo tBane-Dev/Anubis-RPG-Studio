@@ -13,7 +13,7 @@ enum class EdgePointType {
 	RightBottom
 };
 
-class EdgePoint : public Element {
+class EdgePoint : public Anubis::Element {
 public:
 	sf::IntRect _rect;
 	EdgePointType _type;

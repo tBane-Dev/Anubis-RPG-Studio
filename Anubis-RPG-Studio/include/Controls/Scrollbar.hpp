@@ -4,7 +4,7 @@
 
 enum class ScrollbarState { Idle, Dragging, Scrolled };
 
-class Scrollbar : public Element {
+class Scrollbar : public Anubis::Element {
 public:
 
 	int _barSize = 16;      // scrollbar logicznie ma 16 px

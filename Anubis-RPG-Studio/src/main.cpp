@@ -6,42 +6,28 @@
 // includes :-) 
 #include "SFML/Window.hpp"
 #include <SFML/Graphics.hpp>
+
 #include "RenderWindow.hpp"
 #include "DebugLog.hpp"
 #include "Time.hpp"
-
 #include "Intro.hpp"
-
 #include "Theme.hpp"
-
 #include "3D/OpenGLBuffers.hpp"
-
-#include "Tooltip.hpp" // to move
-
 #include "Loader.hpp"
-
 #include "TexturesManager.hpp"
 #include "ModelsManager.hpp"
 #include "ShadersManager.hpp"
 #include "Tileset.hpp"
 #include "Wallset.hpp"
 #include "PrefabsManager.hpp"
-
-
 #include "Cursor.hpp"
 #include "WindowsManager.hpp"
-
+#include "GUIManager.hpp"
+#include "Tooltip.hpp"
 #include "EditorsManager.hpp"
 #include "Editors/MapEditor/Editor.hpp"
-
 #include "Editors/MapEditor/Map/CameraOnMap.hpp"
 #include "Editors/MapEditor/Map/Map.hpp"
-
-#include "Objects/Object.hpp"
-#include "Objects/GameObject.hpp"
-#include "Objects/Monster.hpp"
-#include "Objects/PlacedGameObject.hpp"
-
 #include "History.hpp"
 
 #include <windows.h>
@@ -218,7 +204,7 @@ int main() {
 
     Cursors::cursor = std::make_shared<Cursors::Cursor>();
     
-    GUI_manager = std::make_shared<GUIManager>();
+    Anubis::GUI_manager = std::make_shared<Anubis::GUIManager>();
     Main::tooltip = std::make_shared<Main::Tooltip>();
 
     Main::windows_manager = std::make_shared<Main::WindowsManager>();
@@ -322,7 +308,7 @@ int main() {
             elapsed = 0.0f;
         }
 
-        GUI_manager->Element_hovered = nullptr;
+        Anubis::GUI_manager->Element_hovered = nullptr;
         Main::editor_manager->cursorHover();
 		Main::windows_manager->cursorHover();
 
@@ -337,7 +323,7 @@ int main() {
             if(event->is<sf::Event::Resized>()) {
 				sf::Vector2u newSize = event->getIf<sf::Event::Resized>()->size;
                 Anubis::render_window->setSize(newSize);
-                GUI_manager->resize(sf::Vector2i(newSize));
+                Anubis::GUI_manager->resize(sf::Vector2i(newSize));
 
 			}
 

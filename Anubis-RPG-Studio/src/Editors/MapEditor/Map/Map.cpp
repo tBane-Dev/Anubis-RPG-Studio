@@ -520,7 +520,7 @@ namespace MapEditor {
 	void Map::cursorHover() {
 
 		if (MapEditor::editor->_cursor_on_map != nullptr && MapEditor::editor->_cursor_on_map->_isOnTerrain && getRect().contains(MapEditor::editor->_cursor_on_map->_globalPosition)) {
-			GUI_manager->Element_hovered = shared_from_this();
+			Anubis::GUI_manager->Element_hovered = shared_from_this();
 		}
 
 		//_ghostChunk->cursorHover(); // TO-DO
@@ -528,16 +528,16 @@ namespace MapEditor {
 
 	void Map::handleEvent(const sf::Event& event) {
 
-		if (GUI_manager->Element_hovered.get() == this) {
+		if (Anubis::GUI_manager->Element_hovered.get() == this) {
 			if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Left) {
-				GUI_manager->Element_pressed = shared_from_this();
+				Anubis::GUI_manager->Element_pressed = shared_from_this();
 			}
 
 		}
 
-		else if (GUI_manager->Element_pressed.get() == this) {
+		else if (Anubis::GUI_manager->Element_pressed.get() == this) {
 			if (!(sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) || sf::Mouse::isButtonPressed(sf::Mouse::Button::Right)))
-				GUI_manager->Element_pressed = nullptr;
+				Anubis::GUI_manager->Element_pressed = nullptr;
 		}
 
 

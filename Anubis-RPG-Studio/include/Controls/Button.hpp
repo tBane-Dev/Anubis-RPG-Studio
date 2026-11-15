@@ -8,7 +8,7 @@
 
 enum class ButtonState { Idle, Hover, Pressed };
 
-class Button : public Element {
+class Button : public Anubis::Element {
 public:
 	//sf::RectangleShape _rect;
 	sf::IntRect _rect;

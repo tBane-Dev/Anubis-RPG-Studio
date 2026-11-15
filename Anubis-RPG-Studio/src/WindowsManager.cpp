@@ -104,14 +104,14 @@ namespace Main {
 	void Window::cursorHover() {
 		
 		if (_rect.contains(Cursors::cursor->_position))
-			GUI_manager->Element_hovered = this->shared_from_this();
+			Anubis::GUI_manager->Element_hovered = this->shared_from_this();
 
 		_closeButton->cursorHover();
 	}
 
 	void Window::handleEvent(const sf::Event& event) {
 
-		if ((event.getIf<sf::Event::MouseButtonReleased>() || event.getIf<sf::Event::MouseButtonPressed>()) && GUI_manager->Element_pressed == nullptr && !_rect.contains(Cursors::cursor->_position)) {
+		if ((event.getIf<sf::Event::MouseButtonReleased>() || event.getIf<sf::Event::MouseButtonPressed>()) && Anubis::GUI_manager->Element_pressed == nullptr && !_rect.contains(Cursors::cursor->_position)) {
 			_animationClickedOutside = true;
 			_animationStartTime = Anubis::currentTime;
 			errorSound.play();
@@ -121,29 +121,29 @@ namespace Main {
 		if (_state == WindowState::Moving) {
 			if (const auto* mv = event.getIf<sf::Event::MouseMoved>(); mv) {
 				setPosition(Cursors::cursor->_position-_offset);
-				GUI_manager->Element_pressed = this->shared_from_this();
+				Anubis::GUI_manager->Element_pressed = this->shared_from_this();
 			}
 
 			if (const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Left) {
 				
 				_state = WindowState::Idle;
 
-				if(GUI_manager->Element_pressed.get() == this)
-					GUI_manager->Element_pressed = nullptr;
+				if(Anubis::GUI_manager->Element_pressed.get() == this)
+					Anubis::GUI_manager->Element_pressed = nullptr;
 			}
 
 		}
 
 		_closeButton->handleEvent(event);
 
-		if(GUI_manager->Element_pressed == _closeButton)
+		if(Anubis::GUI_manager->Element_pressed == _closeButton)
 			return;
 
 		if (_titleRect.contains(Cursors::cursor->_position)) {
 			if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Left) {
 				_state = WindowState::Moving;
 				_offset = Cursors::cursor->_position - _rect.position;
-				GUI_manager->Element_pressed = this->shared_from_this();
+				Anubis::GUI_manager->Element_pressed = this->shared_from_this();
 			}
 		}
 

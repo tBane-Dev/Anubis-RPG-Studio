@@ -118,7 +118,7 @@ void LocationItem::draw() {
 	// draw rect
 	sf::RectangleShape rect(sf::Vector2f(_rect.size));
 	rect.setPosition(sf::Vector2f(_rect.position));
-	if(GUI_manager->Element_hovered.get() == this || (_opener && GUI_manager->Element_hovered == _opener)) 
+	if(Anubis::GUI_manager->Element_hovered.get() == this || (_opener && Anubis::GUI_manager->Element_hovered == _opener))
 		rect.setFillColor(sf::Color(71, 71, 71));
 	else
 		rect.setFillColor(sf::Color::Transparent);

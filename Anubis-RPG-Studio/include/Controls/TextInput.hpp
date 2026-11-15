@@ -6,7 +6,7 @@
 enum class TextInputState { Idle, Hover };
 enum class TextInputEditState { None, TextEntered, Selecting, Selected};
 
-class TextInput : public Element {
+class TextInput : public Anubis::Element {
 public:
 
 	sf::IntRect _rect;

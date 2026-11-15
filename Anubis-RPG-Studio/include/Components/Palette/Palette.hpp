@@ -11,7 +11,7 @@
 
 
 namespace Components {
-	class Palette : public Element {
+	class Palette : public Anubis::Element {
 	public:
 
 		static std::vector<std::shared_ptr<Terrain>> terrains;

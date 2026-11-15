@@ -133,8 +133,8 @@ void Button::setTooltip(int tooltipWidth, std::wstring title, std::wstring descr
 
 void Button::cursorHover() {
 
-	if (GUI_manager->Element_pressed != nullptr) {
-		if(GUI_manager->Element_pressed.get() != this)
+	if (Anubis::GUI_manager->Element_pressed != nullptr) {
+		if(Anubis::GUI_manager->Element_pressed.get() != this)
 			return;
 	}
 
@@ -146,7 +146,7 @@ void Button::cursorHover() {
 		return;
 
 	if (_rect.contains(Cursors::cursor->_position)) {
-		GUI_manager->Element_hovered = this->shared_from_this();
+		Anubis::GUI_manager->Element_hovered = this->shared_from_this();
 	}
 }
 
@@ -154,19 +154,19 @@ void Button::handleEvent(const sf::Event& event) {
 
 
 	if (const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Left) {
-		if (GUI_manager->Element_pressed.get() == this) {
+		if (Anubis::GUI_manager->Element_pressed.get() == this) {
 
-			if(GUI_manager->Element_hovered.get() == this)
+			if(Anubis::GUI_manager->Element_hovered.get() == this)
 				click();
 
-			GUI_manager->Element_pressed = nullptr;
+			Anubis::GUI_manager->Element_pressed = nullptr;
 			return;
 		}
 	}
 	
-	if (GUI_manager->Element_hovered.get() == this) {
+	if (Anubis::GUI_manager->Element_hovered.get() == this) {
 		if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Left) {
-			GUI_manager->Element_pressed = this->shared_from_this();
+			Anubis::GUI_manager->Element_pressed = this->shared_from_this();
 			if(_press_func)
 				_press_func();
 
@@ -177,7 +177,7 @@ void Button::handleEvent(const sf::Event& event) {
 	if (_isSelected && _activatedByEnter) {
 		if (const auto* kp = event.getIf<sf::Event::KeyPressed>(); kp && kp->code == sf::Keyboard::Key::Enter) {
 			click();
-			GUI_manager->Element_pressed = nullptr;
+			Anubis::GUI_manager->Element_pressed = nullptr;
 			return;
 		}
 	}
@@ -190,12 +190,12 @@ void Button::update() {
 				_onclick_func();
 			}
 
-			if (GUI_manager->Element_pressed.get() == this)
-				GUI_manager->Element_pressed = nullptr;
+			if (Anubis::GUI_manager->Element_pressed.get() == this)
+				Anubis::GUI_manager->Element_pressed = nullptr;
 			unclick();
 		}
 	}
-	else if (GUI_manager->Element_hovered.get() == this) {
+	else if (Anubis::GUI_manager->Element_hovered.get() == this) {
 		hover();
 	}
 	else

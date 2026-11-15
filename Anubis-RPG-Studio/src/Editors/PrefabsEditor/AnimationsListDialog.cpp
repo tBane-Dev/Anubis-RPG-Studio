@@ -386,13 +386,13 @@ void AnimationsListDialog::draw() {
 
 	sf::FloatRect vp(
 		sf::Vector2f(
-			frect.position.x / GUI_manager->_view.getSize().x,
-			frect.position.y / GUI_manager->_view.getSize().y
+			frect.position.x / Anubis::GUI_manager->_view.getSize().x,
+			frect.position.y / Anubis::GUI_manager->_view.getSize().y
 		),
 
 		sf::Vector2f(
-			frect.size.x / GUI_manager->_view.getSize().x,
-			frect.size.y / GUI_manager->_view.getSize().y
+			frect.size.x / Anubis::GUI_manager->_view.getSize().x,
+			frect.size.y / Anubis::GUI_manager->_view.getSize().y
 		)
 	);
 
@@ -403,7 +403,7 @@ void AnimationsListDialog::draw() {
 		item->draw();
 	}
 
-	GUI_manager->setView();
+	Anubis::GUI_manager->setView();
 	_scrollbar->draw();
 
 	sf::RectangleShape bottomInnerRect(sf::Vector2f(_bottomInnerRect->size));

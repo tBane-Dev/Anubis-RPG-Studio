@@ -120,7 +120,7 @@ namespace Main {
 
 	}
 
-	void Tooltip::setElement(std::weak_ptr<Element> element, int width) {
+	void Tooltip::setElement(std::weak_ptr<Anubis::Element> element, int width) {
 
 		if (element.expired()) return;
 
@@ -168,7 +168,7 @@ namespace Main {
 
 		if (std::dynamic_pointer_cast<Button>(_element.lock())) {
 			if(!std::dynamic_pointer_cast<Button>(_element.lock())->_rect.contains(Cursors::cursor->_position)) {
-				_element = std::weak_ptr<Element>();
+				_element = std::weak_ptr<Anubis::Element>();
 			}
 		}
 

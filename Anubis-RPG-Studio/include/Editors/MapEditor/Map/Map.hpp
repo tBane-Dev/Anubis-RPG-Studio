@@ -7,7 +7,7 @@
 #include <fstream>
 
 namespace MapEditor {
-	class Map : public Element {
+	class Map : public Anubis::Element {
 	public:
 
 		std::shared_ptr<Texture> _texture;

@@ -633,13 +633,13 @@ void FileDialog::drawFiles() {
 
 	sf::FloatRect vp(
 		sf::Vector2f(
-			filesRect.position.x / GUI_manager->_view.getSize().x,
-			filesRect.position.y / GUI_manager->_view.getSize().y
+			filesRect.position.x / Anubis::GUI_manager->_view.getSize().x,
+			filesRect.position.y / Anubis::GUI_manager->_view.getSize().y
 		),
 
 		sf::Vector2f(
-			filesRect.size.x / GUI_manager->_view.getSize().x,
-			filesRect.size.y / GUI_manager->_view.getSize().y
+			filesRect.size.x / Anubis::GUI_manager->_view.getSize().x,
+			filesRect.size.y / Anubis::GUI_manager->_view.getSize().y
 		)
 	);
 
@@ -657,13 +657,13 @@ void FileDialog::drawVisibleLocations() {
 
 	sf::FloatRect vp(
 		sf::Vector2f(
-			locationsRect.position.x / GUI_manager->_view.getSize().x,
-			locationsRect.position.y / GUI_manager->_view.getSize().y
+			locationsRect.position.x / Anubis::GUI_manager->_view.getSize().x,
+			locationsRect.position.y / Anubis::GUI_manager->_view.getSize().y
 		),
 
 		sf::Vector2f(
-			locationsRect.size.x / GUI_manager->_view.getSize().x,
-			locationsRect.size.y / GUI_manager->_view.getSize().y
+			locationsRect.size.x / Anubis::GUI_manager->_view.getSize().x,
+			locationsRect.size.y / Anubis::GUI_manager->_view.getSize().y
 		)
 	);
 
@@ -853,7 +853,7 @@ void FileDialog::draw() {
 	drawFiles();
 	drawVisibleLocations();
 	
-	Anubis::render_window->setView(GUI_manager->_view);
+	Anubis::render_window->setView(Anubis::GUI_manager->_view);
 
 	drawBottom();
 

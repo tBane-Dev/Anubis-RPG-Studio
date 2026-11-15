@@ -206,7 +206,7 @@ namespace MapEditor {
 		
 
 		if (MapEditor::editor->_main_menu->_tool_palette->_checkbox->_value == 0) {
-			GUI_manager->setView();
+			Anubis::GUI_manager->setView();
 			Components::Palette::draw();
 		}
 	}

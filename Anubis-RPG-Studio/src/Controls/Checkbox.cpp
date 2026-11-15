@@ -67,7 +67,7 @@ void Checkbox::cursorHover() {
 
 	if (_value > -1) {
 		if (_rect.contains(Cursors::cursor->_position)) {
-			GUI_manager->Element_hovered = this->shared_from_this();
+			Anubis::GUI_manager->Element_hovered = this->shared_from_this();
 		}
 	}
 
@@ -76,13 +76,13 @@ void Checkbox::cursorHover() {
 void Checkbox::handleEvent(const sf::Event& event) {
 	
 
-	if (GUI_manager->Element_hovered.get() == this) {
+	if (Anubis::GUI_manager->Element_hovered.get() == this) {
 
 		if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Left) {
-			GUI_manager->Element_pressed = this->shared_from_this();
+			Anubis::GUI_manager->Element_pressed = this->shared_from_this();
 		}
 		else if (const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Left) {
-			if (GUI_manager->Element_pressed.get() == this) {
+			if (Anubis::GUI_manager->Element_pressed.get() == this) {
 				click();
 			}
 		}
@@ -103,12 +103,12 @@ void Checkbox::update() {
 				_onclick_func();
 			}
 
-			if (GUI_manager->Element_pressed.get() == this)
-				GUI_manager->Element_pressed = nullptr;
+			if (Anubis::GUI_manager->Element_pressed.get() == this)
+				Anubis::GUI_manager->Element_pressed = nullptr;
 			unclick();
 		}
 	}
-	else if (GUI_manager->Element_hovered.get() == this) {
+	else if (Anubis::GUI_manager->Element_hovered.get() == this) {
 		hover();
 	}
 	else

@@ -112,16 +112,16 @@ void TextInput::positioningCursorByMouse() {
 
 void TextInput::cursorHover() {
 
-	if(GUI_manager->Element_pressed.get() != this && GUI_manager->Element_pressed != nullptr)
+	if(Anubis::GUI_manager->Element_pressed.get() != this && Anubis::GUI_manager->Element_pressed != nullptr)
 		return;
 
 	if (_rect.contains(Cursors::cursor->_position)) {
-		GUI_manager->Element_hovered = this->shared_from_this();
+		Anubis::GUI_manager->Element_hovered = this->shared_from_this();
 		return;
 	}
 
 	if (_editState == TextInputEditState::Selecting) {
-		GUI_manager->Element_hovered = this->shared_from_this();
+		Anubis::GUI_manager->Element_hovered = this->shared_from_this();
 		return;
 	}
 
@@ -168,7 +168,7 @@ void TextInput::handleEvent(const sf::Event& event) {
 				
 			}
 
-			GUI_manager->Element_pressed = this->shared_from_this();
+			Anubis::GUI_manager->Element_pressed = this->shared_from_this();
 		}
 		else {
 			_editState = TextInputEditState::None;
@@ -176,16 +176,16 @@ void TextInput::handleEvent(const sf::Event& event) {
 			_selectionEnd = -1;
 			_lastCLickTime = Anubis::currentTime;
 
-			if(GUI_manager->Element_pressed.get() == this)
-				GUI_manager->Element_pressed = nullptr;
+			if(Anubis::GUI_manager->Element_pressed.get() == this)
+				Anubis::GUI_manager->Element_pressed = nullptr;
 		}
 		_lastCLickTime = Anubis::currentTime;
 		return;
 	}
 
 	if(const auto* mr = event.getIf<sf::Event::MouseButtonReleased>(); mr) {
-		if (GUI_manager->Element_pressed.get() == this) {
-			GUI_manager->Element_pressed = nullptr;
+		if (Anubis::GUI_manager->Element_pressed.get() == this) {
+			Anubis::GUI_manager->Element_pressed = nullptr;
 		}
 
 		if(_editState == TextInputEditState::Selecting)
@@ -429,7 +429,7 @@ void TextInput::update() {
 	
 	}
 	
-	if (GUI_manager->Element_hovered.get() == this) {
+	if (Anubis::GUI_manager->Element_hovered.get() == this) {
 		_state = TextInputState::Hover;
 	}
 	else {
