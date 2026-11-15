@@ -3,7 +3,7 @@
 
 
 // TO-DO - add namespace Anubis
-BinaryReader::BinaryReader(std::ifstream& is) : is(is) { }
+BinaryReader::BinaryReader(std::istream& is) : is(is) { }
 
 std::wstring BinaryReader::read_wstring() {
     uint16_t len = 0;
@@ -65,4 +65,14 @@ sf::Image BinaryReader::read_Image() {
     }
 
     return image;
+}
+
+std::shared_ptr<std::vector<uint8_t>> BinaryReader::read_data() {
+    int32_t size = read_int32();
+    std::shared_ptr<std::vector<uint8_t>> data = std::make_shared<std::vector<uint8_t>>(size);
+
+    if (size > 0)
+        is.read((char*)data->data(), size);
+
+    return data;
 }

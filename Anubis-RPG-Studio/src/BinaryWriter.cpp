@@ -44,5 +44,11 @@ void BinaryWriter::write_Image(sf::Image image) {
 
     write_int32(pngData->size());
     os.write(reinterpret_cast<const char*>(pngData->data()), pngData->size());
+}
 
+void BinaryWriter::write_data(std::vector<uint8_t>& data) {
+    write_int32((int32_t)data.size());
+
+    if (!data.empty())
+        os.write((char*)data.data(), data.size());
 }

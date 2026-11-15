@@ -71,6 +71,8 @@ namespace Anubis {
 		for (auto& src : other._meshes)
 			_meshes.push_back(std::make_shared<Mesh3D>(*src));
 
+		_glbData = other._glbData;
+
 		_nodes = other._nodes;
 		_skins = other._skins;
 
@@ -2099,7 +2101,22 @@ namespace Anubis {
 			return nullptr;
 		}
 
-		// .. loading ..
+		file.seekg(0, std::ios::end);
+		std::size_t size = (std::size_t)file.tellg();
+		file.seekg(0, std::ios::beg);
+
+		std::shared_ptr<std::vector<uint8_t>> data = std::make_shared<std::vector<uint8_t>>(size);
+		file.read((char*)data->data(), size);
+
+		return openModel3DFromMemory(data);
+	}
+
+	std::shared_ptr<Model3D> openModel3DFromMemory(std::shared_ptr<std::vector<uint8_t>> data) {
+
+		if (!data || data->empty())
+			return nullptr;
+
+		std::istringstream file(std::string((char*)data->data(), data->size()), std::ios::binary);
 
 		BinaryReader reader(file);
 
@@ -3045,7 +3062,7 @@ namespace Anubis {
 		float memory = float(size.x * size.y) * 4.f / (1024.f * 1024.f);
 		DebugStat(L"GLB Texture: " + std::to_wstring(memory) + L" MiB");
 
-		std::shared_ptr<Texture> texture = std::make_shared<Texture>(path.wstring() + L"#baseColor", image);
+		std::shared_ptr<Texture> texture = std::make_shared<Texture>(L"texture", image);
 
 		if (texture->_texture->getSize().x == 0 ||
 			texture->_texture->getSize().y == 0) {
@@ -3056,8 +3073,6 @@ namespace Anubis {
 		mesh->setTexture(texture);
 
 		DebugStat(L"Base color texture loaded");
-
-		file.close();
 
 		std::shared_ptr<Model3D> model = std::make_shared<Model3D>();
 
@@ -3087,6 +3102,7 @@ namespace Anubis {
 		DebugStat(L"Uploaded joint matrices: " + std::to_wstring(mesh->_gpuJointCount));
 
 		model->addMesh(mesh);
+		model->_glbData = data;
 
 		return model;
 

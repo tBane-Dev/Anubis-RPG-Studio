@@ -21,6 +21,12 @@ namespace MapEditor {
 	void saveTheObjectsCount(std::ofstream& file) {
 		BinaryWriter writer(file);
 
+		int32_t modelsCount = 0;
+		for (auto& model : Anubis::models_manager->_models)
+			if (model) modelsCount++;
+
+		writer.write_int32(modelsCount);
+
 		int32_t prefabsCount = 0;
 		for (auto& prefab : Anubis::prefabs_manager->_prefabs) {
 			if (!prefab)
@@ -102,8 +108,11 @@ namespace MapEditor {
 
 						file.exceptions(std::ios::failbit | std::ios::badbit);
 
+						MapEditor::editor->_scene = std::make_shared<Anubis::Scene>();
+						MapEditor::editor->_scene->initializeModel3DShaders();
+
 						std::shared_ptr<Anubis::Loader> loader = std::make_shared<Anubis::Loader>(file);
-						Anubis::models_manager->load(file, loader);
+						Anubis::models_manager->loadFromProject(file, loader);
 						Anubis::prefabs_manager->loadFromProject(file, loader);
 						MapEditor::editor->_map->loadFromProject(file, loader);
 						MapEditor::editor->_game_objects->loadFromProject(file, loader);
@@ -137,6 +146,7 @@ namespace MapEditor {
 				std::ofstream file;
 				file.open(save_window->getPathFile(), std::ios::out | std::ios::trunc | std::ios::binary);
 				saveTheObjectsCount(file);
+				Anubis::models_manager->saveFromProject(file);
 				Anubis::prefabs_manager->saveFromProject(file);
 				MapEditor::editor->_map->saveFromProject(file);
 				MapEditor::editor->_game_objects->saveFromProject(file);

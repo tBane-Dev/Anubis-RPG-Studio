@@ -36,6 +36,7 @@ namespace Anubis {
 
 		std::weak_ptr<Scene> _scene;
 		std::vector<std::shared_ptr<Mesh3D>> _meshes;
+		std::shared_ptr<std::vector<uint8_t>> _glbData;
 
 		std::vector<Node3D> _nodes;
 		std::vector<Skin3D> _skins;
@@ -80,4 +81,5 @@ namespace Anubis {
 	bool loadModelAnimations(JsonReader& reader, std::vector<std::uint8_t>& binData, Model3D& model);
 
 	std::shared_ptr<Model3D> openModel3DFromFile(std::filesystem::path path);
+	std::shared_ptr<Model3D> openModel3DFromMemory(std::shared_ptr<std::vector<uint8_t>> data);
 }

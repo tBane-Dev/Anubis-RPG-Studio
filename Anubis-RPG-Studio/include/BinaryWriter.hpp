@@ -17,4 +17,5 @@ public:
 	void write_float(float val);
     void write_Vector2i(sf::Vector2i val);
     void write_Image(sf::Image image);
+    void write_data(std::vector<uint8_t>& data);
 };

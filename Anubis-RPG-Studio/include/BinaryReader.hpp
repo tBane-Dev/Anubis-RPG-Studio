@@ -6,10 +6,10 @@
 // TO-DO - add namespace Anubis
 
 class BinaryReader {
-    std::ifstream& is;
+    std::istream& is;
 
 public:
-    BinaryReader(std::ifstream& is);
+    BinaryReader(std::istream& is);
 
     std::wstring read_wstring();
     uint32_t read_uint32();
@@ -19,4 +19,5 @@ public:
 	float read_float();
     sf::Vector2i read_Vector2i();
     sf::Image read_Image();
+    std::shared_ptr<std::vector<uint8_t>> read_data();
 };
