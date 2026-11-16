@@ -2,6 +2,7 @@
 #include "Cursor.hpp"
 #include "Editors/MapEditor/Map/CameraOnMap.hpp"
 #include "Editors/MapEditor/Map/Map.hpp"
+#include "Editors/MapEditor/Map/Chunk.hpp"
 #include "EditorsManager.hpp"
 #include "Editors/MapEditor/Editor.hpp"
 #include "Objects/GameObject.hpp"
@@ -15,6 +16,7 @@
 #include <set>
 #include "WindowsManager.hpp"
 #include "History.hpp"
+#include "Time.hpp"
 #include <cmath>
 #include <algorithm>
 #include <SFML/OpenGL.hpp>
@@ -145,18 +147,26 @@ namespace MapEditor {
 
 		// Terrain point under the cursor (works for any terrain heights).
 		// _globalPosition keeps the map coordinates (world x, world z) for the existing 2D map logic.
-		// Rebuild chunks changed by the terrain brush (once per frame).
-		if (!_chunksToRebuild.empty()) {
-			std::shared_ptr<Map> mapa = MapEditor::editor->_map;
+		// Terrain brush: paints every frame while the left button is held.
+		if (_isPainting) {
+			if (!sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+				endTerrainStroke();
+			else {
+				// the terrain under the cursor changes while painting heights - pick it every frame
+				_isOnTerrain = MapEditor::editor->_map->pickTerrain(_position, _worldPosition);
 
-			for (auto& c : _chunksToRebuild)
-				c->generateVertexBuffer(
-					mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y - 1), mapa->getChunkByCoords(c->_coords.x, c->_coords.y - 1), mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y - 1),
-					mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y), mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y),
-					mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y + 1), mapa->getChunkByCoords(c->_coords.x, c->_coords.y + 1), mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y + 1)
-				);
+				if (_isOnTerrain)
+					paintTerrain();
+			}
+		}
+
+		// Refresh chunks changed by the terrain brush (once per frame).
+		if (!_chunksToRebuild.empty()) {
+			std::vector<std::shared_ptr<Chunk>> chunks(_chunksToRebuild.begin(), _chunksToRebuild.end());
+			MapEditor::editor->_map->refreshChunks(chunks, _heightsChanged);
 
 			_chunksToRebuild.clear();
+			_heightsChanged = false;
 		}
 
 		if (_pickClock.getElapsedTime() > sf::milliseconds(_pickInterval)) {
@@ -327,6 +337,12 @@ namespace MapEditor {
 	}
 
 	void CursorOnMap::handleEvent(const sf::Event& event) {
+
+		// height tools work without an object (no terrain has to be selected)
+		if (isHeightTool()) {
+			handleTerrainEvent(event);
+			return;
+		}
 
 		if (_object.expired()) {
 
@@ -511,102 +527,7 @@ namespace MapEditor {
 			return;
 
 		if (_object.lock()->_type == ObjectType::Terrain) {
-
-			std::shared_ptr<ToolsTerrain> tools = std::dynamic_pointer_cast<ToolsTerrain>(MapEditor::editor->_palette->_tools);
-
-			bool conditionToDraw =
-				Anubis::GUI_manager->Element_hovered == MapEditor::editor->_map &&
-				_isOnTerrain &&
-				sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) &&
-				MapEditor::editor->_map->getChunkByGlobalPosition() != nullptr &&
-				(tools && tools->_toolType == ToolTerrainType::Circle || tools->_toolType == ToolTerrainType::Rect);
-
-			if (conditionToDraw) {
-
-				std::shared_ptr<Map> mapa = std::dynamic_pointer_cast<Map>(MapEditor::editor->_map);
-
-				// Same tile as the brush preview drawn on the terrain.
-				sf::Vector2i tileCoords = getCursorTile();
-
-				int type = std::dynamic_pointer_cast<Terrain>(MapEditor::editor->_cursor_on_map->_object.lock())->_id;
-
-				std::set<std::shared_ptr<Chunk>> chunksToEdit;
-
-				int brushSize = MapEditor::editor->_palette->_brushSize;
-				std::vector<std::vector<bool>> brush;
-
-				if (tools->_toolType == ToolTerrainType::Rect)
-					brush = Cursors::square_brushes[brushSize];
-
-				if (tools->_toolType == ToolTerrainType::Circle)
-					brush = Cursors::circle_brushes[brushSize];
-
-
-				for (int yy = 0; yy < brush.size(); yy++) {
-					for (int xx = 0; xx < brush[yy].size(); xx++) {
-						if (brush[yy][xx]) {
-
-							int tileX = tileCoords.x + (xx - brush[yy].size() / 2);
-							int tileY = tileCoords.y + (yy - brush.size() / 2);
-
-
-
-							std::shared_ptr<Chunk> c = mapa->getChunkByTileGlobalCoords(tileX, tileY);
-							if (!c) continue;
-
-							std::shared_ptr<Tile> t = c->getTileByTileGlobalCoords(tileX, tileY);
-							if (!t) continue;
-
-							sf::Vector2i pos(tileX, tileY);
-
-							if (_editedTiles.find(pos) == _editedTiles.end())
-								_editedTiles[pos] = TileValues{ t->_type, type };
-							else
-								_editedTiles[pos].newValue = type;
-
-							chunksToEdit.insert(c);
-
-							// Rebuild only when the tile really changes.
-							if (t->_type == type)
-								continue;
-
-							t->_type = type;
-
-							_chunksToRebuild.insert(c);
-
-							// Tile shapes depend on neighbours 1 tile away, so a neighbour chunk
-							// needs a rebuild only when the tile lies on the edge of its chunk.
-							int localX = tileX - c->_coords.x * Chunk::tilesCols;
-							int localY = tileY - c->_coords.y * Chunk::tilesRows;
-
-							int dxMin = (localX == 0) ? -1 : 0;
-							int dxMax = (localX == Chunk::tilesCols - 1) ? 1 : 0;
-							int dyMin = (localY == 0) ? -1 : 0;
-							int dyMax = (localY == Chunk::tilesRows - 1) ? 1 : 0;
-
-							for (int dy = dyMin; dy <= dyMax; dy++) {
-								for (int dx = dxMin; dx <= dxMax; dx++) {
-									if (dx == 0 && dy == 0) continue;
-									if (std::shared_ptr<Chunk> neighbour = mapa->getChunkByCoords(c->_coords.x + dx, c->_coords.y + dy))
-										_chunksToRebuild.insert(neighbour);
-								}
-							}
-						}
-					}
-				}
-
-				// Chunks are rebuilt once per frame in update(), not on every mouse event.
-
-				if (!chunksToEdit.empty())
-					_state = Cursors::CursorWithObjectState::Drawing;
-			}
-
-			if (const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Left) {
-				std::shared_ptr<EditTerrain> step = std::make_shared<EditTerrain>(_editedTiles);
-				history->addStep(step);
-				_editedTiles.clear();
-			}
-
+			handleTerrainEvent(event);
 			return;
 		}
 
@@ -676,38 +597,149 @@ namespace MapEditor {
 		);
 	}
 
-	void CursorOnMap::drawTerrainBrush() {
+	bool CursorOnMap::isHeightTool() {
+
+		std::shared_ptr<ToolsTerrain> tools = std::dynamic_pointer_cast<ToolsTerrain>(MapEditor::editor->_palette->_tools);
+
+		if (!tools)
+			return false;
+
+		return tools->_toolType == ToolTerrainType::Raise || tools->_toolType == ToolTerrainType::Lower || tools->_toolType == ToolTerrainType::Smooth || tools->_toolType == ToolTerrainType::Flatten;
+	}
+
+	// terrain and height tools: start and end of a brush stroke - painting itself is in update() (every frame while the button is held)
+	void CursorOnMap::handleTerrainEvent(const sf::Event& event) {
+
+		if (Main::windows_manager->get_back())
+			return;
 
 		std::shared_ptr<ToolsTerrain> tools = std::dynamic_pointer_cast<ToolsTerrain>(MapEditor::editor->_palette->_tools);
 
 		if (!tools)
 			return;
 
-		int brushSize = MapEditor::editor->_palette->_brushSize;
-		std::vector<std::vector<bool>> brush;
+		// right button - no tool
+		if (const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Right) {
+			endTerrainStroke();
+			tools->setTool(tools->_tools[0], ToolTerrainType::None);
+			return;
+		}
 
-		if (tools->_toolType == ToolTerrainType::Rect)
-			brush = Cursors::square_brushes[brushSize];
-
-		if (tools->_toolType == ToolTerrainType::Circle)
-			brush = Cursors::circle_brushes[brushSize];
-
-		if (brush.empty() || brush[0].empty())
+		if (!(Anubis::GUI_manager->Element_pressed == nullptr || Anubis::GUI_manager->Element_pressed == MapEditor::editor->_map))
 			return;
 
-		int height = (int)brush.size();
-		int width = (int)brush[0].size();
+		if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Left) {
+			if (tools->_toolType != ToolTerrainType::None && Anubis::GUI_manager->Element_hovered == MapEditor::editor->_map && _isOnTerrain) {
+				_isPainting = true;
+				_strokeSnapshots.clear();
+				_flattenHeight = _worldPosition.y;
+				_state = Cursors::CursorWithObjectState::Drawing;
+			}
+		}
 
-		std::vector<float> mask(width * height, 0.f);
+		if (const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Left)
+			endTerrainStroke();
+	}
 
-		for (int yy = 0; yy < height; yy++)
-			for (int xx = 0; xx < width && xx < (int)brush[yy].size(); xx++)
-				mask[yy * width + xx] = brush[yy][xx] ? 1.f : 0.f;
+	// brush sizes 0 - 5: 8, 16, 32, 64, 128, 256 world units
+	float CursorOnMap::getBrushRadius() {
+		return float(Tile::tileSize) * 0.5f * float(1 << MapEditor::editor->_palette->_brushSize);
+	}
 
-		// Same tiles as the painting code in handleEvent().
-		sf::Vector2i firstTile = getCursorTile() - sf::Vector2i(width / 2, height / 2);
+	// keeps the terrain of the chunk from before the stroke (undo)
+	void CursorOnMap::addToStroke(std::shared_ptr<Chunk> chunk) {
 
-		MapEditor::editor->_map->drawTileOverlay(firstTile, sf::Vector2i(width, height), mask, sf::Color(255, 47, 47, 127));
+		for (auto& snapshot : _strokeSnapshots) {
+			if (snapshot->_chunk == chunk)
+				return;
+		}
+
+		std::shared_ptr<TerrainSnapshot> snapshot = std::make_shared<TerrainSnapshot>();
+		snapshot->_chunk = chunk;
+		snapshot->_oldHeights = chunk->_heights;
+		snapshot->_oldWeights = chunk->_weights;
+		_strokeSnapshots.push_back(snapshot);
+	}
+
+	void CursorOnMap::paintTerrain() {
+
+		std::shared_ptr<ToolsTerrain> tools = std::dynamic_pointer_cast<ToolsTerrain>(MapEditor::editor->_palette->_tools);
+
+		if (!tools || tools->_toolType == ToolTerrainType::None)
+			return;
+
+		std::shared_ptr<Map> mapa = MapEditor::editor->_map;
+
+		float radius = getBrushRadius();
+		bool square = tools->_toolType == ToolTerrainType::Rect;
+		sf::Vector2f center(_worldPosition.x, _worldPosition.z);
+		float dt = Anubis::deltaTime.asSeconds();
+
+		std::vector<std::shared_ptr<Chunk>> chunks = mapa->getChunksInRect(center, radius);
+
+		if (chunks.empty())
+			return;
+
+		for (auto& chunk : chunks)
+			addToStroke(chunk);
+
+		if (tools->_toolType == ToolTerrainType::Circle || tools->_toolType == ToolTerrainType::Rect) {
+			std::shared_ptr<Terrain> terrain = std::dynamic_pointer_cast<Terrain>(_object.lock());
+
+			if (!terrain)
+				return;
+
+			mapa->paintTerrain(chunks, center, radius, square, terrain->_id, dt * 4.f);	// full terrain in the middle after 0.25 s
+		}
+		else {
+			float amount = dt * 6.f;									// Smooth, Flatten: speed
+
+			if (tools->_toolType == ToolTerrainType::Raise || tools->_toolType == ToolTerrainType::Lower)
+				amount = dt * 48.f;									// world units per second
+
+			mapa->changeHeights(chunks, center, radius, square, tools->_toolType, amount, _flattenHeight);
+			_heightsChanged = true;
+		}
+
+		for (auto& chunk : chunks)
+			_chunksToRebuild.insert(chunk);
+	}
+
+	void CursorOnMap::endTerrainStroke() {
+
+		if (!_strokeSnapshots.empty()) {
+			for (auto& snapshot : _strokeSnapshots) {
+				snapshot->_newHeights = snapshot->_chunk->_heights;
+				snapshot->_newWeights = snapshot->_chunk->_weights;
+			}
+
+			std::shared_ptr<EditTerrain> step = std::make_shared<EditTerrain>(_strokeSnapshots);
+			history->addStep(step);
+		}
+
+		_strokeSnapshots.clear();
+		_isPainting = false;
+
+		if (_state == Cursors::CursorWithObjectState::Drawing)
+			_state = Cursors::CursorWithObjectState::Idle;
+	}
+
+	void CursorOnMap::drawTerrainBrush() {
+
+		std::shared_ptr<ToolsTerrain> tools = std::dynamic_pointer_cast<ToolsTerrain>(MapEditor::editor->_palette->_tools);
+
+		if (!tools || tools->_toolType == ToolTerrainType::None)
+			return;
+
+		bool square = tools->_toolType == ToolTerrainType::Rect;
+
+		// red = terrains, blue = heights
+		sf::Color color(255, 47, 47, 95);
+
+		if (!(tools->_toolType == ToolTerrainType::Circle || tools->_toolType == ToolTerrainType::Rect))
+			color = sf::Color(47, 127, 255, 95);
+
+		MapEditor::editor->_map->drawBrushOverlay(sf::Vector2f(_worldPosition.x, _worldPosition.z), getBrushRadius(), square, color);
 	}
 
 	void CursorOnMap::drawPlacementPreview(std::shared_ptr<GameObject> prefab) {
@@ -786,6 +818,14 @@ namespace MapEditor {
 			selectionRectShape.setOutlineColor(sf::Color(0, 0, 255, 200));
 			Anubis::render_window->draw(selectionRectShape);
 
+			return;
+		}
+
+		if (isHeightTool()) {
+			if (_isOnTerrain) {
+				drawTerrainBrush();
+				Anubis::render_window->resetGLStates();
+			}
 			return;
 		}
 

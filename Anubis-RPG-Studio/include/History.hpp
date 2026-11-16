@@ -4,6 +4,7 @@
 #include "Objects/SelectedPlacedGameObject.hpp"
 #include "Editors/MapEditor/Editor.hpp"
 #include "Editors/MapEditor/Map/CursorOnMap.hpp"
+#include "Editors/MapEditor/Map/Chunk.hpp"
 
 class Step : public std::enable_shared_from_this<Step> {
 public:
@@ -15,9 +16,9 @@ public:
 
 class EditTerrain : public Step {
 public:
-	std::map<sf::Vector2i, MapEditor::CursorOnMap::TileValues, MapEditor::CursorOnMap::Vector2iCompare> _editedTiles;
+	std::vector<std::shared_ptr<MapEditor::TerrainSnapshot>> _snapshots;
 
-	EditTerrain(std::map<sf::Vector2i, MapEditor::CursorOnMap::TileValues, MapEditor::CursorOnMap::Vector2iCompare> editedTiles);
+	EditTerrain(std::vector<std::shared_ptr<MapEditor::TerrainSnapshot>> snapshots);
 	~EditTerrain();
 	virtual void undo();
 	virtual void redo();

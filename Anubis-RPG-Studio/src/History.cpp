@@ -22,8 +22,8 @@ void Step::redo() {
 
 }
 
-EditTerrain::EditTerrain(std::map<sf::Vector2i, MapEditor::CursorOnMap::TileValues, MapEditor::CursorOnMap::Vector2iCompare> editedTiles) {
-    _editedTiles = editedTiles;
+EditTerrain::EditTerrain(std::vector<std::shared_ptr<MapEditor::TerrainSnapshot>> snapshots) {
+    _snapshots = snapshots;
 }
 
 EditTerrain::~EditTerrain() {
@@ -32,82 +32,28 @@ EditTerrain::~EditTerrain() {
 
 void EditTerrain::undo() {
 
-    
-    std::shared_ptr<MapEditor::Map> mapa = MapEditor::editor->_map;
-    std::set<std::shared_ptr<MapEditor::Chunk>> chunksToEdit;
-    
-    for (auto& tile : _editedTiles) {
-    
-        int tileX = tile.first.x;
-        int tileY = tile.first.y;
-    
-        std::shared_ptr<MapEditor::Chunk> c = mapa->getChunkByTileGlobalCoords(tileX, tileY);
-        if (!c) continue;
-    
-        std::shared_ptr<MapEditor::Tile> t = c->getTileByTileGlobalCoords(tileX, tileY);
-        if (!t) continue;
-    
-        t->_type = tile.second.oldValue;
-    
-        chunksToEdit.insert(c);
-    
-        if (mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y - 1)) chunksToEdit.insert(mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y - 1));
-        if (mapa->getChunkByCoords(c->_coords.x, c->_coords.y - 1)) chunksToEdit.insert(mapa->getChunkByCoords(c->_coords.x, c->_coords.y - 1));
-        if (mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y - 1)) chunksToEdit.insert(mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y - 1));
-    
-        if (mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y)) chunksToEdit.insert(mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y));
-        if (mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y)) chunksToEdit.insert(mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y));
-    
-        if (mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y + 1)) chunksToEdit.insert(mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y + 1));
-        if (mapa->getChunkByCoords(c->_coords.x, c->_coords.y + 1)) chunksToEdit.insert(mapa->getChunkByCoords(c->_coords.x, c->_coords.y + 1));
-        if (mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y + 1)) chunksToEdit.insert(mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y + 1));
+    std::vector<std::shared_ptr<MapEditor::Chunk>> chunks;
+
+    for (auto& snapshot : _snapshots) {
+        snapshot->_chunk->_heights = snapshot->_oldHeights;
+        snapshot->_chunk->_weights = snapshot->_oldWeights;
+        chunks.push_back(snapshot->_chunk);
     }
-    
-    for (auto& c : chunksToEdit)
-        c->generateVertexBuffer(
-            mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y - 1), mapa->getChunkByCoords(c->_coords.x, c->_coords.y - 1), mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y - 1),
-            mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y), mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y),
-            mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y + 1), mapa->getChunkByCoords(c->_coords.x, c->_coords.y + 1), mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y + 1)
-        );
+
+    MapEditor::editor->_map->refreshChunks(chunks, true);
 }
 
 void EditTerrain::redo() {
-    std::shared_ptr<MapEditor::Map> mapa = MapEditor::editor->_map;
-    std::set<std::shared_ptr<MapEditor::Chunk>> chunksToEdit;
 
-    for (auto& tile : _editedTiles) {
+    std::vector<std::shared_ptr<MapEditor::Chunk>> chunks;
 
-        int tileX = tile.first.x;
-        int tileY = tile.first.y;
-
-        std::shared_ptr<MapEditor::Chunk> c = mapa->getChunkByTileGlobalCoords(tileX, tileY);
-        if (!c) continue;
-
-        std::shared_ptr<MapEditor::Tile> t = c->getTileByTileGlobalCoords(tileX, tileY);
-        if (!t) continue;
-
-        t->_type = tile.second.newValue;
-
-        chunksToEdit.insert(c);
-
-        if (mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y - 1)) chunksToEdit.insert(mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y - 1));
-        if (mapa->getChunkByCoords(c->_coords.x, c->_coords.y - 1)) chunksToEdit.insert(mapa->getChunkByCoords(c->_coords.x, c->_coords.y - 1));
-        if (mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y - 1)) chunksToEdit.insert(mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y - 1));
-
-        if (mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y)) chunksToEdit.insert(mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y));
-        if (mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y)) chunksToEdit.insert(mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y));
-
-        if (mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y + 1)) chunksToEdit.insert(mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y + 1));
-        if (mapa->getChunkByCoords(c->_coords.x, c->_coords.y + 1)) chunksToEdit.insert(mapa->getChunkByCoords(c->_coords.x, c->_coords.y + 1));
-        if (mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y + 1)) chunksToEdit.insert(mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y + 1));
+    for (auto& snapshot : _snapshots) {
+        snapshot->_chunk->_heights = snapshot->_newHeights;
+        snapshot->_chunk->_weights = snapshot->_newWeights;
+        chunks.push_back(snapshot->_chunk);
     }
 
-    for (auto& c : chunksToEdit)
-        c->generateVertexBuffer(
-            mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y - 1), mapa->getChunkByCoords(c->_coords.x, c->_coords.y - 1), mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y - 1),
-            mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y), mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y),
-            mapa->getChunkByCoords(c->_coords.x - 1, c->_coords.y + 1), mapa->getChunkByCoords(c->_coords.x, c->_coords.y + 1), mapa->getChunkByCoords(c->_coords.x + 1, c->_coords.y + 1)
-        );
+    MapEditor::editor->_map->refreshChunks(chunks, true);
 }
 
 

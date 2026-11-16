@@ -241,6 +241,10 @@ void TexturesManager::loadAllTextures() {
     texturePaths.push_back(L"assets\\tex\\palette\\tools\\rect.png");
     texturePaths.push_back(L"assets\\tex\\palette\\tools\\decrease.png");
     texturePaths.push_back(L"assets\\tex\\palette\\tools\\increase.png");
+    texturePaths.push_back(L"assets\\tex\\palette\\tools\\raise.png");
+    texturePaths.push_back(L"assets\\tex\\palette\\tools\\lower.png");
+    texturePaths.push_back(L"assets\\tex\\palette\\tools\\smooth.png");
+    texturePaths.push_back(L"assets\\tex\\palette\\tools\\flatten.png");
     
     texturePaths.push_back(L"assets\\tex\\palette\\slots\\slot_80.png");
     texturePaths.push_back(L"assets\\tex\\palette\\slots\\slot_80_hover.png");

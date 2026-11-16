@@ -2,6 +2,7 @@
 #include "RenderWindow.hpp"
 #include "Theme.hpp"
 #include "DebugLog.hpp"
+#include <algorithm>
 
 ToolTerrainButton::ToolTerrainButton(std::shared_ptr<Texture> texture, std::shared_ptr<Texture> hoverTexture, std::shared_ptr<Texture> pressTexture, std::shared_ptr<Texture> toolTexture, sf::Vector2i position) : ButtonWithSprite(texture, hoverTexture, pressTexture, nullptr, position) {
 	_toolTexture = toolTexture;
@@ -56,6 +57,10 @@ ToolsTerrain::ToolsTerrain() : Tools() {
 
 	_selectedTool = nullptr;
 	_toolType = ToolTerrainType::None;
+	_page = 0;
+
+	_prev->_onclick_func = [this]() { setPage(_page - 1); };
+	_next->_onclick_func = [this]() { setPage(_page + 1); };
 }
 
 ToolsTerrain::~ToolsTerrain() {
@@ -90,6 +95,15 @@ void ToolsTerrain::setTool(std::shared_ptr<ToolTerrainButton> button, ToolTerrai
 	}
 }
 
+void ToolsTerrain::setPage(int page) {
+	int pagesCount = std::max(1, ((int)_tools.size() + _toolsPerPage - 1) / _toolsPerPage);
+	_page = std::clamp(page, 0, pagesCount - 1);
+}
+
+bool ToolsTerrain::isOnPage(int toolIndex) {
+	return toolIndex / _toolsPerPage == _page;
+}
+
 void ToolsTerrain::setPosition(sf::Vector2i position) {
 
 	_rect.position = position + sf::Vector2i(_main_margin, _main_margin);
@@ -105,11 +119,15 @@ void ToolsTerrain::setPosition(sf::Vector2i position) {
 
 	x += _prev->getSize().x + _inner_margin;
 
-	for (auto& tool : _tools) {
-		tool->setPosition(sf::Vector2i(x, y));
-		x += tool->_rect.size.x + _inner_margin;
+	// every page uses the same places
+	int firstX = x;
+
+	for (int i = 0; i < (int)_tools.size(); i++) {
+		x = firstX + (i % _toolsPerPage) * (64 + _inner_margin);
+		_tools[i]->setPosition(sf::Vector2i(x, y));
 	}
 
+	x = firstX + _toolsPerPage * (64 + _inner_margin);
 	_next->setPosition(sf::Vector2i(x, y));
 
 }
@@ -119,18 +137,16 @@ void ToolsTerrain::cursorHover() {
 	_prev->cursorHover();
 	_next->cursorHover();
 
-	for (auto& tool : _tools) {
-		tool->cursorHover();
-	}
+	for (int i = 0; i < (int)_tools.size(); i++)
+		if (isOnPage(i)) _tools[i]->cursorHover();
 }
 
 void ToolsTerrain::handleEvent(const sf::Event& event) {
 	_prev->handleEvent(event);
 	_next->handleEvent(event);
 
-	for (auto& tool : _tools) {
-		tool->handleEvent(event);
-	}
+	for (int i = 0; i < (int)_tools.size(); i++)
+		if (isOnPage(i)) _tools[i]->handleEvent(event);
 }
 
 void ToolsTerrain::update() {
@@ -138,9 +154,8 @@ void ToolsTerrain::update() {
 	_prev->update();
 	_next->update();
 
-	for (auto& tool : _tools) {
-		tool->update();
-	}
+	for (int i = 0; i < (int)_tools.size(); i++)
+		if (isOnPage(i)) _tools[i]->update();
 }
 
 void ToolsTerrain::draw() {
@@ -158,7 +173,6 @@ void ToolsTerrain::draw() {
 	_prev->draw();
 	_next->draw();
 
-	for (auto& tool : _tools) {
-		tool->draw();
-	}
+	for (int i = 0; i < (int)_tools.size(); i++)
+		if (isOnPage(i)) _tools[i]->draw();
 }

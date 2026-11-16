@@ -1,6 +1,5 @@
 #pragma once
 #include "EditorsManager.hpp"
-#include "Tileset.hpp"
 #include "3D/Scene.hpp"
 #include "Editors/MapEditor/Map/Map.hpp"
 #include "Editors/MapEditor/Map/CameraOnMap.hpp"

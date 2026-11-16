@@ -1,4 +1,4 @@
-#include "Editors/MapEditor/Editor.hpp"
+﻿#include "Editors/MapEditor/Editor.hpp"
 #include "DebugLog.hpp"
 #include "Objects/Monster.hpp"
 #include "Objects/Nature.hpp"
@@ -42,9 +42,10 @@ namespace MapEditor {
 
 		_map->create(width, height);
 
-		_map->drawCircle(sf::Vector2i(24, 28), 16, 4);
-		_map->drawCircle(sf::Vector2i(48, 16), 16, 4);
-		_map->drawCircle(sf::Vector2i(42, 28), 16, 4);
+		// swamp (terrain 3), positions and radius in world units
+		_map->drawCircle(sf::Vector2f(24.f * 16.f, 28.f * 16.f), 256.f, 3);
+		_map->drawCircle(sf::Vector2f(48.f * 16.f, 16.f * 16.f), 256.f, 3);
+		_map->drawCircle(sf::Vector2f(42.f * 16.f, 28.f * 16.f), 256.f, 3);
 	}	
 
 	void Editor::createCursorOnMap() {

@@ -1,16 +1,40 @@
 #version 330 core
 
-in vec2 vTexCoord;
+// Smooth terrain with texture splatting.
+// Every chunk has 2 splat textures 65 x 65 (one texel = one weight point, every 4 world units):
+//   uSplat0.rgba = weights of terrains 0-3, uSplat1.rgba = weights of terrains 4-7.
+// Linear filtering gives smooth weights, height blending (+ noise) makes the border sharp and uneven.
+
+in vec2 vTexCoord;		// splat texture coords of this chunk
+in vec2 worldPos;
+in vec3 vNormal;
+in vec4 vLightPos;
 out vec4 fragColor;
-uniform sampler2D uTexture;
+
+uniform sampler2D uTerrainTexture;	// tileset.png: all terrains in one column (size x size each, e.g. 64 or 256)
+uniform sampler2D uSplat0;
+uniform sampler2D uSplat1;
+uniform int uTerrainCount;			// terrains in the atlas (8)
+uniform float uTextureWorldSize;	// one terrain texture covers this many world units
+uniform float uSplatWorldSize;		// world size of the whole splat texture (65 texels * 4)
+uniform float uTileSize;
+uniform vec3 uSunDirection;
+
 uniform vec2 resolution;
 uniform float time;
-in vec2 worldPos;
 uniform vec2 startPos;
-in vec4 vLightPos;
 uniform sampler2D uShadowMap;
 uniform float uShadowStrength;	// 0 = no shadows, 1 = black shadows
 uniform int uShadowSamples;		// 1 = one sample, 3 = 3x3
+
+#define WATER 0
+#define BEACH 1
+#define GRASS 2
+#define SWAMP 3
+#define BOG 4
+#define HIGHLAND 5
+#define MAGMA 6
+#define LAVA 7
 
 // SHADOWS ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -38,15 +62,11 @@ float shadowAmount() {
 
 // OCEAN /////////////////////////////////////////////////////////////////////////////////////////////////////////
 float oceanRandom(float x) {
- 
     return fract(sin(x) * 10000.);
-          
 }
 
 float oceanNoise(vec2 p) {
-
     return oceanRandom(p.x + p.y * 10000.);
-            
 }
 
 vec2 sw(vec2 p) { return vec2(floor(p.x), floor(p.y)); }
@@ -55,51 +75,51 @@ vec2 nw(vec2 p) { return vec2(floor(p.x), ceil(p.y)); }
 vec2 ne(vec2 p) { return vec2(ceil(p.x), ceil(p.y)); }
 
 float oceanSmoothNoise(vec2 p) {
-
     vec2 interp = smoothstep(0., 1., fract(p));
     float s = mix(oceanNoise(sw(p)), oceanNoise(se(p)), interp.x);
     float n = mix(oceanNoise(nw(p)), oceanNoise(ne(p)), interp.x);
     return mix(s, n, interp.y);
-        
 }
 
 float oceanFractalNoise(vec2 p) {
-
     float x = 0.;
     x += oceanSmoothNoise(p      );
     x += oceanSmoothNoise(p * 2. ) / 2.;
     x += oceanSmoothNoise(p * 4. ) / 4.;
     x += oceanSmoothNoise(p * 8. ) / 8.;
     x += oceanSmoothNoise(p * 16.) / 16.;
-
     x /= 1. + 1./2. + 1./4. + 1./8. + 1./16.;
     return x;
-            
 }
 
 float oceanMovingNoise(vec2 p) {
- 
     float x = oceanFractalNoise(p + time);
     float y = oceanFractalNoise(p - time);
-    return oceanFractalNoise(p + vec2(x, y));   
-    
+    return oceanFractalNoise(p + vec2(x, y));
 }
 
 float oceanNestedNoise(vec2 p) {
-    
     float x = oceanMovingNoise(p);
     float y = oceanMovingNoise(p + 100.);
     return oceanMovingNoise(p + vec2(x, y));
-    
+}
+
+vec3 oceanColor() {
+    vec2 coords = (worldPos.xy - startPos) / resolution;
+    float pixelationFactor = 0.00390625;
+    vec2 pixelCoord = floor(coords / pixelationFactor) * pixelationFactor;
+    float n = oceanNestedNoise(pixelCoord * 25.60);
+    vec3 color = mix(vec3(.4, .6, 1.), vec3(.05, .1, 1.), n);
+    return color * 0.7;
 }
 
 // BOG //////////////////////////////////////////////////////////////////////////////////////////////////////////
 vec4 permute(vec4 x) {
-  return mod((34.0 * x + 1.0) * x, 289.0);
+    return mod((34.0 * x + 1.0) * x, 289.0);
 }
 
 vec3 permute(vec3 x) {
-  return mod((34.0 * x + 1.0) * x, 289.0);
+    return mod((34.0 * x + 1.0) * x, 289.0);
 }
 
 vec2 cellular2x2x2(vec3 P) {
@@ -110,7 +130,7 @@ vec2 cellular2x2x2(vec3 P) {
 	#define Kzo 0.416666666667
 	#define jitter 0.8
 	vec3 Pi = mod(floor(P), 289.0);
- 	vec3 Pf = fract(P);
+	vec3 Pf = fract(P);
 	vec4 Pfx = Pf.x + vec4(0.0, -1.0, 0.0, -1.0);
 	vec4 Pfy = Pf.y + vec4(0.0, 0.0, -1.0, -1.0);
 	vec4 p = permute(Pi.x + vec4(0.0, 1.0, 0.0, 1.0));
@@ -132,12 +152,6 @@ vec2 cellular2x2x2(vec3 P) {
 	vec4 d1 = dx1 * dx1 + dy1 * dy1 + dz1 * dz1;
 	vec4 d2 = dx2 * dx2 + dy2 * dy2 + dz2 * dz2;
 
-#if 0
-	d1 = min(d1, d2);
-	d1.xy = min(d1.xy, d1.wz);
-	d1.x = min(d1.x, d1.y);
-	return sqrt(d1.xx);
-#else
 	vec4 d = min(d1,d2);
 	d2 = max(d1,d2);
 	d.xy = (d.x < d.y) ? d.xy : d.yx;
@@ -148,14 +162,27 @@ vec2 cellular2x2x2(vec3 P) {
 	d.y = min(d.y, d.w);
 	d.y = min(d.y, d2.x);
 	return sqrt(d.xy);
-#endif
 }
 
+vec3 bogColor() {
+    float pixelSize = 2.0;
+    vec2 pixelatedWorldPos = floor(worldPos / pixelSize) * pixelSize;
+    vec2 st = (2.0 * (pixelatedWorldPos - startPos) - resolution.xy) / resolution.y;
+    st.y = st.y * 2.0;
+    st *= 10.0;
+    vec2 F = cellular2x2x2(vec3(st, time / 8.0));
+    float n = smoothstep(0.4, 0.5, F.x);
 
-// LAVA //////////////////////////////////////////////
+    if (n < 0.6)
+        return vec3(0.15, 0.35, 0.15);
 
-vec2 random2( vec2 p ) {
-    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);
+    return vec3(0.15 * n, 0.25 * n, 0.15 * n);
+}
+
+// LAVA //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+vec2 random2(vec2 p) {
+    return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453);
 }
 
 float lavaNoise(vec2 st) {
@@ -164,9 +191,9 @@ float lavaNoise(vec2 st) {
 
     vec2 u = f*f*(3.0-2.0*f);
 
-    return mix( mix( dot( random2(i + vec2(0.0,0.0) ), f - vec2(0.0,0.0) ), 
+    return mix( mix( dot( random2(i + vec2(0.0,0.0) ), f - vec2(0.0,0.0) ),
                      dot( random2(i + vec2(1.0,0.0) ), f - vec2(1.0,0.0) ), u.x),
-                mix( dot( random2(i + vec2(0.0,1.0) ), f - vec2(0.0,1.0) ), 
+                mix( dot( random2(i + vec2(0.0,1.0) ), f - vec2(0.0,1.0) ),
                      dot( random2(i + vec2(1.0,1.0) ), f - vec2(1.0,1.0) ), u.x), u.y);
 }
 
@@ -180,73 +207,150 @@ vec3 lavaFunc(vec3 color, vec2 uv, float detail, float power,
 
     vec2 cell = floor(uv);
     vec2 frac = fract(uv);
-    
+
     for (int i = -1; i <= 1; i++) {
         for (int j = -1; j <= 1; j++) {
-        	vec2 cellDir = vec2(float(i), float(j));
+            vec2 cellDir = vec2(float(i), float(j));
             vec2 randPoint = random2(cell + cellDir);
             randPoint += lavaNoise(uv) * noiseAmount;
             randPoint = animate ? 0.5 + 0.5 * sin(time * .35 + 6.2831 * randPoint) : randPoint;
             minDistance = min(minDistance, length(cellDir + randPoint - frac));
         }
     }
-    	
+
     float powAdd = sin(uv.x * 2. + time * glowRate) + sin(uv.y * 2. + time * glowRate);
     vec3 outColor = vec3(color * pow(minDistance, power + powAdd * .95) * colorMul);
     outColor.rgb = mix(rockColor, outColor.rgb, minDistance);
     return outColor;
 }
 
+vec3 lavaColor() {
+    vec2 uv = (worldPos.xy - startPos) / resolution;
+    uv.x *= resolution.x / resolution.y;
+    float pixelSize = 4.0;
+    vec2 grid = pixelSize / resolution;
+    uv = floor(uv / grid) * grid;
+    vec3 color = vec3(0.);
+    float addPower = -1.5;
+    color += lavaFunc(vec3(1.5, .45, 0.), uv*2, 3.,  2.5+addPower, 1.15, 1.5, false, 1.5);
+    color += lavaFunc(vec3(1.5, 0., 0.), uv*2, 6., 3.+addPower, .4, 1., false, 0.);
+    color += lavaFunc(vec3(1.2, .4, 0.), uv*2, 8., 4.+addPower, .2, 1.9, true, 0.5);
+    return color;
+}
+
+// SPLATTING /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Pixel of one terrain from the atlas. p = world position (center of a texel).
+vec3 atlasColor(int id, vec2 p) {
+    vec2 inTexture = fract(p / uTextureWorldSize);
+    vec2 uv = vec2(inTexture.x, (float(id) + inTexture.y) / float(uTerrainCount));
+    return texture(uTerrainTexture, uv).rgb;
+}
+
+bool isAnimated(int id) {
+    return id == WATER || id == BOG || id == LAVA;
+}
+
+vec3 animatedColor(int id) {
+    if (id == WATER) return oceanColor();
+    if (id == BOG) return bogColor();
+    return lavaColor();
+}
+
+// gradient noise, about -0.7 .. 0.7, average 0
+float borderNoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+
+    float a = dot(random2(i + vec2(0.0, 0.0)) * 2.0 - 1.0, f - vec2(0.0, 0.0));
+    float b = dot(random2(i + vec2(1.0, 0.0)) * 2.0 - 1.0, f - vec2(1.0, 0.0));
+    float c = dot(random2(i + vec2(0.0, 1.0)) * 2.0 - 1.0, f - vec2(0.0, 1.0));
+    float d = dot(random2(i + vec2(1.0, 1.0)) * 2.0 - 1.0, f - vec2(1.0, 1.0));
+
+    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+// How "high" a terrain lies on the border. Higher terrain covers lower terrain
+// (beach covers water, highland covers grass ...). Texture brightness and noise make the border uneven.
+float terrainHeight(int id, vec3 color, vec2 p) {
+    float base[8] = float[8](
+        0.00,	// water
+        0.35,	// beach
+        0.45,	// grass
+        0.30,	// swamp
+        0.10,	// bog
+        0.60,	// highland
+        0.40,	// magma (dry lava)
+        0.05	// lava
+    );
+
+    float detail = isAnimated(id) ? 0.25 : dot(color, vec3(0.299, 0.587, 0.114));
+    vec2 q = p / uTileSize + vec2(float(id) * 7.31, float(id) * 3.17);
+    float noise = borderNoise(q * 0.6) + borderNoise(q * 1.9) * 0.4;
+    return base[id] + detail * 0.5 + noise * 0.9;
+}
+
 // MAIN /////////////////////////////////////////////////////////////////////////////////////////////////////////
 void main()
 {
-    vec4 texcolor = texture(uTexture, vTexCoord);
-    ivec4 tileColor = ivec4(floor(texcolor * 255.0 + 0.5));
+    // one blend step per texel - the borders stay pixelated like the textures
+    float texelWorld = uTextureWorldSize / float(textureSize(uTerrainTexture, 0).x);
+    vec2 pixel = (floor(worldPos / texelWorld) + 0.5) * texelWorld;
 
-    if(all(equal(tileColor, ivec4(50, 61, 186, 255)))) {
+    vec2 splatSize = vec2(textureSize(uSplat0, 0));
+    vec2 splatUV = vTexCoord + (pixel - worldPos) / uSplatWorldSize;
+    splatUV = clamp(splatUV, 0.5 / splatSize, 1.0 - 0.5 / splatSize);
 
-        vec2 coords = (worldPos.xy-startPos)/resolution;
-        float pixelationFactor = 0.00390625;
-        vec2 pixelCoord = floor(coords / pixelationFactor) * pixelationFactor;
-        float n = oceanNestedNoise(pixelCoord * 25.60);
-        vec3 color = mix(vec3(.4, .6, 1.), vec3(.05, .1, 1.), n);
-        vec3 darkcolor = color * 0.7;
-        fragColor = vec4(darkcolor, 1.);
+    vec4 w0 = texture(uSplat0, splatUV);
+    vec4 w1 = texture(uSplat1, splatUV);
+    float weights[8] = float[8](w0.r, w0.g, w0.b, w0.a, w1.r, w1.g, w1.b, w1.a);
 
-    } else if (all(equal(tileColor, ivec4(13, 69, 30, 255)))) {
+    // 1. height of every terrain under this pixel
+    vec3 colors[8];
+    float heights[8];
+    float highest = -10.0;
 
-        float pixelSize = 2.0;
-        vec2 pixelatedWorldPos = floor(worldPos / pixelSize) * pixelSize;
-        vec2 st = (2.0 * (pixelatedWorldPos - startPos) - resolution.xy) / resolution.y;
-        st.y = st.y * 2.0;
-        st *= 10.0;
-        vec2 F = cellular2x2x2(vec3(st, time / 8.0));
-        float n = smoothstep(0.4, 0.5, F.x);
-        vec4 final_color;
-        if(n < 0.6)
-            final_color = vec4(0.15, 0.35, 0.15, 1.0);
-        else
-            final_color = vec4(0.15*n, 0.25*n, 0.15*n, 1.0);
+    for (int i = 0; i < 8; i++) {
+        colors[i] = vec3(0.0);
+        heights[i] = -10.0;
 
-        fragColor = final_color;
+        if (weights[i] < 0.004)
+            continue;
 
-    } else if (all(equal(tileColor, ivec4(237, 28, 36, 255)))) {
+        if (!isAnimated(i))
+            colors[i] = atlasColor(i, pixel);
 
-        vec2 uv = (worldPos.xy-startPos)/resolution;
-    	uv.x *= resolution.x / resolution.y;
-        float pixelSize = 4.0;
-      	vec2 grid = pixelSize / resolution;
-        uv = floor(uv/grid) * grid;
-    	vec4 lavaColor = vec4(0.);
-        float addPower = -1.5;
-    	lavaColor.rgb += lavaFunc(vec3(1.5, .45, 0.), uv*2, 3.,  2.5+addPower, 1.15, 1.5, false, 1.5);
-    	lavaColor.rgb += lavaFunc(vec3(1.5, 0., 0.), uv*2, 6., 3.+addPower, .4, 1., false, 0.);
-    	lavaColor.rgb += lavaFunc(vec3(1.2, .4, 0.), uv*2, 8., 4.+addPower, .2, 1.9, true, 0.5);
-    	fragColor = vec4(lavaColor.rgb, 1.0);
-
-    } else {
-        fragColor = texcolor;
+        heights[i] = weights[i] + terrainHeight(i, colors[i], pixel);
+        highest = max(highest, heights[i]);
     }
 
+    // 2. height blending - only terrains close to the highest one are visible
+    const float blendDepth = 0.08;
+    vec3 color = vec3(0.0);
+    float total = 0.0;
+
+    for (int i = 0; i < 8; i++) {
+        float b = max(heights[i] - (highest - blendDepth), 0.0);
+
+        if (b <= 0.0)
+            continue;
+
+        if (isAnimated(i))
+            colors[i] = animatedColor(i);
+
+        color += colors[i] * b;
+        total += b;
+    }
+
+    color /= max(total, 0.0001);
+
+    // light: flat ground keeps its color, slopes to the sun are brighter, the others darker
+    vec3 toSun = -normalize(uSunDirection);
+    float flatLight = max(toSun.y, 0.05);
+    float light = max(dot(normalize(vNormal), toSun), 0.0) / flatLight;
+    color *= clamp(mix(1.0, light, 0.85), 0.35, 1.3);
+
+    fragColor = vec4(color, 1.0);
     fragColor.rgb *= 1.0 - uShadowStrength * shadowAmount();
 }

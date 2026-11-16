@@ -3,7 +3,7 @@
 #include "Components/Palette/Tools.hpp"
 #include "Objects/Object.hpp"
 
-enum class ToolTerrainType { None, Circle, Rect };
+enum class ToolTerrainType { None, Circle, Rect, Raise, Lower, Smooth, Flatten };
 
 class ToolTerrainButton : public ButtonWithSprite {
 public:
@@ -25,12 +25,16 @@ public:
 	std::vector<std::shared_ptr<ToolTerrainButton>> _tools;
 	std::shared_ptr<ToolTerrainButton> _selectedTool = nullptr;
 	ToolTerrainType _toolType = ToolTerrainType::None;
+	int _page = 0;
+	int _toolsPerPage = 5;
 
 	ToolsTerrain();
 	~ToolsTerrain();
 
 	void addTool(std::shared_ptr<Texture> texture, std::shared_ptr<Texture> hoverTexture, std::shared_ptr<Texture> pressTexture, std::shared_ptr<Texture> toolTexture, std::function<void()> function);
 	void setTool(std::shared_ptr<ToolTerrainButton> button, ToolTerrainType type);
+	void setPage(int page);
+	bool isOnPage(int toolIndex);
 	virtual void setPosition(sf::Vector2i position);
 
 	virtual void cursorHover();

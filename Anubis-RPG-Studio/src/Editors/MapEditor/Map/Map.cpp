@@ -10,110 +10,58 @@
 #include "Time.hpp"
 #include <SFML/OpenGL.hpp>
 #include "3D/OpenGLBuffers.hpp"
+#include "Components/Palette/Tools-Terrain.hpp"
+#include <algorithm>
+#include <array>
+#include <cmath>
 
 namespace MapEditor {
 	Map::Map() {
 		_ghostChunk = std::make_shared<GhostChunk>();
 		_texture = textures_manager->getTexture(L"assets\\tex\\tileset.png");
-		
-
 	}
 
 	Map::~Map() {
 
 	}
 
-	void Map::addChunk(std::shared_ptr<Chunk> chunk, int tileType) {
+	void Map::addChunk(std::shared_ptr<Chunk> chunk, int terrain) {
 
-		int x = chunk->_coords.x;
-		int y = chunk->_coords.y;
-
-		for (int ty = 0; ty < Chunk::tilesRows; ty++) {
-			for (int tx = 0; tx < Chunk::tilesCols; tx++) {
-				std::shared_ptr<Tile> tile = std::make_shared<Tile>();
-
-				tile->_type = tileType;
-
-				tile->_coords.x = x * Chunk::tilesCols + tx;
-				tile->_coords.y = y * Chunk::tilesRows + ty;
-
-				tile->_position.x = (float)(tile->_coords.x * Tile::tileSize);
-				tile->_position.y = (float)(tile->_coords.y * Tile::tileSize);
-
-				chunk->_tiles.push_back(tile);
-			}
-		}
-
+		chunk->fill(terrain, 0.f);
 		_chunks.push_back(chunk);
 
+		// shared edge points get the values of the existing neighbours
+		stitchChunk(chunk);
+		chunk->updateSplatTextures();
+
+		// neighbours too - their normals on the edge use the heights of the new chunk
 		for (int yy = -1; yy <= 1; yy++) {
 			for (int xx = -1; xx <= 1; xx++) {
 
-				int cx = x + xx;
-				int cy = y + yy;
+				std::shared_ptr<Chunk> currentChunk = getChunkByCoords(chunk->_coords.x + xx, chunk->_coords.y + yy);
 
-				std::shared_ptr<Chunk> currentChunk = getChunkByCoords(cx, cy);
-
-				if (!currentChunk)
-					continue;
-
-				currentChunk->generateVertexBuffer(
-					getChunkByCoords(cx - 1, cy - 1), getChunkByCoords(cx, cy - 1), getChunkByCoords(cx + 1, cy - 1),
-					getChunkByCoords(cx - 1, cy), getChunkByCoords(cx + 1, cy),
-					getChunkByCoords(cx - 1, cy + 1), getChunkByCoords(cx, cy + 1), getChunkByCoords(cx + 1, cy + 1)
-				);
+				if (currentChunk)
+					currentChunk->generateVertexBuffer();
 			}
 		}
 	}
 
 	void Map::create(int width, int height) {
 
-		int tileType = 2;
+		int terrain = 2;
 
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
 				std::shared_ptr<Chunk> chunk = std::make_shared<Chunk>(x, y);
-				addChunk(chunk, tileType);
+				addChunk(chunk, terrain);
 			}
 		}
 	}
 
-	void Map::drawCircle(sf::Vector2i center, int radius, int type) {
-
-		std::set<std::shared_ptr<Chunk>> chunksToEdit;
-		for (int yy = center.y - radius; yy <= center.y + radius; yy++) {
-			for (int xx = center.x - radius; xx <= center.x + radius; xx++) {
-
-				if ((yy - center.y) * (yy - center.y) + (xx - center.x) * (xx - center.x) >= radius * radius) continue;
-
-				std::shared_ptr<Chunk> c = getChunkByTileGlobalCoords(xx, yy);
-				if (!c) continue;
-
-				std::shared_ptr<Tile> t = c->getTileByTileGlobalCoords(xx, yy);
-				if (!t) continue;
-
-				t->_type = type;
-				chunksToEdit.insert(c);
-
-				if (getChunkByCoords(c->_coords.x - 1, c->_coords.y - 1)) chunksToEdit.insert(getChunkByCoords(c->_coords.x - 1, c->_coords.y - 1));
-				if (getChunkByCoords(c->_coords.x, c->_coords.y - 1)) chunksToEdit.insert(getChunkByCoords(c->_coords.x, c->_coords.y - 1));
-				if (getChunkByCoords(c->_coords.x + 1, c->_coords.y - 1)) chunksToEdit.insert(getChunkByCoords(c->_coords.x + 1, c->_coords.y - 1));
-
-				if (getChunkByCoords(c->_coords.x - 1, c->_coords.y)) chunksToEdit.insert(getChunkByCoords(c->_coords.x - 1, c->_coords.y));
-				if (getChunkByCoords(c->_coords.x + 1, c->_coords.y)) chunksToEdit.insert(getChunkByCoords(c->_coords.x + 1, c->_coords.y));
-
-				if (getChunkByCoords(c->_coords.x - 1, c->_coords.y + 1)) chunksToEdit.insert(getChunkByCoords(c->_coords.x - 1, c->_coords.y + 1));
-				if (getChunkByCoords(c->_coords.x, c->_coords.y + 1)) chunksToEdit.insert(getChunkByCoords(c->_coords.x, c->_coords.y + 1));
-				if (getChunkByCoords(c->_coords.x + 1, c->_coords.y + 1)) chunksToEdit.insert(getChunkByCoords(c->_coords.x + 1, c->_coords.y + 1));
-			}
-		}
-
-		for (auto& c : chunksToEdit)
-			c->generateVertexBuffer(
-				getChunkByCoords(c->_coords.x - 1, c->_coords.y - 1), getChunkByCoords(c->_coords.x, c->_coords.y - 1), getChunkByCoords(c->_coords.x + 1, c->_coords.y - 1),
-				getChunkByCoords(c->_coords.x - 1, c->_coords.y), getChunkByCoords(c->_coords.x + 1, c->_coords.y),
-				getChunkByCoords(c->_coords.x - 1, c->_coords.y + 1), getChunkByCoords(c->_coords.x, c->_coords.y + 1), getChunkByCoords(c->_coords.x + 1, c->_coords.y + 1)
-			);
+	void Map::drawCircle(sf::Vector2f center, float radius, int terrain) {
+		std::vector<std::shared_ptr<Chunk>> chunks = getChunksInRect(center, radius);
+		paintTerrain(chunks, center, radius, false, terrain, 1.f);
+		refreshChunks(chunks, false);
 	}
 
 	std::shared_ptr<Chunk> Map::getChunkByCoords(int x, int y) {
@@ -155,17 +103,6 @@ namespace MapEditor {
 		return getChunkByTileGlobalCoords(x, y);
 	}
 
-	std::shared_ptr<Tile> Map::getTileByTileGlobalCoords(int x, int y) {
-
-		std::shared_ptr<Chunk> chunk = getChunkByTileGlobalCoords(x, y);
-
-		if (chunk == nullptr) {
-			return nullptr;
-		}
-
-		return chunk->getTileByTileGlobalCoords(x, y);
-	}
-
 	sf::IntRect Map::getRect() {
 		sf::Vector2i minCoords = sf::Vector2i(INT_MAX, INT_MAX);
 		sf::Vector2i maxCoords = sf::Vector2i(0, 0);
@@ -190,6 +127,267 @@ namespace MapEditor {
 		);
 
 		return rect;
+	}
+
+	std::vector<std::shared_ptr<Chunk>> Map::getChunksInRect(sf::Vector2f center, float radius) {
+
+		std::vector<std::shared_ptr<Chunk>> result;
+
+		for (auto& chunk : _chunks) {
+			sf::Vector2f position = chunk->getWorldPosition();
+			float size = chunk->getSize();
+
+			if (center.x + radius < position.x || center.x - radius > position.x + size) continue;
+			if (center.y + radius < position.y || center.y - radius > position.y + size) continue;
+
+			result.push_back(chunk);
+		}
+
+		return result;
+	}
+
+	// Copies the shared edge points (heights and weights) from the existing neighbours.
+	void Map::stitchChunk(std::shared_ptr<Chunk> chunk) {
+
+		int hc = Chunk::heightsCols;
+		int wc = Chunk::weightsCols;
+		int tc = Chunk::terrainsCount;
+
+		for (int dy = -1; dy <= 1; dy++) {
+			for (int dx = -1; dx <= 1; dx++) {
+
+				if (dx == 0 && dy == 0)
+					continue;
+
+				std::shared_ptr<Chunk> neighbour = getChunkByCoords(chunk->_coords.x + dx, chunk->_coords.y + dy);
+
+				if (!neighbour || neighbour == chunk)
+					continue;
+
+				// only the points that lie in both chunks (the shared edge)
+				for (int y = 0; y < hc; y++) {
+					for (int x = 0; x < hc; x++) {
+						int nx = x - dx * (hc - 1);
+						int ny = y - dy * (hc - 1);
+
+						if (nx < 0 || ny < 0 || nx >= hc || ny >= hc)
+							continue;
+
+						chunk->_heights[y * hc + x] = neighbour->_heights[ny * hc + nx];
+					}
+				}
+
+				for (int y = 0; y < wc; y++) {
+					for (int x = 0; x < wc; x++) {
+						int nx = x - dx * (wc - 1);
+						int ny = y - dy * (wc - 1);
+
+						if (nx < 0 || ny < 0 || nx >= wc || ny >= wc)
+							continue;
+
+						for (int t = 0; t < tc; t++)
+							chunk->_weights[(y * wc + x) * tc + t] = neighbour->_weights[(ny * wc + nx) * tc + t];
+					}
+				}
+			}
+		}
+	}
+
+	// After a change of the terrain data: splat textures, and when heights changed also meshes (+ neighbours) and models on them.
+	void Map::refreshChunks(std::vector<std::shared_ptr<Chunk>> chunks, bool heightsChanged) {
+
+		for (auto& chunk : chunks)
+			chunk->updateSplatTextures();
+
+		if (!heightsChanged)
+			return;
+
+		std::set<std::shared_ptr<Chunk>> toRebuild;
+
+		for (auto& chunk : chunks) {
+			for (int dy = -1; dy <= 1; dy++) {
+				for (int dx = -1; dx <= 1; dx++) {
+					std::shared_ptr<Chunk> c = getChunkByCoords(chunk->_coords.x + dx, chunk->_coords.y + dy);
+					if (c) toRebuild.insert(c);
+				}
+			}
+		}
+
+		for (auto& chunk : toRebuild)
+			chunk->generateVertexBuffer();
+
+		// models stand on the new heights
+		for (auto& chunk : chunks) {
+			for (auto& object : chunk->_gameObjectsOnMap)
+				MapEditor::editor->_game_objects->updateModelTransform(object);
+		}
+	}
+
+	// 1 in the middle of the brush, 0 on the edge. Full strength up to the half of the radius.
+	float Map::getBrushFalloff(sf::Vector2f delta, float radius, bool square) {
+
+		float distance = square ? std::max(std::abs(delta.x), std::abs(delta.y)) : std::sqrt(delta.x * delta.x + delta.y * delta.y);
+
+		if (distance >= radius)
+			return 0.f;
+
+		float f = std::clamp((radius - distance) / (radius * 0.5f), 0.f, 1.f);
+		return f * f * (3.f - 2.f * f);
+	}
+
+	// amount = how much of the terrain is added in the middle of the brush (0 - 1)
+	void Map::paintTerrain(std::vector<std::shared_ptr<Chunk>> chunks, sf::Vector2f center, float radius, bool square, int terrain, float amount) {
+
+		int wc = Chunk::weightsCols;
+		int tc = Chunk::terrainsCount;
+
+		terrain = std::clamp(terrain, 0, tc - 1);
+
+		for (auto& chunk : chunks) {
+
+			sf::Vector2f position = chunk->getWorldPosition();
+			float step = chunk->getWeightStep();
+
+			for (int y = 0; y < wc; y++) {
+				for (int x = 0; x < wc; x++) {
+
+					sf::Vector2f point(position.x + float(x) * step, position.y + float(y) * step);
+					float a = std::clamp(getBrushFalloff(point - center, radius, square) * amount, 0.f, 1.f);
+
+					if (a <= 0.f)
+						continue;
+
+					// other terrains get smaller, the painted terrain gets the rest to 255
+					int index = (y * wc + x) * tc;
+					int total = 0;
+
+					for (int t = 0; t < tc; t++) {
+						if (t == terrain)
+							continue;
+
+						int value = (int)(float(chunk->_weights[index + t]) * (1.f - a));
+						chunk->_weights[index + t] = (std::uint8_t)value;
+						total += value;
+					}
+
+					chunk->_weights[index + terrain] = (std::uint8_t)(255 - total);
+				}
+			}
+		}
+	}
+
+	// Raise / Lower: amount = world units in the middle of the brush. Smooth / Flatten: amount = speed (0 - 1).
+	void Map::changeHeights(std::vector<std::shared_ptr<Chunk>> chunks, sf::Vector2f center, float radius, bool square, ToolTerrainType tool, float amount, float flattenHeight) {
+
+		int hc = Chunk::heightsCols;
+
+		// 1. new heights of all chunks first - Smooth reads the neighbours,
+		//    so the shared edge points get the same values in both chunks
+		std::vector<std::vector<float>> newHeights;
+
+		for (auto& chunk : chunks) {
+
+			std::vector<float> heights = chunk->_heights;
+			sf::Vector2f position = chunk->getWorldPosition();
+			float step = chunk->getHeightStep();
+
+			for (int y = 0; y < hc; y++) {
+				for (int x = 0; x < hc; x++) {
+
+					sf::Vector2f point(position.x + float(x) * step, position.y + float(y) * step);
+					float f = getBrushFalloff(point - center, radius, square);
+
+					if (f <= 0.f)
+						continue;
+
+					float h = chunk->_heights[y * hc + x];
+
+					if (tool == ToolTerrainType::Raise)
+						h += amount * f;
+					else if (tool == ToolTerrainType::Lower)
+						h -= amount * f;
+					else if (tool == ToolTerrainType::Smooth) {
+						float average = (
+							chunk->getHeightPoint(x - 1, y) + chunk->getHeightPoint(x + 1, y) +
+							chunk->getHeightPoint(x, y - 1) + chunk->getHeightPoint(x, y + 1)
+						) * 0.25f;
+						h += (average - h) * std::min(amount * f, 1.f);
+					}
+					else if (tool == ToolTerrainType::Flatten)
+						h += (flattenHeight - h) * std::min(amount * f, 1.f);
+
+					heights[y * hc + x] = h;
+				}
+			}
+
+			newHeights.push_back(heights);
+		}
+
+		// 2. apply
+		for (int i = 0; i < (int)chunks.size(); i++)
+			chunks[i]->_heights = newHeights[i];
+	}
+
+	// Old maps keep one terrain per tile - weights are interpolated between the tile centers.
+	void Map::convertOldTiles() {
+
+		std::vector<int> oldTileTerrains = { 0, 1, 2, 3, 3, 4, 5, 6, 7 };	// tileset group -> terrain
+
+		int wc = Chunk::weightsCols;
+
+		for (auto& chunk : _chunks) {
+
+			if (chunk->_oldTiles.size() != Chunk::tilesCols * Chunk::tilesRows)
+				continue;
+
+			sf::Vector2f position = chunk->getWorldPosition();
+			float step = chunk->getWeightStep();
+
+			for (int y = 0; y < wc; y++) {
+				for (int x = 0; x < wc; x++) {
+
+					// position in the "tile centers" space
+					float sx = (position.x + float(x) * step) / float(Tile::tileSize) - 0.5f;
+					float sy = (position.y + float(y) * step) / float(Tile::tileSize) - 0.5f;
+
+					int tx = (int)std::floor(sx);
+					int ty = (int)std::floor(sy);
+					float fx = sx - float(tx);
+					float fy = sy - float(ty);
+
+					std::array<float, 8> weights = {};
+
+					for (int i = 0; i < 4; i++) {
+						int gx = tx + i % 2;
+						int gy = ty + i / 2;
+						float w = (i % 2 == 0 ? 1.f - fx : fx) * (i / 2 == 0 ? 1.f - fy : fy);
+
+						std::shared_ptr<Chunk> c = getChunkByTileGlobalCoords(gx, gy);
+
+						// no chunk there (edge of the map) - the nearest tile of this chunk
+						if (!c || c->_oldTiles.size() != Chunk::tilesCols * Chunk::tilesRows) {
+							c = chunk;
+							gx = std::clamp(gx, chunk->_coords.x * Chunk::tilesCols, chunk->_coords.x * Chunk::tilesCols + Chunk::tilesCols - 1);
+							gy = std::clamp(gy, chunk->_coords.y * Chunk::tilesRows, chunk->_coords.y * Chunk::tilesRows + Chunk::tilesRows - 1);
+						}
+
+						int lx = gx - c->_coords.x * Chunk::tilesCols;
+						int ly = gy - c->_coords.y * Chunk::tilesRows;
+						int type = c->_oldTiles[ly * Chunk::tilesCols + lx];
+
+						if (type < 0 || type >= (int)oldTileTerrains.size())
+							type = 0;
+
+						weights[oldTileTerrains[type]] += w;
+					}
+
+					chunk->setWeights(y * wc + x, weights);
+				}
+			}
+		}
+
+		for (auto& chunk : _chunks)
+			chunk->_oldTiles.clear();
 	}
 
 	void Map::removeGameObjectsFromChunksByPrefab(std::shared_ptr<GameObject> object) {
@@ -296,12 +494,13 @@ namespace MapEditor {
 		for (auto& chunk : _chunks) {
 			writer.write_Vector2i(chunk->_coords);
 
-			for (int ty = 0; ty < Chunk::tilesRows; ty++) {
-				for (int tx = 0; tx < Chunk::tilesCols; tx++) {
-					int index = ty * Chunk::tilesCols + tx;
-					writer.write_int8(chunk->_tiles[index]->_type);
-				}
-			}
+			// -2 = smooth terrain (old maps have here the type of the first tile: 0 or more)
+			writer.write_int8(-2);
+
+			for (auto& height : chunk->_heights)
+				writer.write_float(height);
+
+			writer.write_data(chunk->_weights);
 		}
 	}
 
@@ -323,27 +522,36 @@ namespace MapEditor {
 			sf::Vector2i chunkCoords = reader.read_Vector2i();
 			std::shared_ptr<Chunk> chunk = std::make_shared<Chunk>(chunkCoords.x, chunkCoords.y);
 			loader->nextStep(L"chunks");
-			for (int ty = 0; ty < Chunk::tilesRows; ty++) {
-				for (int tx = 0; tx < Chunk::tilesCols; tx++) {
-					std::shared_ptr<Tile> tile = std::make_shared<Tile>();
-					tile->_type = reader.read_int8();
-					tile->_coords.x = chunkCoords.x * Chunk::tilesCols + tx;
-					tile->_coords.y = chunkCoords.y * Chunk::tilesRows + ty;
-					tile->_position.x = (float)(tile->_coords.x * Tile::tileSize);
-					tile->_position.y = (float)(tile->_coords.y * Tile::tileSize);
-					chunk->_tiles.push_back(tile);
-				}
+
+			int format = reader.read_int8();
+
+			if (format == -2) {
+				for (auto& height : chunk->_heights)
+					height = reader.read_float();
+
+				std::shared_ptr<std::vector<uint8_t>> weights = reader.read_data();
+
+				if (weights->size() == chunk->_weights.size())
+					chunk->_weights = *weights;
+				else
+					DebugError(L"Wrong size of the terrain weights in chunk " + std::to_wstring(chunkCoords.x) + L"x" + std::to_wstring(chunkCoords.y));
+			}
+			else {
+				// old map - one terrain per tile, converted in convertOldTiles()
+				chunk->_oldTiles.push_back(format);
+
+				for (int t = 1; t < Chunk::tilesCols * Chunk::tilesRows; t++)
+					chunk->_oldTiles.push_back(reader.read_int8());
 			}
 
 			_chunks.push_back(chunk);
 		}
 
+		convertOldTiles();
+
 		for (auto& chunk : _chunks) {
-			chunk->generateVertexBuffer(
-				getChunkByCoords(chunk->_coords.x - 1, chunk->_coords.y - 1), getChunkByCoords(chunk->_coords.x, chunk->_coords.y - 1), getChunkByCoords(chunk->_coords.x + 1, chunk->_coords.y - 1),
-				getChunkByCoords(chunk->_coords.x - 1, chunk->_coords.y), getChunkByCoords(chunk->_coords.x + 1, chunk->_coords.y),
-				getChunkByCoords(chunk->_coords.x - 1, chunk->_coords.y + 1), getChunkByCoords(chunk->_coords.x, chunk->_coords.y + 1), getChunkByCoords(chunk->_coords.x + 1, chunk->_coords.y + 1)
-			);
+			chunk->updateSplatTextures();
+			chunk->generateVertexBuffer();
 		}
 
 		editor->setVisibleChunks();
@@ -438,19 +646,14 @@ namespace MapEditor {
 		return scene->unprojectDepth(pixel, depth, hit);
 	}
 
-	void Map::drawTileOverlay(sf::Vector2i firstTile, sf::Vector2i size, const std::vector<float>& mask, sf::Color color) {
-
-		constexpr int maxTiles = 441; // must match uMask[] in tileOverlay3D.frag
+	void Map::drawBrushOverlay(sf::Vector2f center, float radius, bool square, sf::Color color) {
 
 		auto scene = MapEditor::editor ? MapEditor::editor->_scene : nullptr;
 
-		if (!scene || !Anubis::shaders_manager->tileOverlay3D_shader || Anubis::shaders_manager->tileOverlay3D_shader->getNativeHandle() == 0)
+		if (!scene || !Anubis::shaders_manager->brush3D_shader || Anubis::shaders_manager->brush3D_shader->getNativeHandle() == 0)
 			return;
 
 		if (!Anubis::GL::bindVertexArray)
-			return;
-
-		if (size.x <= 0 || size.y <= 0 || size.x * size.y > maxTiles || int(mask.size()) < size.x * size.y)
 			return;
 
 		GLint previousMatrixMode = 0;
@@ -472,16 +675,14 @@ namespace MapEditor {
 		glGetFloatv(GL_MODELVIEW_MATRIX, viewMatrix);
 		glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix);
 
-		std::shared_ptr<sf::Shader> shader = Anubis::shaders_manager->tileOverlay3D_shader;
+		std::shared_ptr<sf::Shader> shader = Anubis::shaders_manager->brush3D_shader;
 		shader->setUniform("uView", sf::Glsl::Mat4(viewMatrix));
 		shader->setUniform("uProjection", sf::Glsl::Mat4(projectionMatrix));
-		shader->setUniform("uTileSize", float(Tile::tileSize));
-		shader->setUniform("uFirstTile", sf::Glsl::Vec2((float)firstTile.x, (float)firstTile.y));
-		shader->setUniform("uWidth", size.x);
-		shader->setUniform("uHeight", size.y);
-		shader->setUniformArray("uMask", mask.data(), std::size_t(size.x * size.y));
+		shader->setUniform("uCenter", center);
+		shader->setUniform("uRadius", radius);
+		shader->setUniform("uSquare", square);
 		shader->setUniform("uColor", sf::Glsl::Vec4(color));
-		shader->setUniform("uGridWidth", 1.f);
+		shader->setUniform("uLineWidth", 1.5f);
 
 		// Same geometry as the terrain, drawn slightly in front of it; models still cover it.
 		glEnable(GL_DEPTH_TEST);
@@ -495,9 +696,9 @@ namespace MapEditor {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		sf::Shader::bind(Anubis::shaders_manager->tileOverlay3D_shader.get());
+		sf::Shader::bind(shader.get());
 
-		for (auto& chunk : _visibleChunks)
+		for (auto& chunk : getChunksInRect(center, radius))
 			chunk->draw();
 
 		Anubis::GL::bindVertexArray(0);
@@ -513,8 +714,17 @@ namespace MapEditor {
 	}
 
 	float Map::getHeight(float x, float z) {
-		// TO-DO - terrain heights: interpolate tile corner heights here.
-		return 0.f;
+
+		if (_chunks.empty())
+			return 0.f;
+
+		float size = _chunks[0]->getSize();
+		std::shared_ptr<Chunk> chunk = getChunkByCoords((int)std::floor(x / size), (int)std::floor(z / size));
+
+		if (!chunk)
+			return 0.f;
+
+		return chunk->getHeight(x, z);
 	}
 
 	void Map::cursorHover() {
@@ -584,7 +794,16 @@ namespace MapEditor {
 		std::shared_ptr<sf::Shader> shader = Anubis::shaders_manager->terrain3D_shader;
 		shader->setUniform("uView", sf::Glsl::Mat4(viewMatrix));
 		shader->setUniform("uProjection", sf::Glsl::Mat4(projectionMatrix));
-		shader->setUniform("uTexture", 0);
+		shader->setUniform("uTerrainTexture", 0);
+		shader->setUniform("uSplat0", 2);
+		shader->setUniform("uSplat1", 3);
+		// tileset.png = terrains in one column, every terrain is a square (64 x 64, 256 x 256 ...)
+		sf::Vector2u tilesetSize = _texture->_texture->getSize();
+		shader->setUniform("uTerrainCount", (int)(tilesetSize.y / tilesetSize.x));
+		shader->setUniform("uTextureWorldSize", (float)tilesetSize.x);	// 1 texel = 1 world unit
+		shader->setUniform("uSplatWorldSize", float(Tile::tileSize * Chunk::tilesCols) / float(Chunk::weightsCols - 1) * float(Chunk::weightsCols));
+		shader->setUniform("uTileSize", float(Tile::tileSize));
+		shader->setUniform("uSunDirection", map_editor->_scene->_sunDirection);
 		shader->setUniform("resolution", sf::Vector2f(windowSize));
 		shader->setUniform("time", Anubis::currentTime.asSeconds());
 		shader->setUniform("startPos", sf::Vector2f(0.f, 0.f));
@@ -617,6 +836,10 @@ namespace MapEditor {
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		Anubis::GL::activeTexture(0x84C1); // GL_TEXTURE1
+		glBindTexture(GL_TEXTURE_2D, 0);
+		Anubis::GL::activeTexture(0x84C2); // GL_TEXTURE2
+		glBindTexture(GL_TEXTURE_2D, 0);
+		Anubis::GL::activeTexture(0x84C3); // GL_TEXTURE3
 		glBindTexture(GL_TEXTURE_2D, 0);
 		Anubis::GL::activeTexture(0x84C0); // GL_TEXTURE0
 
@@ -658,176 +881,4 @@ namespace MapEditor {
 		_ghostChunk->draw();
 	}
 
-	int getNeighbourTypeLocal(
-		int nx, int ny,
-		const std::shared_ptr<Chunk>& chunk,
-		const std::shared_ptr<Chunk>& leftTopChunk,
-		const std::shared_ptr<Chunk>& topChunk,
-		const std::shared_ptr<Chunk>& rightTopChunk,
-		const std::shared_ptr<Chunk>& leftChunk,
-		const std::shared_ptr<Chunk>& rightChunk,
-		const std::shared_ptr<Chunk>& leftBottomChunk,
-		const std::shared_ptr<Chunk>& bottomChunk,
-		const std::shared_ptr<Chunk>& rightBottomChunk
-	)
-	{
-		constexpr int EMPTY_TYPE = -1;
-
-		if (nx >= 0 && nx < chunk->tilesCols && ny >= 0 && ny < chunk->tilesRows) {
-			return chunk->_tiles[ny * chunk->tilesCols + nx]->_type;
-		}
-
-		const int dx = (nx < 0) ? -1 : (nx >= chunk->tilesCols ? 1 : 0);
-		const int dy = (ny < 0) ? -1 : (ny >= chunk->tilesRows ? 1 : 0);
-
-		std::shared_ptr<Chunk> c = nullptr;
-
-		if (dx == -1 && dy == -1) c = leftTopChunk;
-		else if (dx == 0 && dy == -1) c = topChunk;
-		else if (dx == 1 && dy == -1) c = rightTopChunk;
-
-		else if (dx == -1 && dy == 0) c = leftChunk;
-		else if (dx == 1 && dy == 0) c = rightChunk;
-
-		else if (dx == -1 && dy == 1) c = leftBottomChunk;
-		else if (dx == 0 && dy == 1) c = bottomChunk;
-		else if (dx == 1 && dy == 1) c = rightBottomChunk;
-
-		if (!c) return EMPTY_TYPE;
-
-		int lx = nx;
-		int ly = ny;
-
-		if (lx < 0) lx += chunk->tilesCols;
-		else if (lx >= chunk->tilesCols) lx -= chunk->tilesCols;
-
-		if (ly < 0) ly += chunk->tilesRows;
-		else if (ly >= chunk->tilesRows) ly -= chunk->tilesRows;
-		return c->_tiles[ly * chunk->tilesCols + lx]->_type;
-	}
-
-	int getTileType(
-		int type,
-		int x, int y,
-		std::shared_ptr<Chunk> chunk,
-		std::shared_ptr<Chunk> leftTopChunk,
-		std::shared_ptr<Chunk> topChunk,
-		std::shared_ptr<Chunk> rightTopChunk,
-		std::shared_ptr<Chunk> leftChunk,
-		std::shared_ptr<Chunk> rightChunk,
-		std::shared_ptr<Chunk> leftBottomChunk,
-		std::shared_ptr<Chunk> bottomChunk,
-		std::shared_ptr<Chunk> rightBottomChunk) {
-
-		int tileType = 5; // domyślnie środek
-
-		// Sprawdzanie sąsiadów z uwzględnieniem krawędzi
-		bool hasLeft = areFriends(type, getNeighbourTypeLocal(
-			x - 1, y, chunk,
-			leftTopChunk, topChunk, rightTopChunk,
-			leftChunk, rightChunk,
-			leftBottomChunk, bottomChunk, rightBottomChunk
-		));
-
-		bool hasRight = areFriends(type, getNeighbourTypeLocal(
-			x + 1, y, chunk,
-			leftTopChunk, topChunk, rightTopChunk,
-			leftChunk, rightChunk,
-			leftBottomChunk, bottomChunk, rightBottomChunk
-		));
-
-		bool hasTop = areFriends(type, getNeighbourTypeLocal(
-			x, y - 1, chunk,
-			leftTopChunk, topChunk, rightTopChunk,
-			leftChunk, rightChunk,
-			leftBottomChunk, bottomChunk, rightBottomChunk
-		));
-
-		bool hasBottom = areFriends(type, getNeighbourTypeLocal(
-			x, y + 1, chunk,
-			leftTopChunk, topChunk, rightTopChunk,
-			leftChunk, rightChunk,
-			leftBottomChunk, bottomChunk, rightBottomChunk
-		));
-
-		// Narożniki:
-		bool hasTopLeft = areFriends(type, getNeighbourTypeLocal(
-			x - 1, y - 1, chunk,
-			leftTopChunk, topChunk, rightTopChunk,
-			leftChunk, rightChunk,
-			leftBottomChunk, bottomChunk, rightBottomChunk
-		));
-
-		bool hasTopRight = areFriends(type, getNeighbourTypeLocal(
-			x + 1, y - 1, chunk,
-			leftTopChunk, topChunk, rightTopChunk,
-			leftChunk, rightChunk,
-			leftBottomChunk, bottomChunk, rightBottomChunk
-		));
-
-		bool hasBottomLeft = areFriends(type, getNeighbourTypeLocal(
-			x - 1, y + 1, chunk,
-			leftTopChunk, topChunk, rightTopChunk,
-			leftChunk, rightChunk,
-			leftBottomChunk, bottomChunk, rightBottomChunk
-		));
-
-		bool hasBottomRight = areFriends(type, getNeighbourTypeLocal(
-			x + 1, y + 1, chunk,
-			leftTopChunk, topChunk, rightTopChunk,
-			leftChunk, rightChunk,
-			leftBottomChunk, bottomChunk, rightBottomChunk
-		));
-
-		// Logika dobierania odpowiedniego fragmentu
-		if (!hasTop && !hasLeft) {
-			if (hasRight && hasBottom && !hasBottomRight) {
-				tileType = 13; // wewnętrzny lewo-góra
-			}
-			else {
-				tileType = 1; // standardowy lewo-góra
-			}
-		}
-		else if (!hasTop && !hasRight) {
-			tileType = 3; // prawo-góra
-		}
-		else if (!hasBottom && !hasLeft) {
-			tileType = 7; // lewo-dół
-		}
-		else if (!hasBottom && !hasRight) {
-			tileType = 9; // prawo-dół
-		}
-		else if (!hasTop) {
-			tileType = 2; // góra
-		}
-		else if (!hasLeft) {
-			tileType = 4; // lewo
-		}
-		else if (!hasRight) {
-			tileType = 6; // prawo
-		}
-		else if (!hasBottom) {
-			tileType = 8; // dół
-		}
-		else {
-			// Dla pełnego otoczenia - sprawdź wewnętrzne narożniki
-			if (!hasTopLeft && hasTop && hasLeft) {
-				tileType = 11; // wewnętrzny lewo-góra dla środka
-			}
-			else if (!hasTopRight && hasTop && hasRight) {
-				tileType = 12; // wewnętrzny prawo-góra dla środka
-			}
-			else if (!hasBottomLeft && hasBottom && hasLeft) {
-				tileType = 13; // wewnętrzny lewo-dół dla środka
-			}
-			else if (!hasBottomRight && hasBottom && hasRight) {
-				tileType = 14; // wewnętrzny prawo-dół dla środka
-			}
-			else {
-				tileType = 5; // środek
-			}
-		}
-
-		return tileType;
-	}
 }

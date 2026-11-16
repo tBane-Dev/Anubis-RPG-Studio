@@ -8,6 +8,7 @@
 
 namespace MapEditor {
 	class Chunk;
+	class TerrainSnapshot;
 
 	class CursorOnMap : public Cursors::CursorWithObject {
 	public:
@@ -25,14 +26,12 @@ namespace MapEditor {
 		bool _isOnTerrain = false;			// false when the cursor does not hit the terrain
 
 
-		struct TileValues { int oldValue; int newValue; };
-		struct Vector2iCompare {
-			bool operator()(const sf::Vector2i& a, const sf::Vector2i& b) const {
-				return a.x < b.x || (a.x == b.x && a.y < b.y);
-			}
-		};
-		std::map<sf::Vector2i, MapEditor::CursorOnMap::TileValues, Vector2iCompare> _editedTiles;
-		std::set<std::shared_ptr<Chunk>> _chunksToRebuild;	// terrain brush: rebuilt once per frame in update()
+		// terrain brush (smooth terrain)
+		bool _isPainting = false;			// left button is held with a terrain tool
+		bool _heightsChanged = false;		// meshes of _chunksToRebuild need a rebuild (not only splat textures)
+		float _flattenHeight = 0.f;			// Flatten tool: height under the cursor at the start of the stroke
+		std::vector<std::shared_ptr<TerrainSnapshot>> _strokeSnapshots;	// chunks changed by the stroke (undo)
+		std::set<std::shared_ptr<Chunk>> _chunksToRebuild;	// terrain brush: refreshed once per frame in update()
 
 		CursorOnMap();
 		~CursorOnMap();
@@ -46,6 +45,12 @@ namespace MapEditor {
 
 		sf::Vector2i getCursorTile();
 		sf::Vector2i getPlacementPosition(std::shared_ptr<GameObject> prefab);
+		bool isHeightTool();
+		void handleTerrainEvent(const sf::Event& event);
+		float getBrushRadius();
+		void addToStroke(std::shared_ptr<Chunk> chunk);
+		void paintTerrain();
+		void endTerrainStroke();
 		void drawTerrainBrush();
 		void drawPlacementPreview(std::shared_ptr<GameObject> prefab);
 

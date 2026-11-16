@@ -296,14 +296,6 @@ namespace MapEditor {
 					for (auto& c : map->_chunks) {
 						c->_coords.x += offsetX;
 						c->_coords.y += offsetY;
-
-						for (auto& tile : c->_tiles) {
-							tile->_coords.x += offsetX * Chunk::tilesCols;
-							tile->_coords.y += offsetY * Chunk::tilesRows;
-
-							tile->_position.x = (float)(tile->_coords.x * Tile::tileSize);
-							tile->_position.y = (float)(tile->_coords.y * Tile::tileSize);
-						}
 					}
 				}
 
@@ -315,17 +307,8 @@ namespace MapEditor {
 				map->addChunk(newChunk, 2);
 
 				// refresh all chunks, because existing chunks may have changed position
-				for (auto& c : map->_chunks) {
-					int x = c->_coords.x;
-					int y = c->_coords.y;
-
-					c->generateVertexBuffer(
-						map->getChunkByCoords(x - 1, y - 1), map->getChunkByCoords(x, y - 1), map->getChunkByCoords(x + 1, y - 1),
-						map->getChunkByCoords(x - 1, y), map->getChunkByCoords(x + 1, y),
-						map->getChunkByCoords(x - 1, y + 1), map->getChunkByCoords(x, y + 1), map->getChunkByCoords(x + 1, y + 1)
-					);
-
-				}
+				for (auto& c : map->_chunks)
+					c->generateVertexBuffer();
 
 
 				

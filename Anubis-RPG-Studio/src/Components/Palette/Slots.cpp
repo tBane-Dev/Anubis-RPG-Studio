@@ -16,7 +16,6 @@
 #include "DebugLog.hpp"
 #include "Editors/MapEditor/Editor.hpp"
 #include "Editors/BuildingsEditor/Editor.hpp"
-#include "Tileset.hpp"
 #include "TexturesManager.hpp"
 #include "ShadersManager.hpp"
 #include "Time.hpp"
@@ -174,7 +173,7 @@ void Slots::generateScrollbar() {
 	int scrollbarSliderSize;
 
 	if (_type == ObjectType::Terrain) {
-		rowsTotal = (int)std::ceil(tileset->groups.size() / _slotsCount.x);
+		rowsTotal = (int)std::ceil((float)Components::Palette::terrains.size() / (float)_slotsCount.x);
 		rowsVisible = _slotsCount.y;
 		rowHeight = 160 + _inner_margin;
 		scrollbarValue = 0;
@@ -182,7 +181,7 @@ void Slots::generateScrollbar() {
 		scrollbarSliderSize = _slotsCount.y * (160 + _inner_margin);
 	}
 	else {
-		rowsTotal = (int)std::ceil(tileset->groups.size() / _slotsCount.x);
+		rowsTotal = (int)std::ceil((float)Anubis::prefabs_manager->getPrefabs(_type).size() / (float)_slotsCount.x);
 		rowsVisible = _slotsCount.y;
 		rowHeight = 80 + _inner_margin;
 		scrollbarValue = 0;
@@ -383,8 +382,10 @@ void Slots::selectSlot(int selectedSlotId) {
 
 	_selectedSlotId = selectedSlotId;
 
-	if (_selectedSlotId < 0)
+	if (_selectedSlotId < 0) {
+		_selectedSlot = nullptr;
 		return;
+	}
 
 	int slotHeight;
 	if(_type == ObjectType::Terrain)

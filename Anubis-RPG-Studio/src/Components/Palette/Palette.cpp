@@ -20,9 +20,12 @@ namespace Components {
 
 
 		if (Palette::terrains.empty()) {
-			for (int i = 0; i < tileset->groups.size(); i++){
-				Palette::terrains.emplace_back(std::make_shared<Terrain>(i, sf::IntRect(sf::Vector2i(15 * 64, i * 64), sf::Vector2i(16, 16))));
-			}
+			// 8 terrains of the smooth map: water, beach, meadow, swamp, bog, highland, dry lava, lava
+			// rect = the terrain in tileset.png (one column, every terrain is a square)
+			int size = (int)textures_manager->getTexture(L"assets\\tex\\tileset.png")->_texture->getSize().x;
+
+			for (int i = 0; i < 8; i++)
+				Palette::terrains.emplace_back(std::make_shared<Terrain>(i, sf::IntRect(sf::Vector2i(0, i * size), sf::Vector2i(size, size))));
 		}
 
 		sf::Vector2i size;

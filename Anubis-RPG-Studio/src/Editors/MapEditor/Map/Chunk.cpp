@@ -9,6 +9,8 @@
 #include "DebugLog.hpp"
 #include "3D/OpenGLBuffers.hpp"
 #include <cstdint>
+#include <algorithm>
+#include <cmath>
 
 namespace MapEditor {
 
@@ -26,7 +28,7 @@ namespace MapEditor {
 		_coordsText = std::make_unique<sf::Text>(basicFont, text, 24);
 		_coordsText->setFillColor(basic_text_color);
 
-		
+		fill(2, 0.f);
 	}
 
 	Chunk::~Chunk() {
@@ -40,121 +42,191 @@ namespace MapEditor {
 		return _coords.x < other._coords.x;
 	}
 
-	std::shared_ptr<Tile> Chunk::getTileByTileGlobalCoords(int x, int y) {
-
-		int xx = x - _coords.x * tilesCols;
-		int yy = y - _coords.y * tilesRows;
-
-		if (xx < 0 || yy < 0 || xx >= tilesCols || yy >= tilesRows)
-			return nullptr;
-
-		return _tiles[yy * Chunk::tilesCols + xx];
+	float Chunk::getSize() {
+		return float(tilesCols * Tile::tileSize);
 	}
 
-	std::shared_ptr<Tile> Chunk::getTileByGlobalPosition() {
+	float Chunk::getHeightStep() {
+		return getSize() / float(heightsCols - 1);
+	}
 
-		sf::IntRect rect;
-		rect.position.x = _coords.x * tilesCols * Tile::tileSize;
-		rect.position.y = _coords.y * tilesRows * Tile::tileSize;
-		rect.size.x = tilesCols * Tile::tileSize;
-		rect.size.y = tilesRows * Tile::tileSize;
+	float Chunk::getWeightStep() {
+		return getSize() / float(weightsCols - 1);
+	}
 
-		if (rect.contains(MapEditor::editor->_cursor_on_map->_position)) {
-			int x = MapEditor::editor->_cursor_on_map->_position.x / Tile::tileSize;
-			int y = MapEditor::editor->_cursor_on_map->_position.y / Tile::tileSize;
-			return getTileByTileGlobalCoords(x, y);
+	sf::Vector2f Chunk::getWorldPosition() {
+		return sf::Vector2f(float(_coords.x) * getSize(), float(_coords.y) * getSize());
+	}
+
+	void Chunk::fill(int terrain, float height) {
+
+		_heights.assign(heightsCols * heightsCols, height);
+		_weights.assign(weightsCols * weightsCols * terrainsCount, 0);
+
+		terrain = std::clamp(terrain, 0, terrainsCount - 1);
+
+		for (int i = 0; i < weightsCols * weightsCols; i++)
+			_weights[i * terrainsCount + terrain] = 255;
+	}
+
+	// weights in any scale - they are normalized to the sum 255
+	void Chunk::setWeights(int point, std::array<float, 8> weights) {
+
+		float sum = 0.f;
+		int biggest = 0;
+
+		for (int i = 0; i < terrainsCount; i++) {
+			weights[i] = std::max(weights[i], 0.f);
+			sum += weights[i];
+
+			if (weights[i] > weights[biggest])
+				biggest = i;
 		}
 
-		return nullptr;
+		if (sum <= 0.f) {
+			weights.fill(0.f);
+			weights[0] = 1.f;
+			sum = 1.f;
+		}
+
+		int total = 0;
+
+		for (int i = 0; i < terrainsCount; i++) {
+			int value = (int)(weights[i] / sum * 255.f + 0.5f);
+			_weights[point * terrainsCount + i] = (std::uint8_t)value;
+			total += value;
+		}
+
+		// the rounding rest goes to the biggest terrain
+		_weights[point * terrainsCount + biggest] = (std::uint8_t)(int(_weights[point * terrainsCount + biggest]) + 255 - total);
 	}
 
-	void Chunk::generateVertexBuffer(
-		std::shared_ptr<Chunk> leftTopChunk,
-		std::shared_ptr<Chunk> topChunk,
-		std::shared_ptr<Chunk> rightTopChunk,
-		std::shared_ptr<Chunk> leftChunk,
-		std::shared_ptr<Chunk> rightChunk,
-		std::shared_ptr<Chunk> leftBottomChunk,
-		std::shared_ptr<Chunk> bottomChunk,
-		std::shared_ptr<Chunk> rightBottomChunk
-	) {
+	// height of a point of the grid, points outside this chunk are taken from the neighbours
+	float Chunk::getHeightPoint(int x, int y) {
 
-		if (!tileset || !MapEditor::editor || !MapEditor::editor->_map)
+		if (x >= 0 && y >= 0 && x < heightsCols && y < heightsCols)
+			return _heights[y * heightsCols + x];
+
+		sf::Vector2f position = getWorldPosition();
+		float step = getHeightStep();
+
+		return MapEditor::editor->_map->getHeight(position.x + float(x) * step, position.y + float(y) * step);
+	}
+
+	// height on the surface, the same triangles as in generateVertexBuffer()
+	float Chunk::getHeight(float x, float z) {
+
+		sf::Vector2f position = getWorldPosition();
+		float step = getHeightStep();
+
+		float fx = std::clamp((x - position.x) / step, 0.f, float(heightsCols - 1));
+		float fz = std::clamp((z - position.y) / step, 0.f, float(heightsCols - 1));
+
+		int x0 = std::min((int)fx, heightsCols - 2);
+		int z0 = std::min((int)fz, heightsCols - 2);
+
+		float tx = fx - float(x0);
+		float tz = fz - float(z0);
+
+		float leftTop = _heights[z0 * heightsCols + x0];
+		float rightTop = _heights[z0 * heightsCols + x0 + 1];
+		float leftBottom = _heights[(z0 + 1) * heightsCols + x0];
+		float rightBottom = _heights[(z0 + 1) * heightsCols + x0 + 1];
+
+		if (tz > tx)
+			return leftTop + (rightBottom - leftBottom) * tx + (leftBottom - leftTop) * tz;
+
+		return leftTop + (rightTop - leftTop) * tx + (rightBottom - rightTop) * tz;
+	}
+
+	void Chunk::updateSplatTextures() {
+
+		if (_weights.size() != weightsCols * weightsCols * terrainsCount)
 			return;
 
-		auto texture = MapEditor::editor->_map->_texture;
+		std::vector<std::vector<std::uint8_t>> pixels(2, std::vector<std::uint8_t>(weightsCols * weightsCols * 4, 0));
 
-		if (!texture || !texture->_texture)
+		for (int i = 0; i < weightsCols * weightsCols; i++) {
+			for (int t = 0; t < terrainsCount; t++)
+				pixels[t / 4][i * 4 + t % 4] = _weights[i * terrainsCount + t];
+		}
+
+		if (_splatTextures.size() != 2) {
+			_splatTextures.clear();
+
+			for (int i = 0; i < 2; i++) {
+				std::shared_ptr<sf::Texture> splatTexture = std::make_shared<sf::Texture>();
+
+				if (!splatTexture->resize(sf::Vector2u((unsigned int)weightsCols, (unsigned int)weightsCols))) {
+					DebugError(L"Cannot create a splat texture");
+					_splatTextures.clear();
+					return;
+				}
+
+				splatTexture->setSmooth(true);	// linear filtering = smooth weights between the points
+				_splatTextures.push_back(splatTexture);
+			}
+		}
+
+		for (int i = 0; i < 2; i++)
+			_splatTextures[i]->update(pixels[i].data());
+	}
+
+	void Chunk::generateVertexBuffer() {
+
+		if (!MapEditor::editor || !MapEditor::editor->_map)
 			return;
 
-		sf::Vector2u textureSize = texture->_texture->getSize();
-
-		if (textureSize.x == 0 || textureSize.y == 0)
-			return;
-
-		if (_tiles.size() != tilesCols * tilesRows) {
-			DebugError(L"Cannot generate an incomplete chunk");
+		if (_heights.size() != heightsCols * heightsCols) {
+			DebugError(L"Cannot generate a chunk without heights");
 			return;
 		}
 
 		std::shared_ptr<Anubis::Mesh3D> mesh = std::make_shared<Anubis::Mesh3D>();
-		mesh->setTexture(texture);
 
 		std::vector<Anubis::Vertex3D> vertices;
 		std::vector<std::uint32_t> indices;
-		vertices.reserve(tilesCols * tilesRows * 4);
-		indices.reserve(tilesCols * tilesRows * 6);
+		vertices.reserve(heightsCols * heightsCols);
+		indices.reserve((heightsCols - 1) * (heightsCols - 1) * 6);
 
-		std::shared_ptr<Chunk> chunk = shared_from_this();
+		sf::Vector2f position = getWorldPosition();
+		float step = getHeightStep();
+		float weightStep = getWeightStep();
 
-		for (int y = 0; y < tilesRows; y++) {
-			for (int x = 0; x < tilesCols; x++) {
+		for (int y = 0; y < heightsCols; y++) {
+			for (int x = 0; x < heightsCols; x++) {
 
-				int tx = _coords.x * tilesCols + x;
-				int ty = _coords.y * tilesRows + y;
+				float xx = position.x + float(x) * step;
+				float zz = position.y + float(y) * step;
+				float yy = _heights[y * heightsCols + x];
 
-				float xx = float(tx * Tile::tileSize);
-				float zz = float(ty * Tile::tileSize);
+				// normal from the neighbour heights (also from the neighbour chunks)
+				float nx = getHeightPoint(x - 1, y) - getHeightPoint(x + 1, y);
+				float nz = getHeightPoint(x, y - 1) - getHeightPoint(x, y + 1);
+				float ny = 2.f * step;
+				float length = std::sqrt(nx * nx + ny * ny + nz * nz);
 
-				std::shared_ptr<Tile> t = getTileByTileGlobalCoords(tx, ty);
+				// texcoord = position in the splat texture (texel centers are the weight points)
+				float u = (float(x) * step / weightStep + 0.5f) / float(weightsCols);
+				float v = (float(y) * step / weightStep + 0.5f) / float(weightsCols);
 
-				if (!t || t->_type < 0 || t->_type >= int(tileset->groups.size()) || !tileset->groups[t->_type]) {
-					DebugError(L"Invalid tile in chunk");
-					return;
-				}
+				vertices.emplace_back(xx, yy, zz, nx / length, ny / length, nz / length, u, v);
+			}
+		}
 
-				int tileType = getTileType(
-					t->_type, x, y, chunk,
-					leftTopChunk, topChunk, rightTopChunk,
-					leftChunk, rightChunk,
-					leftBottomChunk, bottomChunk, rightBottomChunk
-				);
+		for (int y = 0; y < heightsCols - 1; y++) {
+			for (int x = 0; x < heightsCols - 1; x++) {
 
-				Tileset::Tile tile = tileset->groups[t->_type]->tiles[tileType];
-
-				// Positive remainder also keeps the pattern correct in negative chunks.
-				int u = tile.x * Tile::tileSize + (tx * Tile::tileSize % 64 + 64) % 64;
-				int v = tile.y * Tile::tileSize + (ty * Tile::tileSize % 64 + 64) % 64;
-
-				float left = float(u + 1) / float(textureSize.x);
-				float top = float(v + 1) / float(textureSize.y);
-				float right = float(u + Tile::tileSize - 1) / float(textureSize.x);
-				float bottom = float(v + Tile::tileSize - 1) / float(textureSize.y);
-
-				std::uint32_t index = (std::uint32_t)vertices.size();
-
-				vertices.emplace_back(xx,                  0.f, zz,                  0.f, 1.f, 0.f, left,  top);
-				vertices.emplace_back(xx,                  0.f, zz + Tile::tileSize, 0.f, 1.f, 0.f, left,  bottom);
-				vertices.emplace_back(xx + Tile::tileSize, 0.f, zz + Tile::tileSize, 0.f, 1.f, 0.f, right, bottom);
-				vertices.emplace_back(xx + Tile::tileSize, 0.f, zz,                  0.f, 1.f, 0.f, right, top);
+				std::uint32_t index = (std::uint32_t)(y * heightsCols + x);
+				std::uint32_t below = index + (std::uint32_t)heightsCols;
 
 				indices.push_back(index);
+				indices.push_back(below);
+				indices.push_back(below + 1);
+
+				indices.push_back(index);
+				indices.push_back(below + 1);
 				indices.push_back(index + 1);
-				indices.push_back(index + 2);
-
-				indices.push_back(index);
-				indices.push_back(index + 2);
-				indices.push_back(index + 3);
 			}
 		}
 
@@ -273,7 +345,16 @@ namespace MapEditor {
 		if (geometry._vertexArray == 0 || geometry._indexCount == 0)
 			return;
 
-		// Map::draw() binds the terrain shader and tileset once for all chunks.
+		// Map::draw() binds the terrain shader and the terrain atlas once for all chunks.
+		// Splat textures are different for every chunk: units 2 and 3.
+		if (_splatTextures.size() == 2) {
+			Anubis::GL::activeTexture(0x84C2); // GL_TEXTURE2
+			glBindTexture(GL_TEXTURE_2D, _splatTextures[0]->getNativeHandle());
+			Anubis::GL::activeTexture(0x84C3); // GL_TEXTURE3
+			glBindTexture(GL_TEXTURE_2D, _splatTextures[1]->getNativeHandle());
+			Anubis::GL::activeTexture(0x84C0); // GL_TEXTURE0
+		}
+
 		Anubis::GL::bindVertexArray(geometry._vertexArray);
 		glDrawElements(GL_TRIANGLES, geometry._indexCount, GL_UNSIGNED_INT, nullptr);
 	}

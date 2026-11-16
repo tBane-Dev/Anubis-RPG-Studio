@@ -141,6 +141,38 @@ namespace MapEditor {
 				[this, t]() { MapEditor::editor->_palette->_brushSize = std::clamp(MapEditor::editor->_palette->_brushSize + 1, MapEditor::editor->_palette->_minBrushSize, MapEditor::editor->_palette->_maxBrushSize); }
 			);
 
+			t->addTool(
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_hover.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_press.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\raise.png"),
+				[this, t]() { t->setTool(t->_tools[5], ToolTerrainType::Raise); }
+			);
+
+			t->addTool(
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_hover.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_press.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\lower.png"),
+				[this, t]() { t->setTool(t->_tools[6], ToolTerrainType::Lower); }
+			);
+
+			t->addTool(
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_hover.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_press.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\smooth.png"),
+				[this, t]() { t->setTool(t->_tools[7], ToolTerrainType::Smooth); }
+			);
+
+			t->addTool(
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_hover.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_press.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\flatten.png"),
+				[this, t]() { t->setTool(t->_tools[8], ToolTerrainType::Flatten); }
+			);
+
 			t->setTool(t->_tools[0], ToolTerrainType::None);
 		}
 	}
