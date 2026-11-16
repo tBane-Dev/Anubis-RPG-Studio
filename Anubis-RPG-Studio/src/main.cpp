@@ -241,7 +241,7 @@ int main() {
     Anubis::cursor->setScene(MapEditor::editor->_scene);
 
     // load the test-map
-    const std::filesystem::path path = L"..\\test-map.anubis";
+    const std::filesystem::path path = L"world.anubis";
     if (std::filesystem::exists(path)) {
         try {
             std::ifstream file(path, std::ios::binary);

@@ -48,7 +48,6 @@ namespace ModelsEditor {
 				std::filesystem::path path(pathFile);
 				ModelsEditor::editor->_model_panel->loadModel(model);
 				ModelsEditor::editor->_name_panel->_name->setText(path.stem().wstring());
-				ModelsEditor::editor->_list_panel->selectItem(-1);
 				ModelsEditor::editor->_actions_panel->setButtonsActivity();
 				ModelsEditor::editor->_actions_panel->setTooltips();
 				ModelsEditor::editor->_preview_panel->loadModel(model);
