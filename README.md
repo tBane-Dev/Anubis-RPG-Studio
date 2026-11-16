@@ -1,4 +1,4 @@
-# Anubis-RPG-Studio v0.01
+# Anubis-RPG-Studio v0.03
 
 ## Contents
 - [Description](#description)
