@@ -235,6 +235,8 @@ int main() {
     Anubis::cursor = std::make_shared<Anubis::Cursor>();
     Anubis::cursor->setScene(MapEditor::editor->_scene);
 
+    MapEditor::editor->setVisibleChunks();
+
     // load the test-map
     const std::filesystem::path path = L"world.anubis";
     if (std::filesystem::exists(path)) {
@@ -253,6 +255,8 @@ int main() {
                 MapEditor::editor->_game_objects->loadFromProject(file, loader);
                 
                 loader->end();
+
+                MapEditor::editor->setVisibleChunks();
             }
 
             
