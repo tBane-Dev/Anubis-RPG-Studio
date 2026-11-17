@@ -8,7 +8,6 @@ namespace Anubis {
 		std::shared_ptr<sf::Shader> terrain2D_shader;
 		std::shared_ptr<sf::Shader> ghost_chunk_shader;
 		std::shared_ptr<sf::Shader> grid_shader;
-		std::shared_ptr<sf::Shader> grid2_shader;
 		std::shared_ptr<sf::Shader> checkerboard_shader;
 		std::shared_ptr<sf::Shader> brush3D_shader;
 

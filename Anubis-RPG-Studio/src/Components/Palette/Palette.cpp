@@ -7,10 +7,7 @@
 #include "Editors/MapEditor/Map/CursorOnMap.hpp"
 #include "DebugLog.hpp"
 #include "Editors/BuildingsEditor/Editor.hpp"
-#include "Wallset.hpp"
 #include <queue>
-
-
 
 namespace Components {
 

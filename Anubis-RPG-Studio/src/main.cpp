@@ -17,7 +17,6 @@
 #include "TexturesManager.hpp"
 #include "ModelsManager.hpp"
 #include "ShadersManager.hpp"
-#include "Wallset.hpp"
 #include "PrefabsManager.hpp"
 #include "Cursor.hpp"
 #include "WindowsManager.hpp"
@@ -208,8 +207,6 @@ int main() {
 
     Main::windows_manager = std::make_shared<Main::WindowsManager>();
     Main::editor_manager = std::make_shared<Main::EditorsManager>();
-
-	wallset = std::make_shared<Wallset>();
 
     Anubis::renderIntro();
 
