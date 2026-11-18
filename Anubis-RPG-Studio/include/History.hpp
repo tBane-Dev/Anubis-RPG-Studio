@@ -5,6 +5,7 @@
 #include "Editors/MapEditor/Editor.hpp"
 #include "Editors/MapEditor/Map/CursorOnMap.hpp"
 #include "Editors/MapEditor/Map/Chunk.hpp"
+#include "Editors/MapEditor/Map/Water.hpp"
 
 class Step : public std::enable_shared_from_this<Step> {
 public:
@@ -20,6 +21,22 @@ public:
 
 	EditTerrain(std::vector<std::shared_ptr<MapEditor::TerrainSnapshot>> snapshots);
 	~EditTerrain();
+	virtual void undo();
+	virtual void redo();
+};
+
+// Any change of a water: Fill, brush, eraser, level, add, remove (exists = false when the water is not on the map).
+class EditWater : public Step {
+public:
+	std::shared_ptr<MapEditor::Water> _water;
+	MapEditor::WaterState _oldState;
+	MapEditor::WaterState _newState;
+	bool _oldExists;
+	bool _newExists;
+
+	EditWater(std::shared_ptr<MapEditor::Water> water, MapEditor::WaterState oldState, bool oldExists, MapEditor::WaterState newState, bool newExists);
+	~EditWater();
+	void apply(MapEditor::WaterState state, bool exists);
 	virtual void undo();
 	virtual void redo();
 };

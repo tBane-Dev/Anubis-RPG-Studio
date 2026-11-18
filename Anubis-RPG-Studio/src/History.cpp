@@ -105,6 +105,37 @@ void RemoveGameObjectsOnMap::redo() {
     }
 }
 
+EditWater::EditWater(std::shared_ptr<MapEditor::Water> water, MapEditor::WaterState oldState, bool oldExists, MapEditor::WaterState newState, bool newExists) {
+    _water = water;
+    _oldState = oldState;
+    _oldExists = oldExists;
+    _newState = newState;
+    _newExists = newExists;
+}
+
+EditWater::~EditWater() {
+
+}
+
+void EditWater::apply(MapEditor::WaterState state, bool exists) {
+
+    if (!exists) {
+        MapEditor::editor->_map->removeWater(_water);
+        return;
+    }
+
+    MapEditor::editor->_map->addWater(_water);
+    _water->setState(state);
+}
+
+void EditWater::undo() {
+    apply(_oldState, _oldExists);
+}
+
+void EditWater::redo() {
+    apply(_newState, _newExists);
+}
+
 MoveGameObjectsOnMap::MoveGameObjectsOnMap(std::vector<std::shared_ptr<SelectedPlacedGameObject>> objects) : Step() {
     _objects = objects;
 

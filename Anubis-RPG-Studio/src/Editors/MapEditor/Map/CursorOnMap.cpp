@@ -847,6 +847,9 @@ namespace MapEditor {
 
 		water->_seeds.push_back(sf::Vector2f(_worldPosition.x, _worldPosition.z));
 		water->fill();
+
+		std::shared_ptr<EditWater> step = std::make_shared<EditWater>(water, oldState, existed, water->getState(), true);
+		history->addStep(step);
 	}
 
 	// Brush / Eraser: start of a stroke
@@ -887,6 +890,11 @@ namespace MapEditor {
 
 		if (!exists)
 			MapEditor::editor->_map->removeWater(_paintWater);
+
+		if (exists || _paintWaterExisted) {
+			std::shared_ptr<EditWater> step = std::make_shared<EditWater>(_paintWater, _paintWaterOldState, _paintWaterExisted, _paintWater->getState(), exists);
+			history->addStep(step);
+		}
 
 		_paintWater = nullptr;
 	}
@@ -956,6 +964,9 @@ namespace MapEditor {
 				continue;
 
 			_dragWaters[i]->fill();
+
+			std::shared_ptr<EditWater> step = std::make_shared<EditWater>(_dragWaters[i], _dragWaterStates[i], true, _dragWaters[i]->getState(), true);
+			history->addStep(step);
 		}
 
 		_dragWaters.clear();

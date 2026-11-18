@@ -155,8 +155,12 @@ namespace MapEditor {
 				}
 				_cursor_on_map->_selectedObjects.clear();
 
-				for (auto& water : removedWaters)
+				for (auto& water : removedWaters) {
+					WaterState state = water->getState();
 					_map->removeWater(water);
+					std::shared_ptr<EditWater> step = std::make_shared<EditWater>(water, state, true, state, false);
+					history->addStep(step);
+				}
 				return;
 			}
 			
