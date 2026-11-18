@@ -20,21 +20,18 @@ uniform float uSplatWorldSize;		// world size of the whole splat texture (65 tex
 uniform float uTileSize;
 uniform vec3 uSunDirection;
 
-uniform vec2 resolution;
-uniform float time;
-uniform vec2 startPos;
 uniform sampler2D uShadowMap;
 uniform float uShadowStrength;	// 0 = no shadows, 1 = black shadows
 uniform int uShadowSamples;		// 1 = one sample, 3 = 3x3
 
-#define WATER 0
+#define SEA_BOTTOM 0
 #define BEACH 1
 #define GRASS 2
 #define SWAMP 3
-#define BOG 4
+#define SWAMP_BOTTOM 4
 #define HIGHLAND 5
 #define MAGMA 6
-#define LAVA 7
+#define LAVA_ROCK 7
 
 // SHADOWS ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -60,182 +57,10 @@ float shadowAmount() {
     return shadow / 9.0;
 }
 
-// OCEAN /////////////////////////////////////////////////////////////////////////////////////////////////////////
-float oceanRandom(float x) {
-    return fract(sin(x) * 10000.);
-}
-
-float oceanNoise(vec2 p) {
-    return oceanRandom(p.x + p.y * 10000.);
-}
-
-vec2 sw(vec2 p) { return vec2(floor(p.x), floor(p.y)); }
-vec2 se(vec2 p) { return vec2(ceil(p.x), floor(p.y)); }
-vec2 nw(vec2 p) { return vec2(floor(p.x), ceil(p.y)); }
-vec2 ne(vec2 p) { return vec2(ceil(p.x), ceil(p.y)); }
-
-float oceanSmoothNoise(vec2 p) {
-    vec2 interp = smoothstep(0., 1., fract(p));
-    float s = mix(oceanNoise(sw(p)), oceanNoise(se(p)), interp.x);
-    float n = mix(oceanNoise(nw(p)), oceanNoise(ne(p)), interp.x);
-    return mix(s, n, interp.y);
-}
-
-float oceanFractalNoise(vec2 p) {
-    float x = 0.;
-    x += oceanSmoothNoise(p      );
-    x += oceanSmoothNoise(p * 2. ) / 2.;
-    x += oceanSmoothNoise(p * 4. ) / 4.;
-    x += oceanSmoothNoise(p * 8. ) / 8.;
-    x += oceanSmoothNoise(p * 16.) / 16.;
-    x /= 1. + 1./2. + 1./4. + 1./8. + 1./16.;
-    return x;
-}
-
-float oceanMovingNoise(vec2 p) {
-    float x = oceanFractalNoise(p + time);
-    float y = oceanFractalNoise(p - time);
-    return oceanFractalNoise(p + vec2(x, y));
-}
-
-float oceanNestedNoise(vec2 p) {
-    float x = oceanMovingNoise(p);
-    float y = oceanMovingNoise(p + 100.);
-    return oceanMovingNoise(p + vec2(x, y));
-}
-
-vec3 oceanColor() {
-    vec2 coords = (worldPos.xy - startPos) / resolution;
-    float pixelationFactor = 0.00390625;
-    vec2 pixelCoord = floor(coords / pixelationFactor) * pixelationFactor;
-    float n = oceanNestedNoise(pixelCoord * 25.60);
-    vec3 color = mix(vec3(.4, .6, 1.), vec3(.05, .1, 1.), n);
-    return color * 0.7;
-}
-
-// BOG //////////////////////////////////////////////////////////////////////////////////////////////////////////
-vec4 permute(vec4 x) {
-    return mod((34.0 * x + 1.0) * x, 289.0);
-}
-
-vec3 permute(vec3 x) {
-    return mod((34.0 * x + 1.0) * x, 289.0);
-}
-
-vec2 cellular2x2x2(vec3 P) {
-	#define K 0.142857142857
-	#define Ko 0.428571428571
-	#define K2 0.020408163265306
-	#define Kz 0.166666666667
-	#define Kzo 0.416666666667
-	#define jitter 0.8
-	vec3 Pi = mod(floor(P), 289.0);
-	vec3 Pf = fract(P);
-	vec4 Pfx = Pf.x + vec4(0.0, -1.0, 0.0, -1.0);
-	vec4 Pfy = Pf.y + vec4(0.0, 0.0, -1.0, -1.0);
-	vec4 p = permute(Pi.x + vec4(0.0, 1.0, 0.0, 1.0));
-	p = permute(p + Pi.y + vec4(0.0, 0.0, 1.0, 1.0));
-	vec4 p1 = permute(p + Pi.z);
-	vec4 p2 = permute(p + Pi.z + vec4(1.0));
-	vec4 ox1 = fract(p1*K) - Ko;
-	vec4 oy1 = mod(floor(p1*K), 7.0)*K - Ko;
-	vec4 oz1 = floor(p1*K2)*Kz - Kzo;
-	vec4 ox2 = fract(p2*K) - Ko;
-	vec4 oy2 = mod(floor(p2*K), 7.0)*K - Ko;
-	vec4 oz2 = floor(p2*K2)*Kz - Kzo;
-	vec4 dx1 = Pfx + jitter*ox1;
-	vec4 dy1 = Pfy + jitter*oy1;
-	vec4 dz1 = Pf.z + jitter*oz1;
-	vec4 dx2 = Pfx + jitter*ox2;
-	vec4 dy2 = Pfy + jitter*oy2;
-	vec4 dz2 = Pf.z - 1.0 + jitter*oz2;
-	vec4 d1 = dx1 * dx1 + dy1 * dy1 + dz1 * dz1;
-	vec4 d2 = dx2 * dx2 + dy2 * dy2 + dz2 * dz2;
-
-	vec4 d = min(d1,d2);
-	d2 = max(d1,d2);
-	d.xy = (d.x < d.y) ? d.xy : d.yx;
-	d.xz = (d.x < d.z) ? d.xz : d.zx;
-	d.xw = (d.x < d.w) ? d.xw : d.wx;
-	d.yzw = min(d.yzw, d2.yzw);
-	d.y = min(d.y, d.z);
-	d.y = min(d.y, d.w);
-	d.y = min(d.y, d2.x);
-	return sqrt(d.xy);
-}
-
-vec3 bogColor() {
-    float pixelSize = 2.0;
-    vec2 pixelatedWorldPos = floor(worldPos / pixelSize) * pixelSize;
-    vec2 st = (2.0 * (pixelatedWorldPos - startPos) - resolution.xy) / resolution.y;
-    st.y = st.y * 2.0;
-    st *= 10.0;
-    vec2 F = cellular2x2x2(vec3(st, time / 8.0));
-    float n = smoothstep(0.4, 0.5, F.x);
-
-    if (n < 0.6)
-        return vec3(0.15, 0.35, 0.15);
-
-    return vec3(0.15 * n, 0.25 * n, 0.15 * n);
-}
-
-// LAVA //////////////////////////////////////////////////////////////////////////////////////////////////////////
+// NOISE ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 vec2 random2(vec2 p) {
     return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453);
-}
-
-float lavaNoise(vec2 st) {
-    vec2 i = floor(st);
-    vec2 f = fract(st);
-
-    vec2 u = f*f*(3.0-2.0*f);
-
-    return mix( mix( dot( random2(i + vec2(0.0,0.0) ), f - vec2(0.0,0.0) ),
-                     dot( random2(i + vec2(1.0,0.0) ), f - vec2(1.0,0.0) ), u.x),
-                mix( dot( random2(i + vec2(0.0,1.0) ), f - vec2(0.0,1.0) ),
-                     dot( random2(i + vec2(1.0,1.0) ), f - vec2(1.0,1.0) ), u.x), u.y);
-}
-
-vec3 lavaFunc(vec3 color, vec2 uv, float detail, float power,
-              float colorMul, float glowRate, bool animate, float noiseAmount)
-{
-    vec3 rockColor = vec3(0.09 + abs(sin(time * .75)) * .03, 0.02, .02);
-    float minDistance = 1.;
-    uv *= detail;
-    uv *= 10.0;
-
-    vec2 cell = floor(uv);
-    vec2 frac = fract(uv);
-
-    for (int i = -1; i <= 1; i++) {
-        for (int j = -1; j <= 1; j++) {
-            vec2 cellDir = vec2(float(i), float(j));
-            vec2 randPoint = random2(cell + cellDir);
-            randPoint += lavaNoise(uv) * noiseAmount;
-            randPoint = animate ? 0.5 + 0.5 * sin(time * .35 + 6.2831 * randPoint) : randPoint;
-            minDistance = min(minDistance, length(cellDir + randPoint - frac));
-        }
-    }
-
-    float powAdd = sin(uv.x * 2. + time * glowRate) + sin(uv.y * 2. + time * glowRate);
-    vec3 outColor = vec3(color * pow(minDistance, power + powAdd * .95) * colorMul);
-    outColor.rgb = mix(rockColor, outColor.rgb, minDistance);
-    return outColor;
-}
-
-vec3 lavaColor() {
-    vec2 uv = (worldPos.xy - startPos) / resolution;
-    uv.x *= resolution.x / resolution.y;
-    float pixelSize = 4.0;
-    vec2 grid = pixelSize / resolution;
-    uv = floor(uv / grid) * grid;
-    vec3 color = vec3(0.);
-    float addPower = -1.5;
-    color += lavaFunc(vec3(1.5, .45, 0.), uv*2, 3.,  2.5+addPower, 1.15, 1.5, false, 1.5);
-    color += lavaFunc(vec3(1.5, 0., 0.), uv*2, 6., 3.+addPower, .4, 1., false, 0.);
-    color += lavaFunc(vec3(1.2, .4, 0.), uv*2, 8., 4.+addPower, .2, 1.9, true, 0.5);
-    return color;
 }
 
 // SPLATTING /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -245,16 +70,6 @@ vec3 atlasColor(int id, vec2 p) {
     vec2 inTexture = fract(p / uTextureWorldSize);
     vec2 uv = vec2(inTexture.x, (float(id) + inTexture.y) / float(uTerrainCount));
     return texture(uTerrainTexture, uv).rgb;
-}
-
-bool isAnimated(int id) {
-    return id == WATER || id == BOG || id == LAVA;
-}
-
-vec3 animatedColor(int id) {
-    if (id == WATER) return oceanColor();
-    if (id == BOG) return bogColor();
-    return lavaColor();
 }
 
 // gradient noise, about -0.7 .. 0.7, average 0
@@ -275,17 +90,17 @@ float borderNoise(vec2 p) {
 // (beach covers water, highland covers grass ...). Texture brightness and noise make the border uneven.
 float terrainHeight(int id, vec3 color, vec2 p) {
     float base[8] = float[8](
-        0.00,	// water
+        0.00,	// sea bottom (sand)
         0.35,	// beach
         0.45,	// grass
         0.30,	// swamp
-        0.10,	// bog
+        0.10,	// swamp bottom
         0.60,	// highland
         0.40,	// magma (dry lava)
-        0.05	// lava
+        0.05	// lava rock
     );
 
-    float detail = isAnimated(id) ? 0.25 : dot(color, vec3(0.299, 0.587, 0.114));
+    float detail = dot(color, vec3(0.299, 0.587, 0.114));
     vec2 q = p / uTileSize + vec2(float(id) * 7.31, float(id) * 3.17);
     float noise = borderNoise(q * 0.6) + borderNoise(q * 1.9) * 0.4;
     return base[id] + detail * 0.5 + noise * 0.9;
@@ -318,8 +133,7 @@ void main()
         if (weights[i] < 0.004)
             continue;
 
-        if (!isAnimated(i))
-            colors[i] = atlasColor(i, pixel);
+        colors[i] = atlasColor(i, pixel);
 
         heights[i] = weights[i] + terrainHeight(i, colors[i], pixel);
         highest = max(highest, heights[i]);
@@ -335,9 +149,6 @@ void main()
 
         if (b <= 0.0)
             continue;
-
-        if (isAnimated(i))
-            colors[i] = animatedColor(i);
 
         color += colors[i] * b;
         total += b;

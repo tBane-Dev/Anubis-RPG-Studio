@@ -804,9 +804,6 @@ namespace MapEditor {
 		shader->setUniform("uSplatWorldSize", float(Tile::tileSize * Chunk::tilesCols) / float(Chunk::weightsCols - 1) * float(Chunk::weightsCols));
 		shader->setUniform("uTileSize", float(Tile::tileSize));
 		shader->setUniform("uSunDirection", map_editor->_scene->_sunDirection);
-		shader->setUniform("resolution", sf::Vector2f(windowSize));
-		shader->setUniform("time", Anubis::currentTime.asSeconds());
-		shader->setUniform("startPos", sf::Vector2f(0.f, 0.f));
 		shader->setUniform("uLightViewProjection", sf::Glsl::Mat4(map_editor->_scene->_lightViewProjection.data()));
 		shader->setUniform("uShadowMap", 1);
 		shader->setUniform("uShadowStrength", 0.45f);
