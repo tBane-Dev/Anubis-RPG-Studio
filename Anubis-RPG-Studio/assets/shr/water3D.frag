@@ -91,8 +91,20 @@ vec4 oceanColor(vec2 p) {
     vec4 deepColor = vec4(0.06, 0.18, 0.50, 0.85);
     vec4 color = mix(deepColor, shallowColor, shore);
 
-    float water = max(foam(shore, p), waves(p) * (1.0 - shore));
-    return clamp(color + water, 0.0, 1.0);
+    float foamValue = foam(shore, p);
+    float waveValue = waves(p) * (1.0 - shore);
+
+    // big slow swells - lighter and darker bands of blue
+    vec4 swell = texture(uNoise, (p + vec2(time * 0.6, time * 0.3)) * 0.008);
+    color.rgb *= 0.85 + 0.3 * swell.z;
+
+    // crests: light blue, only the strongest ones go a bit to white
+    color.rgb += vec3(0.30, 0.50, 0.70) * waveValue * 0.7;
+    color.rgb += vec3(waveValue * waveValue * 0.25);
+
+    // foam on the shore stays white
+    color += vec4(foamValue);
+    return clamp(color, 0.0, 1.0);
 }
 
 // BOG //////////////////////////////////////////////////////////////////////////////////////////////////////////
