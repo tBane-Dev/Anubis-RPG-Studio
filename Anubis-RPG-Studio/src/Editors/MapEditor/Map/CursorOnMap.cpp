@@ -7,6 +7,7 @@
 #include "Editors/MapEditor/Editor.hpp"
 #include "Objects/GameObject.hpp"
 #include "Objects/Terrain.hpp"
+#include "Objects/WaterPrefab.hpp"
 #include "Objects/Monster.hpp"
 #include "Objects/Nature.hpp"
 #include "PrefabsManager.hpp"
@@ -85,7 +86,8 @@ namespace MapEditor {
 			}
 		}
 
-		return nullptr;
+		// no model - maybe a water surface
+		return MapEditor::editor->_map->getWaterUnderCursor(_position);
 	}
 
 	std::vector<std::shared_ptr<PlacedGameObject>> CursorOnMap::getObjectsInSelectionRect() {
@@ -187,6 +189,11 @@ namespace MapEditor {
 		}
 
 		if (_isDragging || _isSelecting) {
+			if (_isDragging && _isDraggingWater) {
+				dragWaters();
+				return;
+			}
+
 			if (_isDragging) {
 
 				_prevPosition = _position;
@@ -195,6 +202,9 @@ namespace MapEditor {
 
 					if (!object) continue;
 					if (!object->_object) continue;
+
+					// waters do not move - only their level (dragWaters)
+					if (object->_object->_type == ObjectType::Water) continue;
 
 					std::shared_ptr<PlacedGameObject> gameObject = object->_object;
 
@@ -404,6 +414,9 @@ namespace MapEditor {
 								_isDragging = true;
 								_prevPosition = _position;
 
+								if (selectedGameObject->_type == ObjectType::Water)
+									startWaterDrag(std::dynamic_pointer_cast<Water>(selectedGameObject));
+
 								for (auto& object : _selectedObjects) {
 									if (!object->_object)
 										continue;
@@ -484,9 +497,18 @@ namespace MapEditor {
 						_prevSelectedObjects.push_back(object);
 				}
 
-				if (_isDragging) {
-					std::shared_ptr<MoveGameObjectsOnMap> step = std::make_shared<MoveGameObjectsOnMap>(_prevSelectedObjects);
-					history->addStep(step);
+				if (_isDragging && _isDraggingWater)
+					endWaterDrag();
+				else if (_isDragging) {
+					// waters are not moved (and must not be added to chunks by undo)
+					std::vector<std::shared_ptr<SelectedPlacedGameObject>> movedObjects;
+					for (auto& object : _prevSelectedObjects)
+						if (object->_object && object->_object->_type != ObjectType::Water) movedObjects.push_back(object);
+
+					if (!movedObjects.empty()) {
+						std::shared_ptr<MoveGameObjectsOnMap> step = std::make_shared<MoveGameObjectsOnMap>(movedObjects);
+						history->addStep(step);
+					}
 				}
 
 
@@ -526,7 +548,7 @@ namespace MapEditor {
 		if (!(Anubis::GUI_manager->Element_pressed == nullptr || Anubis::GUI_manager->Element_pressed == MapEditor::editor->_map))
 			return;
 
-		if (_object.lock()->_type == ObjectType::Terrain) {
+		if (_object.lock()->_type == ObjectType::Terrain || _object.lock()->_type == ObjectType::Water) {
 			handleTerrainEvent(event);
 			return;
 		}
@@ -630,6 +652,16 @@ namespace MapEditor {
 
 		if (const auto* mbp = event.getIf<sf::Event::MouseButtonPressed>(); mbp && mbp->button == sf::Mouse::Button::Left) {
 			if (tools->_toolType != ToolTerrainType::None && Anubis::GUI_manager->Element_hovered == MapEditor::editor->_map && _isOnTerrain) {
+
+				// Fill is one click, no stroke
+				if (tools->_toolType == ToolTerrainType::WaterFill) {
+					useWaterFill();
+					return;
+				}
+
+				if (isWaterTool())
+					startWaterStroke();
+
 				_isPainting = true;
 				_strokeSnapshots.clear();
 				_flattenHeight = _worldPosition.y;
@@ -675,6 +707,12 @@ namespace MapEditor {
 		sf::Vector2f center(_worldPosition.x, _worldPosition.z);
 		float dt = Anubis::deltaTime.asSeconds();
 
+		if (isWaterTool()) {
+			if (_paintWater)
+				_paintWater->paint(center, radius, tools->_toolType == ToolTerrainType::WaterEraser, dt * 4.f);
+			return;
+		}
+
 		std::vector<std::shared_ptr<Chunk>> chunks = mapa->getChunksInRect(center, radius);
 
 		if (chunks.empty())
@@ -707,6 +745,8 @@ namespace MapEditor {
 
 	void CursorOnMap::endTerrainStroke() {
 
+		endWaterStroke();
+
 		if (!_strokeSnapshots.empty()) {
 			for (auto& snapshot : _strokeSnapshots) {
 				snapshot->_newHeights = snapshot->_chunk->_heights;
@@ -731,15 +771,197 @@ namespace MapEditor {
 		if (!tools || tools->_toolType == ToolTerrainType::None)
 			return;
 
+		// Fill is a click - no brush
+		if (tools->_toolType == ToolTerrainType::WaterFill)
+			return;
+
 		bool square = tools->_toolType == ToolTerrainType::Rect;
 
-		// red = terrains, blue = heights
+		// red = terrains, blue = heights, cyan = water brush, white = water eraser
 		sf::Color color(255, 47, 47, 95);
 
 		if (!(tools->_toolType == ToolTerrainType::Circle || tools->_toolType == ToolTerrainType::Rect))
 			color = sf::Color(47, 127, 255, 95);
 
+		if (tools->_toolType == ToolTerrainType::WaterBrush) color = sf::Color(47, 207, 255, 95);
+		if (tools->_toolType == ToolTerrainType::WaterEraser) color = sf::Color(255, 255, 255, 95);
+
 		MapEditor::editor->_map->drawBrushOverlay(sf::Vector2f(_worldPosition.x, _worldPosition.z), getBrushRadius(), square, color);
+	}
+
+	// WATERS ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+	bool CursorOnMap::isWaterTool() {
+
+		std::shared_ptr<ToolsTerrain> tools = std::dynamic_pointer_cast<ToolsTerrain>(MapEditor::editor->_palette->_tools);
+
+		if (!tools)
+			return false;
+
+		return tools->_toolType == ToolTerrainType::WaterFill || tools->_toolType == ToolTerrainType::WaterBrush || tools->_toolType == ToolTerrainType::WaterEraser;
+	}
+
+	// the water under the cursor, or the only selected water - of the kind chosen in the palette
+	std::shared_ptr<Water> CursorOnMap::getWaterToEdit(int kind) {
+
+		std::shared_ptr<Water> water = MapEditor::editor->_map->getWaterUnderCursor(_position);
+
+		if (water && water->_kind == kind)
+			return water;
+
+		std::shared_ptr<Water> selectedWater = nullptr;
+		int selectedWaters = 0;
+
+		for (auto& selected : _selectedObjects) {
+			if (std::shared_ptr<Water> w = std::dynamic_pointer_cast<Water>(selected->_object)) {
+				selectedWater = w;
+				selectedWaters += 1;
+			}
+		}
+
+		if (selectedWaters == 1 && selectedWater->_kind == kind)
+			return selectedWater;
+
+		return nullptr;
+	}
+
+	// Fill: click in a hollow - the water spreads to the shore. A click on an existing water adds a new start point to it.
+	void CursorOnMap::useWaterFill() {
+
+		std::shared_ptr<WaterPrefab> prefab = std::dynamic_pointer_cast<WaterPrefab>(_object.lock());
+
+		if (!prefab)
+			return;
+
+		std::shared_ptr<Map> mapa = MapEditor::editor->_map;
+		std::shared_ptr<Water> water = getWaterToEdit(prefab->_id);
+		bool existed = water != nullptr;
+		WaterState oldState;
+
+		if (water)
+			oldState = water->getState();
+		else {
+			water = std::make_shared<Water>(prefab->_id, _worldPosition.y + _newWaterDepth);
+			mapa->addWater(water);
+		}
+
+		water->_seeds.push_back(sf::Vector2f(_worldPosition.x, _worldPosition.z));
+		water->fill();
+	}
+
+	// Brush / Eraser: start of a stroke
+	void CursorOnMap::startWaterStroke() {
+
+		_paintWater = nullptr;
+
+		std::shared_ptr<ToolsTerrain> tools = std::dynamic_pointer_cast<ToolsTerrain>(MapEditor::editor->_palette->_tools);
+		std::shared_ptr<WaterPrefab> prefab = std::dynamic_pointer_cast<WaterPrefab>(_object.lock());
+
+		if (!tools || !prefab)
+			return;
+
+		_paintWater = getWaterToEdit(prefab->_id);
+		_paintWaterExisted = _paintWater != nullptr;
+
+		if (_paintWater) {
+			_paintWaterOldState = _paintWater->getState();
+			return;
+		}
+
+		// the eraser needs a water
+		if (tools->_toolType == ToolTerrainType::WaterEraser)
+			return;
+
+		_paintWaterOldState = WaterState();
+		_paintWater = std::make_shared<Water>(prefab->_id, _worldPosition.y + _newWaterDepth);
+		MapEditor::editor->_map->addWater(_paintWater);
+	}
+
+	void CursorOnMap::endWaterStroke() {
+
+		if (!_paintWater)
+			return;
+
+		_paintWater->removeEmptyChunks();
+		bool exists = !_paintWater->_chunks.empty();
+
+		if (!exists)
+			MapEditor::editor->_map->removeWater(_paintWater);
+
+		_paintWater = nullptr;
+	}
+
+	// LMB pressed on a selected water: the grabbed point of the surface goes up and down with the cursor
+	void CursorOnMap::startWaterDrag(std::shared_ptr<Water> clickedWater) {
+
+		_isDraggingWater = true;
+		_dragWaters.clear();
+		_dragWaterLevels.clear();
+		_dragWaterStates.clear();
+
+		for (auto& selected : _selectedObjects) {
+			if (std::shared_ptr<Water> water = std::dynamic_pointer_cast<Water>(selected->_object)) {
+				_dragWaters.push_back(water);
+				_dragWaterLevels.push_back(water->_level);
+				_dragWaterStates.push_back(water->getState());
+			}
+		}
+
+		_dragStartMouseY = _position.y;
+		_waterGrab = _worldPosition;
+		_waterDragNormal = sf::Vector3f(0.f, 0.f, 0.f);
+
+		sf::Vector3f origin, dir;
+
+		if (MapEditor::editor->_scene->screenToRay(_position, origin, dir)) {
+
+			sf::Vector3f hit;
+			if (clickedWater && clickedWater->getRayHit(origin, dir, hit))
+				_waterGrab = hit;
+
+			// vertical plane through the grabbed point, turned to the camera
+			float length = std::sqrt(dir.x * dir.x + dir.z * dir.z);
+			if (length > 0.2f)
+				_waterDragNormal = sf::Vector3f(dir.x / length, 0.f, dir.z / length);
+		}
+	}
+
+	void CursorOnMap::dragWaters() {
+
+		float newY = _waterGrab.y + float(_dragStartMouseY - _position.y) * 0.5f;	// camera looks straight down
+		sf::Vector3f origin, dir;
+
+		if (_waterDragNormal != sf::Vector3f(0.f, 0.f, 0.f) && MapEditor::editor->_scene->screenToRay(_position, origin, dir)) {
+			float along = dir.x * _waterDragNormal.x + dir.z * _waterDragNormal.z;
+
+			if (std::abs(along) > 0.0001f) {
+				sf::Vector3f toGrab = _waterGrab - origin;
+				float t = (toGrab.x * _waterDragNormal.x + toGrab.z * _waterDragNormal.z) / along;
+				newY = origin.y + dir.y * t;
+			}
+		}
+
+		float delta = newY - _waterGrab.y;
+
+		for (int i = 0; i < (int)_dragWaters.size(); i++)
+			_dragWaters[i]->_level = _dragWaterLevels[i] + delta;
+	}
+
+	// the new level changes the shape - the water is filled again from its start points
+	void CursorOnMap::endWaterDrag() {
+
+		for (int i = 0; i < (int)_dragWaters.size(); i++) {
+
+			if (_dragWaters[i]->_level == _dragWaterLevels[i])
+				continue;
+
+			_dragWaters[i]->fill();
+		}
+
+		_dragWaters.clear();
+		_dragWaterLevels.clear();
+		_dragWaterStates.clear();
+		_isDraggingWater = false;
 	}
 
 	void CursorOnMap::drawPlacementPreview(std::shared_ptr<GameObject> prefab) {
@@ -832,7 +1054,7 @@ namespace MapEditor {
 		if (_object.expired() || !_isOnTerrain)
 			return;
 
-		if (_object.lock()->_type == ObjectType::Terrain) {
+		if (_object.lock()->_type == ObjectType::Terrain || _object.lock()->_type == ObjectType::Water) {
 			drawTerrainBrush();
 			Anubis::render_window->resetGLStates();
 			return;

@@ -3,6 +3,7 @@
 #include "Objects/Object.hpp"
 #include "Cursor.hpp"
 #include "Objects/SelectedPlacedGameObject.hpp"
+#include "Editors/MapEditor/Map/Water.hpp"
 #include <map>
 #include <set>
 
@@ -33,6 +34,19 @@ namespace MapEditor {
 		std::vector<std::shared_ptr<TerrainSnapshot>> _strokeSnapshots;	// chunks changed by the stroke (undo)
 		std::set<std::shared_ptr<Chunk>> _chunksToRebuild;	// terrain brush: refreshed once per frame in update()
 
+		// waters
+		float _newWaterDepth = 4.f;				// a new water starts this much above the clicked terrain
+		std::shared_ptr<Water> _paintWater;		// water changed by the water brush / eraser
+		WaterState _paintWaterOldState;
+		bool _paintWaterExisted = false;
+		bool _isDraggingWater = false;			// LMB on a selected water - its level follows the cursor
+		sf::Vector3f _waterGrab;				// grabbed point of the water surface
+		sf::Vector3f _waterDragNormal;
+		int _dragStartMouseY = 0;
+		std::vector<std::shared_ptr<Water>> _dragWaters;
+		std::vector<float> _dragWaterLevels;
+		std::vector<WaterState> _dragWaterStates;
+
 		CursorOnMap();
 		~CursorOnMap();
 
@@ -52,6 +66,15 @@ namespace MapEditor {
 		void paintTerrain();
 		void endTerrainStroke();
 		void drawTerrainBrush();
+
+		bool isWaterTool();
+		std::shared_ptr<Water> getWaterToEdit(int kind);
+		void useWaterFill();
+		void startWaterStroke();
+		void endWaterStroke();
+		void startWaterDrag(std::shared_ptr<Water> clickedWater);
+		void dragWaters();
+		void endWaterDrag();
 		void drawPlacementPreview(std::shared_ptr<GameObject> prefab);
 
 		std::shared_ptr<PlacedGameObject> getObjectUnderCursor();

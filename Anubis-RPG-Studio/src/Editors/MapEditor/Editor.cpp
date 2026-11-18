@@ -72,7 +72,7 @@ namespace MapEditor {
 		for (const auto& selectedObject : MapEditor::editor->_cursor_on_map->_selectedObjects) {
 
 			auto object = selectedObject->_object;
-			if (!object)
+			if (!object || object->_type == ObjectType::Water)
 				continue;
 
 			if (std::find(visibleObjects.begin(), visibleObjects.end(), object) == visibleObjects.end()) {
@@ -126,21 +126,37 @@ namespace MapEditor {
 			
 			if (!_cursor_on_map->_selectedObjects.empty()) {
 
+				// waters are removed from the map, the other objects from the chunks
+				std::vector<std::shared_ptr<SelectedPlacedGameObject>> removedObjects;
+				std::vector<std::shared_ptr<Water>> removedWaters;
+
 				for(auto& selectedObject : _cursor_on_map->_selectedObjects) {
+					if (std::shared_ptr<Water> water = std::dynamic_pointer_cast<Water>(selectedObject->_object)) {
+						removedWaters.push_back(water);
+						continue;
+					}
+
 					if (auto object = selectedObject->_object) {
 						_game_objects->removeGameObject(object);
 						for(auto& chunk : _map->_chunks) {
 							chunk->removePlacedGameObject(object);
 						}
+						removedObjects.push_back(selectedObject);
 					}
 				}
 
-				std::shared_ptr<RemoveGameObjectsOnMap> step = std::make_shared<RemoveGameObjectsOnMap>(_cursor_on_map->_selectedObjects);
-				history->addStep(step);
+				if (!removedObjects.empty()) {
+					std::shared_ptr<RemoveGameObjectsOnMap> step = std::make_shared<RemoveGameObjectsOnMap>(removedObjects);
+					history->addStep(step);
+				}
+
 				for (auto& selected : _cursor_on_map->_selectedObjects) {
 					selected->_object->_isSelected = false;
 				}
 				_cursor_on_map->_selectedObjects.clear();
+
+				for (auto& water : removedWaters)
+					_map->removeWater(water);
 				return;
 			}
 			

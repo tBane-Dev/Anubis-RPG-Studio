@@ -3,6 +3,7 @@
 #include "GUIManager.hpp"
 #include "Editors/MapEditor/Map/Chunk.hpp"
 #include "Editors/MapEditor/Map/GhostChunk.hpp"
+#include "Editors/MapEditor/Map/Water.hpp"
 #include "Loader.hpp"
 #include <fstream>
 
@@ -16,6 +17,7 @@ namespace MapEditor {
 		std::vector<std::shared_ptr<Chunk>> _chunks;
 		std::vector<std::shared_ptr<Chunk>> _visibleChunks;
 		std::shared_ptr<GhostChunk> _ghostChunk;
+		std::vector<std::shared_ptr<Water>> _waters;
 
 		Map();
 		~Map();
@@ -53,6 +55,12 @@ namespace MapEditor {
 
 		// Terrain height at a map point (0 outside the map).
 		float getHeight(float x, float z);
+
+		// WATERS
+		void addWater(std::shared_ptr<Water> water);
+		void removeWater(std::shared_ptr<Water> water);
+		std::shared_ptr<Water> getWaterUnderCursor(sf::Vector2i pixel);
+		void drawWaters(sf::Glsl::Mat4 view, sf::Glsl::Mat4 projection);
 
 		void saveFromProject(std::ofstream& file);
 		void loadFromProject(std::ifstream& file, std::shared_ptr<Anubis::Loader>& loader);
