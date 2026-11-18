@@ -8,6 +8,7 @@
 #include "Components/Palette/Tools-Terrain.hpp"
 #include "Components/Palette/Slots.hpp"
 #include "Objects/Terrain.hpp"
+#include "Objects/WaterPrefab.hpp"
 
 
 namespace Components {
@@ -15,6 +16,7 @@ namespace Components {
 	public:
 
 		static std::vector<std::shared_ptr<Terrain>> terrains;
+		static std::vector<std::shared_ptr<WaterPrefab>> waters;
 
 		sf::IntRect _rect;
 		std::shared_ptr<Categories> _categories;

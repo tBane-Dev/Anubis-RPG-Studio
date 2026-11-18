@@ -50,9 +50,9 @@ namespace MapEditor {
 			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category.png"),
 			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_hover.png"),
 			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_press.png"),
-			nullptr,
-			ObjectType::None,
-			[this]() { loadAll(ObjectType::None); } // TO-DO - must be - selectCategory
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\waters.png"),
+			ObjectType::Water,
+			[this]() { loadAll(ObjectType::Water); } // TO-DO - must be - selectCategory
 		);
 
 		_slots = std::make_shared<Slots>();
@@ -74,11 +74,12 @@ namespace MapEditor {
 		if (!_categories || !_categories->_selectedCategory) return;
 
 		// same tools are ignored
-		if (_categories->_selectedCategory->_type == ObjectType::Terrain && std::dynamic_pointer_cast<ToolsTerrain>(_tools))
+		if (_categories->_selectedType == _toolsCategory && _tools)
 			return;
 
 		// new tools
 		_tools = nullptr;
+		_toolsCategory = _categories->_selectedType;
 
 		if(_categories->_selectedType == ObjectType::Terrain) {
 			std::shared_ptr<ToolsTerrain> t = std::make_shared<ToolsTerrain>();
@@ -175,6 +176,74 @@ namespace MapEditor {
 
 			t->setTool(t->_tools[0], ToolTerrainType::None);
 		}
+
+		if (_categories->_selectedType == ObjectType::Water) {
+			std::shared_ptr<ToolsTerrain> t = std::make_shared<ToolsTerrain>();
+			_tools = t;
+
+			t->addTool(
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_hover.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_press.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\cursor.png"),
+				[this, t]() {
+					// cursor without a kind of water - waters can be selected and their level changed
+					t->setTool(t->_tools[0], ToolTerrainType::None);
+					_slots->selectSlot(-1);
+					MapEditor::editor->_cursor_on_map->_object = std::weak_ptr<Object>();
+				}
+			);
+
+			t->addTool(
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_hover.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_press.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\fill.png"),
+				[this, t]() { t->setTool(t->_tools[1], ToolTerrainType::WaterFill); selectFirstSlot(); }
+			);
+
+			t->addTool(
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_hover.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_press.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\water_brush.png"),
+				[this, t]() { t->setTool(t->_tools[2], ToolTerrainType::WaterBrush); selectFirstSlot(); }
+			);
+
+			t->addTool(
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_hover.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_press.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\eraser.png"),
+				[this, t]() { t->setTool(t->_tools[3], ToolTerrainType::WaterEraser); selectFirstSlot(); }
+			);
+
+			t->addTool(
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_hover.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_press.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\decrease.png"),
+				[this, t]() { MapEditor::editor->_palette->_brushSize = std::clamp(MapEditor::editor->_palette->_brushSize - 1, MapEditor::editor->_palette->_minBrushSize, MapEditor::editor->_palette->_maxBrushSize); }
+			);
+
+			t->addTool(
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_hover.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_press.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\increase.png"),
+				[this, t]() { MapEditor::editor->_palette->_brushSize = std::clamp(MapEditor::editor->_palette->_brushSize + 1, MapEditor::editor->_palette->_minBrushSize, MapEditor::editor->_palette->_maxBrushSize); }
+			);
+
+			t->setTool(t->_tools[0], ToolTerrainType::None);
+		}
+	}
+
+	// water tools need a kind of water (Ocean / Swamp / Lava)
+	void Palette::selectFirstSlot() {
+		if (_slots->_selectedSlot == nullptr && _slots->_slots.size() > 0) {
+			_slots->selectSlot(0);
+			MapEditor::editor->_cursor_on_map->_object = _slots->_slots[0]->_object;
+		}
 	}
 
 	void Palette::loadAll(ObjectType type) {
@@ -199,6 +268,19 @@ namespace MapEditor {
 						if (tools)
 							tools->setTool(tools->_tools[1], ToolTerrainType::Circle);
 					}
+
+					MapEditor::editor->_cursor_on_map->_object = slot->_object;
+					_slots->selectSlot(selectedSlotId);
+				}
+			);
+		}
+		else if (_categories->_selectedType == ObjectType::Water) {
+
+			_slots->setFunction(
+				[this](std::shared_ptr<Slot> slot, int selectedSlotId) {
+
+					if (auto tools = std::dynamic_pointer_cast<ToolsTerrain>(_tools); tools && tools->_toolType == ToolTerrainType::None)
+						tools->setTool(tools->_tools[1], ToolTerrainType::WaterFill);
 
 					MapEditor::editor->_cursor_on_map->_object = slot->_object;
 					_slots->selectSlot(selectedSlotId);

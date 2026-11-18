@@ -25,6 +25,8 @@ public:
 
 	sf::Vector2i getPosition();
 	sf::Vector2i getSize();
+	bool isBigSlots();
+	std::vector<std::shared_ptr<Object>> getBigObjects();
 	void setPosition(sf::Vector2i position);
 	void createSlots(sf::Vector2i slotsCount);
 	void generateScrollbar();

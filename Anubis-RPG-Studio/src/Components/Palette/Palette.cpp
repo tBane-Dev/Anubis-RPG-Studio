@@ -12,6 +12,7 @@
 namespace Components {
 
 	std::vector<std::shared_ptr<Terrain>> Palette::terrains;
+	std::vector<std::shared_ptr<WaterPrefab>> Palette::waters;
 
 	Palette::Palette() : Element() {
 
@@ -23,6 +24,13 @@ namespace Components {
 
 			for (int i = 0; i < 8; i++)
 				Palette::terrains.emplace_back(std::make_shared<Terrain>(i, sf::IntRect(sf::Vector2i(0, i * size), sf::Vector2i(size, size))));
+		}
+
+		if (Palette::waters.empty()) {
+			// category Waters: preview = rows of assets\tex\palette\waters.png (animated by the terrain2D shader)
+			Palette::waters.emplace_back(std::make_shared<WaterPrefab>(0, L"Ocean", sf::IntRect(sf::Vector2i(0, 0), sf::Vector2i(64, 64))));
+			Palette::waters.emplace_back(std::make_shared<WaterPrefab>(1, L"Swamp", sf::IntRect(sf::Vector2i(0, 64), sf::Vector2i(64, 64))));
+			Palette::waters.emplace_back(std::make_shared<WaterPrefab>(2, L"Lava", sf::IntRect(sf::Vector2i(0, 128), sf::Vector2i(64, 64))));
 		}
 
 		sf::Vector2i size;

@@ -20,6 +20,8 @@ std::wstring ObjectTypeToWString(ObjectType type) {
 			return L"Monster";
 		case ObjectType::Nature:
 			return L"Nature";
+		case ObjectType::Water:
+			return L"Water";
 		default:
 			return L"Unknown";
 	};
@@ -32,6 +34,8 @@ ObjectType WStringToObjectType(std::wstring type) {
 		return ObjectType::Monster;
 	else if (type == L"Nature")
 		return ObjectType::Nature;
+	else if (type == L"Water")
+		return ObjectType::Water;
 	
 	else
 		return ObjectType::None;

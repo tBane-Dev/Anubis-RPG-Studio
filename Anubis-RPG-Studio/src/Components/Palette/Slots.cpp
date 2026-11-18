@@ -54,6 +54,24 @@ sf::Vector2i Slots::getSize() {
 	return _rect.size;
 }
 
+// terrains and waters have big slots (160 x 160)
+bool Slots::isBigSlots() {
+	return _type == ObjectType::Terrain || _type == ObjectType::Water;
+}
+
+std::vector<std::shared_ptr<Object>> Slots::getBigObjects() {
+
+	std::vector<std::shared_ptr<Object>> objects;
+
+	if (_type == ObjectType::Terrain)
+		for (auto& terrain : Components::Palette::terrains) objects.push_back(terrain);
+
+	if (_type == ObjectType::Water)
+		for (auto& water : Components::Palette::waters) objects.push_back(water);
+
+	return objects;
+}
+
 void Slots::setPosition(sf::Vector2i position) {
 
 	_rect.position = position + sf::Vector2i(_main_margin, _main_margin);
@@ -72,7 +90,7 @@ void Slots::setPosition(sf::Vector2i position) {
 	// Slots
 	int slotSize = 80;
 
-	if (_type == ObjectType::Terrain)
+	if (isBigSlots())
 		slotSize = 160;
 
 	int scrollOffset = 0;
@@ -97,6 +115,7 @@ void Slots::createSlots(sf::Vector2i slotsCount) {
 	std::wstring t = L"Palette";
 	switch (_type) {
 	case ObjectType::Terrain: t = L"Terrain"; break;
+	case ObjectType::Water: t = L"Waters"; break;
 	case ObjectType::Nature: t = L"Nature"; break;
 	case ObjectType::Monster: t = L"Monsters"; break;
 	default: t = L"Other"; break;
@@ -111,7 +130,7 @@ void Slots::createSlots(sf::Vector2i slotsCount) {
 	std::shared_ptr<Texture> slotPressTexture;
 	std::shared_ptr<Texture> slotInactiveTexture;
 
-	if(_type == ObjectType::Terrain) {
+	if(isBigSlots()) {
 		_inner_margin = (600 - 2 * _main_margin - 2 * _outer_margin - 32 - 3 * 160) / 4;
 		slotTexture = textures_manager->getTexture(L"assets\\tex\\palette\\slots\\slot_160.png");
 		slotHoverTexture = textures_manager->getTexture(L"assets\\tex\\palette\\slots\\slot_160_hover.png");
@@ -130,7 +149,7 @@ void Slots::createSlots(sf::Vector2i slotsCount) {
 		for (int x = 0; x < (_slotsCount.x); x++) {
 			sf::Vector2i position;
 			
-			if (_type == ObjectType::Terrain) {
+			if (isBigSlots()) {
 				position = sf::Vector2i(_rect.position.x + _outer_margin + x * (160 + _inner_margin), _rect.position.y + _main_margin + _outer_margin + _top_margin + y * (160 + _inner_margin));
 				_slots.emplace_back(std::make_shared<TerrainSlot>(
 					slotTexture,
@@ -168,8 +187,8 @@ void Slots::generateScrollbar() {
 	int scrollbarMaxValue;
 	int scrollbarSliderSize;
 
-	if (_type == ObjectType::Terrain) {
-		rowsTotal = (int)std::ceil((float)Components::Palette::terrains.size() / (float)_slotsCount.x);
+	if (isBigSlots()) {
+		rowsTotal = (int)std::ceil((float)getBigObjects().size() / (float)_slotsCount.x);
 		rowsVisible = _slotsCount.y;
 		rowHeight = 160 + _inner_margin;
 		scrollbarValue = 0;
@@ -186,7 +205,7 @@ void Slots::generateScrollbar() {
 	}
 	
 
-	if (_type == ObjectType::Terrain) {
+	if (isBigSlots()) {
 		_scrollbar = std::make_shared<Scrollbar>(scrollbarPosition.x, scrollbarPosition.y, scrollbarSize.x, scrollbarSize.y, 0, scrollbarMaxValue, scrollbarSliderSize, scrollbarValue);
 		_scrollbar->setScrollArea(std::make_shared<sf::IntRect>(
 			sf::Vector2i(_rect.position.x + _outer_margin, _rect.position.y + _main_margin + _top_margin + _outer_margin),
@@ -208,7 +227,7 @@ void Slots::generateScrollbar() {
 			updateObjects();
 
 			sf::Vector2i position;
-			if (_type == ObjectType::Terrain) {
+			if (isBigSlots()) {
 				position = sf::Vector2i(
 					_rect.position.x + _outer_margin + (i % _slotsCount.x) * (160 + _inner_margin),
 					_rect.position.y + _main_margin + _top_margin + _outer_margin + (i / _slotsCount.x) * (160 + _inner_margin) - (_scrollbar->getValue() % (160 + _inner_margin))
@@ -231,11 +250,13 @@ void Slots::loadObjects() {
 
 	selectSlot(_selectedSlotId);
 
-	if (_type == ObjectType::Terrain) {
+	if (isBigSlots()) {
+
+		std::vector<std::shared_ptr<Object>> bigObjects = getBigObjects();
 
 		for (int i = 0; i < (_slotsCount.x) * (_slotsCount.y + 1); i++) {
-			if (i < Components::Palette::terrains.size()) {
-				_slots[i]->setObject(Components::Palette::terrains[i]);
+			if (i < bigObjects.size()) {
+				_slots[i]->setObject(bigObjects[i]);
 				_slots[i]->setActive(true);
 			}
 			else {
@@ -265,18 +286,20 @@ void Slots::updateObjects() {
 
 	int startIndex;
 	
-	if(_type == ObjectType::Terrain)
+	if(isBigSlots())
 		startIndex = _scrollbar->getValue() / (160 + _inner_margin) * _slotsCount.x;
 	else
 		startIndex = _scrollbar->getValue() / (80 + _inner_margin) * _slotsCount.x;
 
 	selectSlot(_selectedSlotId);
 
-	if (_type == ObjectType::Terrain) {
+	if (isBigSlots()) {
+
+		std::vector<std::shared_ptr<Object>> bigObjects = getBigObjects();
 
 		for (int i = 0; i < (_slotsCount.x) * (_slotsCount.y + 1); i++) {
-			if (i + startIndex < Components::Palette::terrains.size()) {
-				_slots[i]->_object = Components::Palette::terrains[i + startIndex];
+			if (i + startIndex < bigObjects.size()) {
+				_slots[i]->_object = bigObjects[i + startIndex];
 				_slots[i]->setActive(true);
 			}
 			else {
@@ -310,7 +333,7 @@ void Slots::setCategory(ObjectType type) {
 	}
 
 	// +1 because scrollbar takes one slot space
-	if (_type == ObjectType::Terrain) {
+	if (isBigSlots()) {
 		createSlots(sf::Vector2i(3, 3));
 		_rect.size = sf::Vector2i(600 - 2 * _main_margin, _slotsCount.y * (160 + _inner_margin) + 2 * _main_margin + _top_margin + _outer_margin);
 	}
@@ -337,7 +360,7 @@ void Slots::setFunction(std::function<void(std::shared_ptr<Slot> slot, int selec
 
 			if (!slot->_object.expired()) {
 				int slotHeight;
-				if(_type == ObjectType::Terrain)
+				if(isBigSlots())
 					slotHeight = 160 + _inner_margin;
 				else
 					slotHeight = 80 + _inner_margin;
@@ -356,7 +379,7 @@ void Slots::selectSlot(int selectedSlotId) {
 		std::shared_ptr<Texture> slotPressTexture;
 		std::shared_ptr<Texture> slotInactiveTexture;
 
-		if (_type == ObjectType::Terrain) {
+		if (isBigSlots()) {
 			_inner_margin = (600 - 2 * _main_margin - 2 * _outer_margin - 32 - 3 * 160) / 4;
 			slotTexture = textures_manager->getTexture(L"assets\\tex\\palette\\slots\\slot_160.png");
 			slotHoverTexture = textures_manager->getTexture(L"assets\\tex\\palette\\slots\\slot_160_hover.png");
@@ -384,7 +407,7 @@ void Slots::selectSlot(int selectedSlotId) {
 	}
 
 	int slotHeight;
-	if(_type == ObjectType::Terrain)
+	if(isBigSlots())
 		slotHeight = 160 + _inner_margin;
 	else
 		slotHeight = 80 + _inner_margin;
@@ -405,7 +428,7 @@ void Slots::selectSlot(int selectedSlotId) {
 		std::shared_ptr<Texture> slotHoverTexture;
 		std::shared_ptr<Texture> slotPressTexture;
 
-		if (_type == ObjectType::Terrain) {
+		if (isBigSlots()) {
 			_inner_margin = (600 - 2 * _main_margin - 2 * _outer_margin - 32 - 3 * 160) / 4;
 			slotTexture = textures_manager->getTexture(L"assets\\tex\\palette\\slots\\selected_160.png");
 			slotHoverTexture = textures_manager->getTexture(L"assets\\tex\\palette\\slots\\selected_160_hover.png");
@@ -504,7 +527,7 @@ void Slots::draw() {
 	view.setViewport(vp);
 	Anubis::render_window->setView(view);
 
-	if (MapEditor::editor->_palette->_slots->_type == ObjectType::Terrain ) {
+	if (MapEditor::editor->_palette->_slots->isBigSlots() ) {
 		Anubis::shaders_manager->terrain2D_shader->setUniform("resolution", sf::Vector2f(Anubis::render_window->getSize()));
 		Anubis::shaders_manager->terrain2D_shader->setUniform("time", Anubis::currentTime.asSeconds());
 	}

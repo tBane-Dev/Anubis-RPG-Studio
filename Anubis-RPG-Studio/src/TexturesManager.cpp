@@ -63,6 +63,7 @@ void TexturesManager::loadAllTextures() {
     // sets
     texturePaths.push_back(L"assets\\tex\\tileset.png");
     texturePaths.push_back(L"assets\\tex\\noise.png");
+    texturePaths.push_back(L"assets\\tex\\palette\\waters.png");
     texturePaths.push_back(L"assets\\tex\\buildings\\floorset.png");
 	texturePaths.push_back(L"assets\\tex\\buildings\\wallset.png");
 	texturePaths.push_back(L"assets\\tex\\buildings\\roof1.png");
@@ -179,6 +180,7 @@ void TexturesManager::loadAllTextures() {
     texturePaths.push_back(L"assets\\tex\\palette\\categories\\selected_hover.png");
     texturePaths.push_back(L"assets\\tex\\palette\\categories\\selected_press.png");
     texturePaths.push_back(L"assets\\tex\\palette\\categories\\terrain.png");
+    texturePaths.push_back(L"assets\\tex\\palette\\categories\\waters.png");
     texturePaths.push_back(L"assets\\tex\\palette\\categories\\buildings.png");
     texturePaths.push_back(L"assets\\tex\\palette\\categories\\natures.png");
     texturePaths.push_back(L"assets\\tex\\palette\\categories\\monsters.png");
@@ -246,6 +248,9 @@ void TexturesManager::loadAllTextures() {
     texturePaths.push_back(L"assets\\tex\\palette\\tools\\lower.png");
     texturePaths.push_back(L"assets\\tex\\palette\\tools\\smooth.png");
     texturePaths.push_back(L"assets\\tex\\palette\\tools\\flatten.png");
+    texturePaths.push_back(L"assets\\tex\\palette\\tools\\fill.png");
+    texturePaths.push_back(L"assets\\tex\\palette\\tools\\water_brush.png");
+    texturePaths.push_back(L"assets\\tex\\palette\\tools\\eraser.png");
     
     texturePaths.push_back(L"assets\\tex\\palette\\slots\\slot_80.png");
     texturePaths.push_back(L"assets\\tex\\palette\\slots\\slot_80_hover.png");
