@@ -61,6 +61,8 @@ namespace MapEditor {
 		void removeWater(std::shared_ptr<Water> water);
 		std::shared_ptr<Water> getWaterUnderCursor(sf::Vector2i pixel);
 		void drawWaters(sf::Glsl::Mat4 view, sf::Glsl::Mat4 projection);
+		void saveWaters(std::ofstream& file);
+		void loadWaters(std::ifstream& file);
 
 		void saveFromProject(std::ofstream& file);
 		void loadFromProject(std::ifstream& file, std::shared_ptr<Anubis::Loader>& loader);

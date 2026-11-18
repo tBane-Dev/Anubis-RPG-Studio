@@ -216,6 +216,14 @@ namespace MapEditor {
 		for (auto& chunk : toRebuild)
 			chunk->generateVertexBuffer();
 
+		// water meshes keep the terrain height under them (depth of the water)
+		std::vector<sf::Vector2i> coords;
+		for (auto& chunk : toRebuild)
+			coords.push_back(chunk->_coords);
+
+		for (auto& water : _waters)
+			water->updateChunksOf(coords);
+
 		// models stand on the new heights
 		for (auto& chunk : chunks) {
 			for (auto& object : chunk->_gameObjectsOnMap)
@@ -597,6 +605,85 @@ namespace MapEditor {
 
 		glDepthMask(GL_TRUE);
 		glDisable(GL_BLEND);
+	}
+
+	// Waters are at the end of the file - old files simply end before them.
+	void Map::saveWaters(std::ofstream& file) {
+
+		BinaryWriter writer(file);
+		writer.write_int32(0x52544157);	// "WATR"
+		writer.write_int32((int32_t)_waters.size());
+
+		for (auto& water : _waters) {
+			WaterState state = water->getState();
+
+			writer.write_int32(state._kind);
+			writer.write_float(state._level);
+
+			writer.write_int32((int32_t)state._seeds.size());
+			for (auto& seed : state._seeds) {
+				writer.write_float(seed.x);
+				writer.write_float(seed.y);
+			}
+
+			writer.write_int32((int32_t)state._coords.size());
+			for (int i = 0; i < (int)state._coords.size(); i++) {
+				writer.write_Vector2i(state._coords[i]);
+				writer.write_data(state._fill[i]);
+				writer.write_data(state._added[i]);
+				writer.write_data(state._removed[i]);
+			}
+		}
+	}
+
+	void Map::loadWaters(std::ifstream& file) {
+
+		_waters.clear();
+
+		if (file.peek() == std::char_traits<char>::eof()) {
+			file.clear();
+			return;
+		}
+
+		BinaryReader reader(file);
+
+		if (reader.read_int32() != 0x52544157) {
+			DebugError(L"Wrong waters data in the map file");
+			return;
+		}
+
+		int watersCount = reader.read_int32();
+		size_t maskSize = Chunk::weightsCols * Chunk::weightsCols;
+
+		for (int w = 0; w < watersCount; w++) {
+
+			WaterState state;
+			state._kind = reader.read_int32();
+			state._level = reader.read_float();
+
+			int seedsCount = reader.read_int32();
+			for (int s = 0; s < seedsCount; s++) {
+				float x = reader.read_float();
+				float y = reader.read_float();
+				state._seeds.push_back(sf::Vector2f(x, y));
+			}
+
+			int chunksCount = reader.read_int32();
+			for (int c = 0; c < chunksCount; c++) {
+				state._coords.push_back(reader.read_Vector2i());
+				state._fill.push_back(*reader.read_data());
+				state._added.push_back(*reader.read_data());
+				state._removed.push_back(*reader.read_data());
+
+				if (state._fill.back().size() != maskSize) state._fill.back().assign(maskSize, 0);
+				if (state._added.back().size() != maskSize) state._added.back().assign(maskSize, 0);
+				if (state._removed.back().size() != maskSize) state._removed.back().assign(maskSize, 0);
+			}
+
+			std::shared_ptr<Water> water = std::make_shared<Water>(state._kind, state._level);
+			water->setState(state);
+			_waters.push_back(water);
+		}
 	}
 
 	void Map::saveFromProject(std::ofstream& file) {

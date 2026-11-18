@@ -297,6 +297,14 @@ namespace MapEditor {
 						c->_coords.x += offsetX;
 						c->_coords.y += offsetY;
 					}
+
+					for (auto& water : map->_waters) {
+						for (auto& waterChunk : water->_chunks)
+							waterChunk->_coords += sf::Vector2i(offsetX, offsetY);
+
+						for (auto& seed : water->_seeds)
+							seed += sf::Vector2f((float)pixelOffsetX, (float)pixelOffsetY);
+					}
 				}
 
 				std::shared_ptr<Chunk> newChunk = std::make_shared<Chunk>(
@@ -309,6 +317,9 @@ namespace MapEditor {
 				// refresh all chunks, because existing chunks may have changed position
 				for (auto& c : map->_chunks)
 					c->generateVertexBuffer();
+
+				for (auto& water : map->_waters)
+					water->updateAllChunks();
 
 
 				
