@@ -116,7 +116,6 @@ namespace MapEditor {
 						Anubis::prefabs_manager->loadFromProject(file, loader);
 						MapEditor::editor->_map->loadFromProject(file, loader);
 						MapEditor::editor->_game_objects->loadFromProject(file, loader);
-						MapEditor::editor->_map->loadWaters(file);
 						loader->end();
 					}
 					catch (const std::exception& e) {
@@ -151,7 +150,6 @@ namespace MapEditor {
 				Anubis::prefabs_manager->saveFromProject(file);
 				MapEditor::editor->_map->saveFromProject(file);
 				MapEditor::editor->_game_objects->saveFromProject(file);
-				MapEditor::editor->_map->saveWaters(file);
 				file.close();
 
 			};

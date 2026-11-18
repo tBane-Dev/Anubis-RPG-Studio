@@ -22,6 +22,15 @@ namespace MapEditor {
 			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category.png"),
 			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_hover.png"),
 			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_press.png"),
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\waters.png"),
+			ObjectType::Water,
+			[this]() { loadAll(ObjectType::Water); } // TO-DO - must be - selectCategory
+		);
+
+		_categories->addCategory(
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category.png"),
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_hover.png"),
+			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_press.png"),
 			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\buildings.png"),
 			ObjectType::None,
 			[this]() { loadAll(ObjectType::None); } // TO-DO - must be - selectCategory
@@ -46,14 +55,7 @@ namespace MapEditor {
 			[this]() { loadAll(ObjectType::Monster); } // TO-DO - must be - selectCategory
 		);
 
-		_categories->addCategory(
-			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category.png"),
-			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_hover.png"),
-			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\category_press.png"),
-			textures_manager->getTexture(L"assets\\tex\\palette\\categories\\waters.png"),
-			ObjectType::Water,
-			[this]() { loadAll(ObjectType::Water); } // TO-DO - must be - selectCategory
-		);
+		
 
 		_slots = std::make_shared<Slots>();
 

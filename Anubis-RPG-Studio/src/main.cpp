@@ -253,7 +253,6 @@ int main() {
                 Anubis::prefabs_manager->loadFromProject(file, loader);
                 MapEditor::editor->_map->loadFromProject(file, loader);
                 MapEditor::editor->_game_objects->loadFromProject(file, loader);
-                MapEditor::editor->_map->loadWaters(file);
                 
                 loader->end();
 

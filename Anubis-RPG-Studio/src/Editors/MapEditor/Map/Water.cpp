@@ -287,12 +287,13 @@ namespace MapEditor {
 				float added = float(waterChunk->_added[index]);
 				float removed = float(waterChunk->_removed[index]);
 
+				// every frame adds a part of the rest (a = only a few % per frame)
 				if (!erase) {
-					added = std::max(added, a * 255.f);
+					added = added + (255.f - added) * a;
 					removed = removed * (1.f - a);
 				}
 				else {
-					removed = std::max(removed, a * 255.f);
+					removed = removed + (255.f - removed) * a;
 					added = added * (1.f - a);
 				}
 

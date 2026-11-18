@@ -40,7 +40,6 @@ namespace MapEditor {
 		float getBrushFalloff(sf::Vector2f delta, float radius, bool square);
 		void paintTerrain(std::vector<std::shared_ptr<Chunk>> chunks, sf::Vector2f center, float radius, bool square, int terrain, float amount);
 		void changeHeights(std::vector<std::shared_ptr<Chunk>> chunks, sf::Vector2f center, float radius, bool square, ToolTerrainType tool, float amount, float flattenHeight);
-		void convertOldTiles();
 
 		void removeGameObjectsFromChunksByPrefab(std::shared_ptr<GameObject> object);
 
@@ -61,8 +60,6 @@ namespace MapEditor {
 		void removeWater(std::shared_ptr<Water> water);
 		std::shared_ptr<Water> getWaterUnderCursor(sf::Vector2i pixel);
 		void drawWaters(sf::Glsl::Mat4 view, sf::Glsl::Mat4 projection);
-		void saveWaters(std::ofstream& file);
-		void loadWaters(std::ifstream& file);
 
 		void saveFromProject(std::ofstream& file);
 		void loadFromProject(std::ifstream& file, std::shared_ptr<Anubis::Loader>& loader);

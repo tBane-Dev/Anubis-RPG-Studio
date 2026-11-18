@@ -336,68 +336,6 @@ namespace MapEditor {
 			chunks[i]->_heights = newHeights[i];
 	}
 
-	// Old maps keep one terrain per tile - weights are interpolated between the tile centers.
-	void Map::convertOldTiles() {
-
-		std::vector<int> oldTileTerrains = { 0, 1, 2, 3, 3, 4, 5, 6, 7 };	// tileset group -> terrain
-
-		int wc = Chunk::weightsCols;
-
-		for (auto& chunk : _chunks) {
-
-			if (chunk->_oldTiles.size() != Chunk::tilesCols * Chunk::tilesRows)
-				continue;
-
-			sf::Vector2f position = chunk->getWorldPosition();
-			float step = chunk->getWeightStep();
-
-			for (int y = 0; y < wc; y++) {
-				for (int x = 0; x < wc; x++) {
-
-					// position in the "tile centers" space
-					float sx = (position.x + float(x) * step) / float(Tile::tileSize) - 0.5f;
-					float sy = (position.y + float(y) * step) / float(Tile::tileSize) - 0.5f;
-
-					int tx = (int)std::floor(sx);
-					int ty = (int)std::floor(sy);
-					float fx = sx - float(tx);
-					float fy = sy - float(ty);
-
-					std::array<float, 8> weights = {};
-
-					for (int i = 0; i < 4; i++) {
-						int gx = tx + i % 2;
-						int gy = ty + i / 2;
-						float w = (i % 2 == 0 ? 1.f - fx : fx) * (i / 2 == 0 ? 1.f - fy : fy);
-
-						std::shared_ptr<Chunk> c = getChunkByTileGlobalCoords(gx, gy);
-
-						// no chunk there (edge of the map) - the nearest tile of this chunk
-						if (!c || c->_oldTiles.size() != Chunk::tilesCols * Chunk::tilesRows) {
-							c = chunk;
-							gx = std::clamp(gx, chunk->_coords.x * Chunk::tilesCols, chunk->_coords.x * Chunk::tilesCols + Chunk::tilesCols - 1);
-							gy = std::clamp(gy, chunk->_coords.y * Chunk::tilesRows, chunk->_coords.y * Chunk::tilesRows + Chunk::tilesRows - 1);
-						}
-
-						int lx = gx - c->_coords.x * Chunk::tilesCols;
-						int ly = gy - c->_coords.y * Chunk::tilesRows;
-						int type = c->_oldTiles[ly * Chunk::tilesCols + lx];
-
-						if (type < 0 || type >= (int)oldTileTerrains.size())
-							type = 0;
-
-						weights[oldTileTerrains[type]] += w;
-					}
-
-					chunk->setWeights(y * wc + x, weights);
-				}
-			}
-		}
-
-		for (auto& chunk : _chunks)
-			chunk->_oldTiles.clear();
-	}
-
 	void Map::removeGameObjectsFromChunksByPrefab(std::shared_ptr<GameObject> object) {
 
 		for (auto& chunk : _chunks) {
@@ -607,16 +545,25 @@ namespace MapEditor {
 		glDisable(GL_BLEND);
 	}
 
-	// Waters are at the end of the file - old files simply end before them.
-	void Map::saveWaters(std::ofstream& file) {
-
+	void Map::saveFromProject(std::ofstream& file) {
 		BinaryWriter writer(file);
-		writer.write_int32(0x52544157);	// "WATR"
+
+		// chunks
+		for (auto& chunk : _chunks) {
+			writer.write_Vector2i(chunk->_coords);
+
+			for (auto& height : chunk->_heights)
+				writer.write_float(height);
+
+			writer.write_data(chunk->_weights);
+		}
+
+		// waters
 		writer.write_int32((int32_t)_waters.size());
 
 		for (auto& water : _waters) {
 			WaterState state = water->getState();
-
+				
 			writer.write_int32(state._kind);
 			writer.write_float(state._level);
 
@@ -636,76 +583,10 @@ namespace MapEditor {
 		}
 	}
 
-	void Map::loadWaters(std::ifstream& file) {
-
-		_waters.clear();
-
-		if (file.peek() == std::char_traits<char>::eof()) {
-			file.clear();
-			return;
-		}
-
-		BinaryReader reader(file);
-
-		if (reader.read_int32() != 0x52544157) {
-			DebugError(L"Wrong waters data in the map file");
-			return;
-		}
-
-		int watersCount = reader.read_int32();
-		size_t maskSize = Chunk::weightsCols * Chunk::weightsCols;
-
-		for (int w = 0; w < watersCount; w++) {
-
-			WaterState state;
-			state._kind = reader.read_int32();
-			state._level = reader.read_float();
-
-			int seedsCount = reader.read_int32();
-			for (int s = 0; s < seedsCount; s++) {
-				float x = reader.read_float();
-				float y = reader.read_float();
-				state._seeds.push_back(sf::Vector2f(x, y));
-			}
-
-			int chunksCount = reader.read_int32();
-			for (int c = 0; c < chunksCount; c++) {
-				state._coords.push_back(reader.read_Vector2i());
-				state._fill.push_back(*reader.read_data());
-				state._added.push_back(*reader.read_data());
-				state._removed.push_back(*reader.read_data());
-
-				if (state._fill.back().size() != maskSize) state._fill.back().assign(maskSize, 0);
-				if (state._added.back().size() != maskSize) state._added.back().assign(maskSize, 0);
-				if (state._removed.back().size() != maskSize) state._removed.back().assign(maskSize, 0);
-			}
-
-			std::shared_ptr<Water> water = std::make_shared<Water>(state._kind, state._level);
-			water->setState(state);
-			_waters.push_back(water);
-		}
-	}
-
-	void Map::saveFromProject(std::ofstream& file) {
-		BinaryWriter writer(file);
-
-		for (auto& chunk : _chunks) {
-			writer.write_Vector2i(chunk->_coords);
-
-			// -2 = smooth terrain (old maps have here the type of the first tile: 0 or more)
-			writer.write_int8(-2);
-
-			for (auto& height : chunk->_heights)
-				writer.write_float(height);
-
-			writer.write_data(chunk->_weights);
-		}
-	}
-
 	void Map::loadFromProject(std::ifstream& file, std::shared_ptr<Anubis::Loader>& loader) {
 
 		loader->setTitle(L"Loading map ...");
-		
+
 		BinaryReader reader(file);
 
 		// clear all
@@ -722,35 +603,56 @@ namespace MapEditor {
 			std::shared_ptr<Chunk> chunk = std::make_shared<Chunk>(chunkCoords.x, chunkCoords.y);
 			loader->nextStep(L"chunks");
 
-			int format = reader.read_int8();
+			for (auto& height : chunk->_heights)
+				height = reader.read_float();
 
-			if (format == -2) {
-				for (auto& height : chunk->_heights)
-					height = reader.read_float();
+			std::shared_ptr<std::vector<uint8_t>> weights = reader.read_data();
 
-				std::shared_ptr<std::vector<uint8_t>> weights = reader.read_data();
-
-				if (weights->size() == chunk->_weights.size())
-					chunk->_weights = *weights;
-				else
-					DebugError(L"Wrong size of the terrain weights in chunk " + std::to_wstring(chunkCoords.x) + L"x" + std::to_wstring(chunkCoords.y));
-			}
-			else {
-				// old map - one terrain per tile, converted in convertOldTiles()
-				chunk->_oldTiles.push_back(format);
-
-				for (int t = 1; t < Chunk::tilesCols * Chunk::tilesRows; t++)
-					chunk->_oldTiles.push_back(reader.read_int8());
-			}
+			if (weights->size() == chunk->_weights.size())
+				chunk->_weights = *weights;
+			else
+				DebugError(L"Wrong size of the terrain weights in chunk " + std::to_wstring(chunkCoords.x) + L"x" + std::to_wstring(chunkCoords.y));
 
 			_chunks.push_back(chunk);
 		}
 
-		convertOldTiles();
-
 		for (auto& chunk : _chunks) {
 			chunk->updateSplatTextures();
 			chunk->generateVertexBuffer();
+		}
+
+		// WATERS (after the chunks - they need the terrain heights)
+		int watersCount = reader.read_int32();
+		size_t maskSize = Chunk::weightsCols * Chunk::weightsCols;
+
+		for (int w = 0; w < watersCount; w++) {
+
+			WaterState state;
+			state._kind = reader.read_int32();
+			state._level = reader.read_float();
+
+			int seedsCount = reader.read_int32();
+			for (int s = 0; s < seedsCount; s++) {
+				float x = reader.read_float();
+				float y = reader.read_float();
+				state._seeds.push_back(sf::Vector2f(x, y));
+			}
+
+			int waterChunksCount = reader.read_int32();
+			for (int c = 0; c < waterChunksCount; c++) {
+				state._coords.push_back(reader.read_Vector2i());
+				state._fill.push_back(*reader.read_data());
+				state._added.push_back(*reader.read_data());
+				state._removed.push_back(*reader.read_data());
+
+				if (state._fill.back().size() != maskSize) state._fill.back().assign(maskSize, 0);
+				if (state._added.back().size() != maskSize) state._added.back().assign(maskSize, 0);
+				if (state._removed.back().size() != maskSize) state._removed.back().assign(maskSize, 0);
+			}
+
+			std::shared_ptr<Water> water = std::make_shared<Water>(state._kind, state._level);
+			water->setState(state);
+			_waters.push_back(water);
 		}
 
 		editor->setVisibleChunks();
