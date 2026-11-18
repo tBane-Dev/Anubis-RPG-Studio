@@ -10,6 +10,7 @@ namespace Anubis {
 		std::shared_ptr<sf::Shader> grid_shader;
 		std::shared_ptr<sf::Shader> checkerboard_shader;
 		std::shared_ptr<sf::Shader> brush3D_shader;
+		std::shared_ptr<sf::Shader> water3D_shader;
 
 		ShadersManager();
 		~ShadersManager();

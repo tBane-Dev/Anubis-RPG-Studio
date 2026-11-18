@@ -62,6 +62,7 @@ void TexturesManager::loadAllTextures() {
 
     // sets
     texturePaths.push_back(L"assets\\tex\\tileset.png");
+    texturePaths.push_back(L"assets\\tex\\noise.png");
     texturePaths.push_back(L"assets\\tex\\buildings\\floorset.png");
 	texturePaths.push_back(L"assets\\tex\\buildings\\wallset.png");
 	texturePaths.push_back(L"assets\\tex\\buildings\\roof1.png");

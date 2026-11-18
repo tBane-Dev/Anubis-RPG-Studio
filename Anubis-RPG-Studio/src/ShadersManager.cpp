@@ -8,6 +8,7 @@ namespace Anubis {
 		grid_shader = std::make_shared<sf::Shader>(L"assets\\shr\\vertex3D.vert", L"assets\\shr\\grid.frag");
 		checkerboard_shader = std::make_shared<sf::Shader>(L"assets\\shr\\vertex2D.vert", L"assets\\shr\\checkerboard.frag");
 		brush3D_shader = std::make_shared<sf::Shader>(L"assets\\shr\\terrain3D.vert", L"assets\\shr\\brush3D.frag");
+		water3D_shader = std::make_shared<sf::Shader>(L"assets\\shr\\water3D.vert", L"assets\\shr\\water3D.frag");
 	}
 
 	ShadersManager::~ShadersManager() {
