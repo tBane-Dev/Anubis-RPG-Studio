@@ -1,4 +1,8 @@
 #version 330 core
+#extension GL_ARB_shader_image_load_store : enable
+
+// pixels hidden by the terrain are skipped before the shader (the water does not write the depth)
+layout(early_fragment_tests) in;
 
 // Waters: flat surfaces separate from the terrain (ocean, swamp, lava).
 // The vertex y of the mesh is the terrain height - the vertex shader puts the vertex on the water level
@@ -19,6 +23,7 @@ uniform bool uSelected;
 uniform float uShoreWidth;		// depth (world units) where the shore effects end
 uniform float uShadowStrength;
 uniform int uShadowSamples;
+uniform float uFoamWidth;		// depth (world units) where the foam ends
 
 uniform vec2 resolution;
 uniform float time;
@@ -67,31 +72,37 @@ float waves(vec2 p) {
 
 // shore: 0 = open water, 1 = on the shore. Foam goes to the shore and back.
 float foam(float shore, vec2 p) {
-    shore = sqrt(shore) * 0.9;
+    shore = shore * 0.9;
 
     vec2 noiseUV = p + time * 0.25;
     vec4 noise = texture(uNoise, noiseUV * 0.015);
 
     float distortion1 = noise.x * (1.0 - shore);
-    float foam1 = sin((shore + distortion1) * 10.0 - time);
+    float foam1 = sin((shore + distortion1) * 20.0 - time);
     foam1 *= foam1;
+    foam1 = smoothstep(0.4, 1.0, foam1);	// only the tops - thin clear lines
 
     float distortion2 = noise.y * (1.0 - shore);
-    float foam2 = sin((shore + distortion2) * 10.0 + time + 2.0);
+    float foam2 = sin((shore + distortion2) * 20.0 + time + 2.0);
     foam2 *= foam2 * 0.7;
+    foam2 = smoothstep(0.2, 0.7, foam2);
 
     return max(foam1, foam2) * shore;
 }
 
-vec4 oceanColor(vec2 p) {
-    float shore = 1.0 - clamp(vDepth / uShoreWidth, 0.0, 1.0);
+// shoreDistance: distance to the beach in world units (0 - 510), counted on the CPU (Water::updateShoreDistances)
+vec4 oceanColor(vec2 p, float shoreDistance) {
+
+    // 1 on the beach, 0 at uShoreWidth / uFoamWidth from the beach
+    float shore = 1.0 - clamp(shoreDistance / uShoreWidth, 0.0, 1.0);
+    float foamShore = 1.0 - clamp(shoreDistance / uFoamWidth, 0.0, 1.0);
 
     // shallow water is lighter and more transparent
     vec4 shallowColor = vec4(0.20, 0.45, 0.80, 0.45);
     vec4 deepColor = vec4(0.06, 0.18, 0.50, 0.85);
-    vec4 color = mix(deepColor, shallowColor, shore);
+    vec4 color = mix(deepColor, shallowColor, shore * shore);
 
-    float foamValue = foam(shore, p);
+    float foamValue = foam(foamShore, p);
     float waveValue = waves(p) * (1.0 - shore);
 
     // big slow swells - lighter and darker bands of blue
@@ -101,9 +112,15 @@ vec4 oceanColor(vec2 p) {
     // crests: light blue, only the strongest ones go a bit to white
     color.rgb += vec3(0.30, 0.50, 0.70) * waveValue * 0.7;
     color.rgb += vec3(waveValue * waveValue * 0.25);
+    
+     color.a *= 1.0 - 0.8 * foamShore;
+
+    // foam closer to the beach is more transparent, it changes with the wave
+    float foamFade = 0.5 + 0.5 * sin(time * 0.8 - foamShore * 6.0);	// 0 - 1
+    float foamVisible = 1.0 - 0.8 * foamShore * foamFade;
 
     // foam on the shore stays white
-    color += vec4(foamValue);
+    color += vec4(foamValue) * 0.5 * foamVisible;
     return clamp(color, 0.0, 1.0);
 }
 
@@ -233,7 +250,16 @@ vec3 lavaColor() {
 // MAIN /////////////////////////////////////////////////////////////////////////////////////////////////////////
 void main()
 {
-    if (texture(uMask, vTexCoord).r < 0.5 || vDepth <= 0.0)
+    vec4 mask = texture(uMask, vTexCoord);
+
+    if (mask.r < 0.5 || vDepth <= 0.0)
+        discard;
+
+    // ocean: the water goes back from the beach and comes again (the edge is where the depth is smaller than the wave)
+    float wave = 0.5 + 0.5 * sin(time * 0.8 - (worldPos.x + worldPos.y) * 0.02);
+    float wash = 3.0 * wave;
+
+    if (uWaterType == 0 && vDepth <= wash)
         discard;
 
     // one step per world unit - pixelated like the terrain
@@ -245,8 +271,14 @@ void main()
         color = vec4(bogColor(), 0.92);
     else if (uWaterType == 2)
         color = vec4(lavaColor(), 1.0);
-    else
-        color = oceanColor(p * 0.6);	// 0.6: scale of the Hex Map waves to our tiles
+    else {
+        // the foam goes with the edge of the water: the distance to the beach gets smaller when the water goes down
+        float depthBefore = vDepth + 7.5 * wave;	// 7.5 - the same as in water3D.vert
+        float depthNow = vDepth - wash;
+        float shoreDistance = mask.g * 510.0 * depthNow / depthBefore;
+
+        color = oceanColor(p * 0.6, shoreDistance);	// 0.6: scale of the Hex Map waves to our tiles
+    }
 
     // swamp and lava: soft edge on the shore
     if (uWaterType != 0)

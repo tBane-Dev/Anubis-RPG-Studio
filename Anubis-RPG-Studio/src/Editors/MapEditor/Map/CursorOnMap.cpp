@@ -779,6 +779,10 @@ namespace MapEditor {
 
 			std::shared_ptr<EditTerrain> step = std::make_shared<EditTerrain>(_strokeSnapshots);
 			history->addStep(step);
+
+			// new terrain heights - the shore of the waters (foam) is counted again
+			for (auto& water : MapEditor::editor->_map->_waters)
+				water->updateAllChunks();
 		}
 
 		_strokeSnapshots.clear();
@@ -947,6 +951,7 @@ namespace MapEditor {
 			return;
 
 		_paintWater->removeEmptyChunks();
+		_paintWater->updateAllChunks();		// the shore (foam) is counted again after the stroke
 		bool exists = !_paintWater->_chunks.empty();
 
 		if (!exists)

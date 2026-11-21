@@ -558,8 +558,9 @@ namespace MapEditor {
 		shader->setUniform("uMask", 2);
 		shader->setUniform("uLightViewProjection", sf::Glsl::Mat4(map_editor->_scene->_lightViewProjection.data()));
 		shader->setUniform("uShadowStrength", 0.45f);
-		shader->setUniform("uShadowSamples", map_editor->_scene->_shadowSamples);
-		shader->setUniform("uShoreWidth", 12.f);
+		shader->setUniform("uShadowSamples", 1);
+		shader->setUniform("uShoreWidth", 96.f);
+		shader->setUniform("uFoamWidth", 160.0f);
 		shader->setUniform("time", Anubis::currentTime.asSeconds());
 		shader->setUniform("resolution", sf::Vector2f(windowSize));
 		shader->setUniform("startPos", sf::Vector2f(0.f, 0.f));

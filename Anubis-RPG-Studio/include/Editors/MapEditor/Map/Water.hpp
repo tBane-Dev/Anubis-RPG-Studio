@@ -15,6 +15,7 @@ namespace MapEditor {
 		std::vector<std::uint8_t> _fill;		// from the Fill tool (counted again when the level changes)
 		std::vector<std::uint8_t> _added;		// painted with the water brush
 		std::vector<std::uint8_t> _removed;		// painted with the eraser
+		std::vector<std::uint8_t> _shore;		// distance to the shore / 2 (0 - 255 = 0 - 510 world units), for the foam
 		std::shared_ptr<sf::Texture> _maskTexture;
 		std::shared_ptr<Anubis::Mesh3D> _mesh;
 
@@ -62,6 +63,7 @@ namespace MapEditor {
 		void paint(sf::Vector2f center, float radius, bool erase, float amount);
 		void removeEmptyChunks();
 
+		void updateShoreDistances();
 		void updateChunk(std::shared_ptr<WaterChunk> waterChunk);
 		void updateAllChunks();
 		void updateChunksOf(std::vector<sf::Vector2i> coords);

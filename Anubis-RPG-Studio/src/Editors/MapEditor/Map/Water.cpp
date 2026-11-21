@@ -24,6 +24,7 @@ namespace MapEditor {
 		_fill.assign(Chunk::weightsCols * Chunk::weightsCols, 0);
 		_added.assign(Chunk::weightsCols * Chunk::weightsCols, 0);
 		_removed.assign(Chunk::weightsCols * Chunk::weightsCols, 0);
+		_shore.assign(Chunk::weightsCols * Chunk::weightsCols, 0);
 		_maskTexture = nullptr;
 		_mesh = nullptr;
 	}
@@ -320,6 +321,105 @@ namespace MapEditor {
 		std::erase_if(_chunks, [](std::shared_ptr<WaterChunk>& waterChunk) { return waterChunk->isEmpty(); });
 	}
 
+	// Distance from every water point to the nearest land (terrain above the level or no water), counted over all chunks of the water.
+	// Two passes over one big grid (chamfer distance): first from the top left, then from the bottom right.
+	void Water::updateShoreDistances() {
+
+		if (_chunks.empty())
+			return;
+
+		std::shared_ptr<Map> mapa = MapEditor::editor->_map;
+		int cells = Chunk::weightsCols - 1;
+		int wc = Chunk::weightsCols;
+		float step = float(Chunk::tilesCols * Tile::tileSize) / float(cells);
+		float diagonal = step * 1.41421356f;
+		float maxDistance = 510.f;
+
+		// chunks of the water + one chunk around (land next to the water)
+		sf::Vector2i minCoords = _chunks[0]->_coords;
+		sf::Vector2i maxCoords = _chunks[0]->_coords;
+
+		for (auto& waterChunk : _chunks) {
+			minCoords.x = std::min(minCoords.x, waterChunk->_coords.x);
+			minCoords.y = std::min(minCoords.y, waterChunk->_coords.y);
+			maxCoords.x = std::max(maxCoords.x, waterChunk->_coords.x);
+			maxCoords.y = std::max(maxCoords.y, waterChunk->_coords.y);
+		}
+
+		minCoords -= sf::Vector2i(1, 1);
+		maxCoords += sf::Vector2i(1, 1);
+
+		int cols = (maxCoords.x - minCoords.x + 1) * cells + 1;
+		int rows = (maxCoords.y - minCoords.y + 1) * cells + 1;
+
+		// 0 = land, maxDistance = water (outside the map too - no foam on the edge of the map)
+		std::vector<float> distances(cols * rows, maxDistance);
+
+		for (int cy = minCoords.y; cy <= maxCoords.y; cy++) {
+			for (int cx = minCoords.x; cx <= maxCoords.x; cx++) {
+
+				std::shared_ptr<Chunk> chunk = mapa->getChunkByCoords(cx, cy);
+
+				if (!chunk)
+					continue;
+
+				std::shared_ptr<WaterChunk> waterChunk = getWaterChunk(sf::Vector2i(cx, cy), false);
+				sf::Vector2f position = chunk->getWorldPosition();
+
+				for (int y = 0; y < wc; y++) {
+					for (int x = 0; x < wc; x++) {
+
+						int gx = (cx - minCoords.x) * cells + x;
+						int gy = (cy - minCoords.y) * cells + y;
+
+						bool water = waterChunk && waterChunk->getMask(y * wc + x) >= 128 &&
+							chunk->getHeight(position.x + float(x) * step, position.y + float(y) * step) < _level;
+
+						if (!water)
+							distances[gy * cols + gx] = 0.f;
+					}
+				}
+			}
+		}
+
+		for (int y = 0; y < rows; y++) {
+			for (int x = 0; x < cols; x++) {
+				float d = distances[y * cols + x];
+
+				if (x > 0) d = std::min(d, distances[y * cols + x - 1] + step);
+				if (y > 0) d = std::min(d, distances[(y - 1) * cols + x] + step);
+				if (x > 0 && y > 0) d = std::min(d, distances[(y - 1) * cols + x - 1] + diagonal);
+				if (x < cols - 1 && y > 0) d = std::min(d, distances[(y - 1) * cols + x + 1] + diagonal);
+
+				distances[y * cols + x] = d;
+			}
+		}
+
+		for (int y = rows - 1; y >= 0; y--) {
+			for (int x = cols - 1; x >= 0; x--) {
+				float d = distances[y * cols + x];
+
+				if (x < cols - 1) d = std::min(d, distances[y * cols + x + 1] + step);
+				if (y < rows - 1) d = std::min(d, distances[(y + 1) * cols + x] + step);
+				if (x < cols - 1 && y < rows - 1) d = std::min(d, distances[(y + 1) * cols + x + 1] + diagonal);
+				if (x > 0 && y < rows - 1) d = std::min(d, distances[(y + 1) * cols + x - 1] + diagonal);
+
+				distances[y * cols + x] = d;
+			}
+		}
+
+		for (auto& waterChunk : _chunks) {
+			for (int y = 0; y < wc; y++) {
+				for (int x = 0; x < wc; x++) {
+					int gx = (waterChunk->_coords.x - minCoords.x) * cells + x;
+					int gy = (waterChunk->_coords.y - minCoords.y) * cells + y;
+					float d = std::min(distances[gy * cols + gx], maxDistance);
+					waterChunk->_shore[y * wc + x] = (std::uint8_t)(d * 0.5f);
+				}
+			}
+		}
+	}
+
 	// mask texture + flat mesh of one chunk. Vertex y = terrain height (the shader puts the vertex on the water level
 	// and uses the difference as the depth). Only quads with water get triangles.
 	void Water::updateChunk(std::shared_ptr<WaterChunk> waterChunk) {
@@ -338,7 +438,7 @@ namespace MapEditor {
 		for (int i = 0; i < wc * wc; i++) {
 			std::uint8_t value = waterChunk->getMask(i);
 			pixels[i * 4 + 0] = value;
-			pixels[i * 4 + 1] = value;
+			pixels[i * 4 + 1] = waterChunk->_shore[i];	// distance to the shore (foam)
 			pixels[i * 4 + 2] = value;
 			pixels[i * 4 + 3] = 255;
 		}
@@ -413,6 +513,8 @@ namespace MapEditor {
 	}
 
 	void Water::updateAllChunks() {
+		updateShoreDistances();
+
 		for (auto& waterChunk : _chunks)
 			updateChunk(waterChunk);
 	}
