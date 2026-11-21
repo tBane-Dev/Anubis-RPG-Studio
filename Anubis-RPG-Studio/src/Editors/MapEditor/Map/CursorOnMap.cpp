@@ -840,7 +840,14 @@ namespace MapEditor {
 		if (tools->_toolType == ToolTerrainType::WaterBrush) color = sf::Color(47, 207, 255, 95);
 		if (tools->_toolType == ToolTerrainType::WaterEraser) color = sf::Color(255, 255, 255, 95);
 
-		MapEditor::editor->_map->drawBrushOverlay(sf::Vector2f(_worldPosition.x, _worldPosition.z), getBrushRadius(), square, color);
+		sf::Vector2f position(_worldPosition.x, _worldPosition.z);
+		sf::Vector2f start = position;
+
+		// slope: the line from the start of the slope to the cursor
+		if (_isSlopeDragging)
+			start = sf::Vector2f(_slopeStart.x, _slopeStart.z);
+
+		MapEditor::editor->_map->drawBrushOverlay(start, getBrushRadius(), square, color, position);
 	}
 
 	// WATERS ///////////////////////////////////////////////////////////////////////////////////////////////////

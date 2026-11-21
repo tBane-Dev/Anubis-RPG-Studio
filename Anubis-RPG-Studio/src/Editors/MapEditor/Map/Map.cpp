@@ -789,7 +789,7 @@ namespace MapEditor {
 		return scene->unprojectDepth(pixel, depth, hit);
 	}
 
-	void Map::drawBrushOverlay(sf::Vector2f center, float radius, bool square, sf::Color color) {
+	void Map::drawBrushOverlay(sf::Vector2f start, float radius, bool square, sf::Color color, sf::Vector2f end) {
 
 		auto scene = MapEditor::editor ? MapEditor::editor->_scene : nullptr;
 
@@ -821,7 +821,8 @@ namespace MapEditor {
 		std::shared_ptr<sf::Shader> shader = Anubis::shaders_manager->brush3D_shader;
 		shader->setUniform("uView", sf::Glsl::Mat4(viewMatrix));
 		shader->setUniform("uProjection", sf::Glsl::Mat4(projectionMatrix));
-		shader->setUniform("uCenter", center);
+		shader->setUniform("uCenter", start);
+		shader->setUniform("uEnd", end);
 		shader->setUniform("uRadius", radius);
 		shader->setUniform("uSquare", square);
 		shader->setUniform("uColor", sf::Glsl::Vec4(color));
@@ -841,7 +842,10 @@ namespace MapEditor {
 
 		sf::Shader::bind(shader.get());
 
-		for (auto& chunk : getChunksInRect(center, radius))
+		sf::Vector2f center = (start + end) * 0.5f;
+		float halfLength = std::sqrt((end.x - start.x) * (end.x - start.x) + (end.y - start.y) * (end.y - start.y)) * 0.5f;
+
+		for (auto& chunk : getChunksInRect(center, halfLength + radius))
 			chunk->draw();
 
 		Anubis::GL::bindVertexArray(0);

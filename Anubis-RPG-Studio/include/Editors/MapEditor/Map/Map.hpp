@@ -50,8 +50,8 @@ namespace MapEditor {
 		// only the terrain is drawn into the scene's picking depth buffer and the depth is unprojected.
 		bool pickTerrain(sf::Vector2i pixel, sf::Vector3f& hit);
 
-		// Brush on the terrain surface (soft circle or square).
-		void drawBrushOverlay(sf::Vector2f center, float radius, bool square, sf::Color color);
+		// Brush on the terrain surface (soft circle or square). start != end: along the line (slope tool).
+		void drawBrushOverlay(sf::Vector2f start, float radius, bool square, sf::Color color, sf::Vector2f end);
 
 		// Terrain height at a map point (0 outside the map).
 		float getHeight(float x, float z);
