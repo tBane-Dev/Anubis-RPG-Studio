@@ -34,6 +34,10 @@ namespace MapEditor {
 		std::vector<std::shared_ptr<TerrainSnapshot>> _strokeSnapshots;	// chunks changed by the stroke (undo)
 		std::set<std::shared_ptr<Chunk>> _chunksToRebuild;	// terrain brush: refreshed once per frame in update()
 
+		// slope tool: LMB pressed at the top of the slope, released at the bottom
+		bool _isSlopeDragging = false;
+		sf::Vector3f _slopeStart;			// terrain point where the slope starts
+
 		// waters
 		float _newWaterDepth = 4.f;				// a new water starts this much above the clicked terrain
 		std::shared_ptr<Water> _paintWater;		// water changed by the water brush / eraser
@@ -65,6 +69,7 @@ namespace MapEditor {
 		void addToStroke(std::shared_ptr<Chunk> chunk);
 		void paintTerrain();
 		void endTerrainStroke();
+		void useSlope();
 		void drawTerrainBrush();
 
 		bool isWaterTool();

@@ -40,6 +40,7 @@ namespace MapEditor {
 		float getBrushFalloff(sf::Vector2f delta, float radius, bool square);
 		void paintTerrain(std::vector<std::shared_ptr<Chunk>> chunks, sf::Vector2f center, float radius, bool square, int terrain, float amount);
 		void changeHeights(std::vector<std::shared_ptr<Chunk>> chunks, sf::Vector2f center, float radius, bool square, ToolTerrainType tool, float amount, float flattenHeight);
+		void makeSlope(std::vector<std::shared_ptr<Chunk>> chunks, sf::Vector3f start, sf::Vector3f end, float radius);
 
 		void removeGameObjectsFromChunksByPrefab(std::shared_ptr<GameObject> object);
 

@@ -162,6 +162,16 @@ namespace MapEditor {
 			}
 		}
 
+		// Slope: the end of the slope follows the cursor, the slope is made when the left button is released
+		if (_isSlopeDragging) {
+			_isOnTerrain = MapEditor::editor->_map->pickTerrain(_position, _worldPosition);
+
+			if (!sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+				useSlope();
+				endTerrainStroke();
+			}
+		}
+
 		// Refresh chunks changed by the terrain brush (once per frame).
 		if (!_chunksToRebuild.empty()) {
 			std::vector<std::shared_ptr<Chunk>> chunks(_chunksToRebuild.begin(), _chunksToRebuild.end());
@@ -626,7 +636,7 @@ namespace MapEditor {
 		if (!tools)
 			return false;
 
-		return tools->_toolType == ToolTerrainType::Raise || tools->_toolType == ToolTerrainType::Lower || tools->_toolType == ToolTerrainType::Smooth || tools->_toolType == ToolTerrainType::Flatten;
+		return tools->_toolType == ToolTerrainType::Raise || tools->_toolType == ToolTerrainType::Lower || tools->_toolType == ToolTerrainType::Smooth || tools->_toolType == ToolTerrainType::Flatten || tools->_toolType == ToolTerrainType::Slope;
 	}
 
 	// terrain and height tools: start and end of a brush stroke - painting itself is in update() (every frame while the button is held)
@@ -659,6 +669,16 @@ namespace MapEditor {
 					return;
 				}
 
+				// Slope is made on release
+				if (tools->_toolType == ToolTerrainType::Slope) {
+					MapEditor::editor->_map->pickTerrain(_position, _worldPosition);
+					_isSlopeDragging = true;
+					_slopeStart = _worldPosition;
+					_strokeSnapshots.clear();
+					_state = Cursors::CursorWithObjectState::Drawing;
+					return;
+				}
+
 				if (isWaterTool())
 					startWaterStroke();
 
@@ -669,8 +689,12 @@ namespace MapEditor {
 			}
 		}
 
-		if (const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Left)
+		if (const auto* mbr = event.getIf<sf::Event::MouseButtonReleased>(); mbr && mbr->button == sf::Mouse::Button::Left) {
+			if (_isSlopeDragging)
+				useSlope();
+
 			endTerrainStroke();
+		}
 	}
 
 	// brush sizes 0 - 5: 8, 16, 32, 64, 128, 256 world units
@@ -759,9 +783,39 @@ namespace MapEditor {
 
 		_strokeSnapshots.clear();
 		_isPainting = false;
+		_isSlopeDragging = false;
 
 		if (_state == Cursors::CursorWithObjectState::Drawing)
 			_state = Cursors::CursorWithObjectState::Idle;
+	}
+
+	// Slope: from the point where LMB was pressed to the point under the cursor
+	void CursorOnMap::useSlope() {
+
+		_isSlopeDragging = false;
+
+		if (!_isOnTerrain)
+			return;
+
+		std::shared_ptr<Map> mapa = MapEditor::editor->_map;
+
+		sf::Vector2f start(_slopeStart.x, _slopeStart.z);
+		sf::Vector2f end(_worldPosition.x, _worldPosition.z);
+		sf::Vector2f center = (start + end) * 0.5f;
+		float radius = getBrushRadius();
+		float halfLength = std::sqrt((end.x - start.x) * (end.x - start.x) + (end.y - start.y) * (end.y - start.y)) * 0.5f;
+
+		std::vector<std::shared_ptr<Chunk>> chunks = mapa->getChunksInRect(center, halfLength + radius);
+
+		if (chunks.empty())
+			return;
+
+		// old heights for undo - the history step is added by endTerrainStroke()
+		for (auto& chunk : chunks)
+			addToStroke(chunk);
+
+		mapa->makeSlope(chunks, _slopeStart, _worldPosition, radius);
+		mapa->refreshChunks(chunks, true);
 	}
 
 	void CursorOnMap::drawTerrainBrush() {

@@ -336,6 +336,48 @@ namespace MapEditor {
 			chunks[i]->_heights = newHeights[i];
 	}
 
+	// Slope: heights go evenly from the start height to the end height. radius = half of the width of the slope.
+	void Map::makeSlope(std::vector<std::shared_ptr<Chunk>> chunks, sf::Vector3f start, sf::Vector3f end, float radius) {
+
+		int hc = Chunk::heightsCols;
+
+		sf::Vector2f a(start.x, start.z);
+		sf::Vector2f ab = sf::Vector2f(end.x, end.z) - a;
+		float length2 = ab.x * ab.x + ab.y * ab.y;
+
+		if (length2 < 1.f)
+			return;
+
+		for (auto& chunk : chunks) {
+
+			sf::Vector2f position = chunk->getWorldPosition();
+			float step = chunk->getHeightStep();
+
+			for (int y = 0; y < hc; y++) {
+				for (int x = 0; x < hc; x++) {
+
+					sf::Vector2f point(position.x + float(x) * step, position.y + float(y) * step);
+
+					// 0 at the start, 1 at the end of the slope
+					float t = std::clamp(((point.x - a.x) * ab.x + (point.y - a.y) * ab.y) / length2, 0.f, 1.f);
+
+					// soft sides - the same falloff as the brush, but from the line
+					float f = getBrushFalloff(point - (a + ab * t), radius, false);
+
+					if (f <= 0.f)
+						continue;
+
+					// smoothstep - soft top and bottom of the slope
+					float s = t * t * (3.f - 2.f * t);
+					float slopeHeight = start.y + (end.y - start.y) * s;
+
+					int index = y * hc + x;
+					chunk->_heights[index] += (slopeHeight - chunk->_heights[index]) * f;
+				}
+			}
+		}
+	}
+
 	void Map::removeGameObjectsFromChunksByPrefab(std::shared_ptr<GameObject> object) {
 
 		for (auto& chunk : _chunks) {
