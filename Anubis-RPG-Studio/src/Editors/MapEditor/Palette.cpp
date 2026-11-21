@@ -176,6 +176,14 @@ namespace MapEditor {
 				[this, t]() { t->setTool(t->_tools[8], ToolTerrainType::Flatten); }
 			);
 
+			t->addTool(
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_hover.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_press.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\slope.png"),
+				[this, t]() { t->setTool(t->_tools[9], ToolTerrainType::Slope); }
+			);
+
 			t->setTool(t->_tools[0], ToolTerrainType::None);
 		}
 

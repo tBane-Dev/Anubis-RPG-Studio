@@ -3,7 +3,7 @@
 #include "Components/Palette/Tools.hpp"
 #include "Objects/Object.hpp"
 
-enum class ToolTerrainType { None, Circle, Rect, Raise, Lower, Smooth, Flatten, WaterFill, WaterBrush, WaterEraser };
+enum class ToolTerrainType { None, Circle, Rect, Raise, Lower, Smooth, Flatten, Slope, WaterFill, WaterBrush, WaterEraser };
 
 class ToolTerrainButton : public ButtonWithSprite {
 public:

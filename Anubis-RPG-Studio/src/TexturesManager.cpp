@@ -248,6 +248,7 @@ void TexturesManager::loadAllTextures() {
     texturePaths.push_back(L"assets\\tex\\palette\\tools\\lower.png");
     texturePaths.push_back(L"assets\\tex\\palette\\tools\\smooth.png");
     texturePaths.push_back(L"assets\\tex\\palette\\tools\\flatten.png");
+    texturePaths.push_back(L"assets\\tex\\palette\\tools\\slope.png");
     texturePaths.push_back(L"assets\\tex\\palette\\tools\\fill.png");
     texturePaths.push_back(L"assets\\tex\\palette\\tools\\water_brush.png");
     texturePaths.push_back(L"assets\\tex\\palette\\tools\\eraser.png");
