@@ -98,9 +98,9 @@ vec4 oceanColor(vec2 p, float shoreDistance) {
     float foamShore = 1.0 - clamp(shoreDistance / uFoamWidth, 0.0, 1.0);
 
     // shallow water is lighter and more transparent
-    vec4 shallowColor = vec4(0.20, 0.45, 0.80, 0.45);
+    vec4 shallowColor = vec4(0.20, 0.45, 0.80, 0.85);
     vec4 deepColor = vec4(0.06, 0.18, 0.50, 0.85);
-    vec4 color = mix(deepColor, shallowColor, shore * shore);
+    vec4 color = mix(deepColor, shallowColor, shore);
 
     float foamValue = foam(foamShore, p);
     float waveValue = waves(p) * (1.0 - shore);
@@ -272,10 +272,11 @@ void main()
     else if (uWaterType == 2)
         color = vec4(lavaColor(), 1.0);
     else {
-        // the foam goes with the edge of the water: the distance to the beach gets smaller when the water goes down
-        float depthBefore = vDepth + 7.5 * wave;	// 7.5 - the same as in water3D.vert
-        float depthNow = vDepth - wash;
-        float shoreDistance = mask.g * 510.0 * depthNow / depthBefore;
+        // the foam and the shore go with the edge of the water:
+        // the water goes down by (7.5 + 3.0) * wave, on a seabed with this slope the edge moves by "lower / slope"
+        float shoreSlope = 0.25;			// the slope of the Seabed tool at the beach
+        float lower = (7.5 + 3.0) * wave;	// 7.5 - water3D.vert, 3.0 - wash
+        float shoreDistance = max(mask.g * 510.0 - lower / shoreSlope, 0.0);
 
         color = oceanColor(p * 0.6, shoreDistance);	// 0.6: scale of the Hex Map waves to our tiles
     }

@@ -336,6 +336,60 @@ namespace MapEditor {
 			chunks[i]->_heights = newHeights[i];
 	}
 
+	// Seabed: the terrain under the water goes down evenly from the beach (0 deep) to "width" from the beach ("depth" deep).
+	// Further from the beach the old terrain comes back slowly. Uses the distances to the shore of the water (Water::updateShoreDistances).
+	void Map::shapeSeabed(std::shared_ptr<Water> water, float width, float depth) {
+
+		int hc = Chunk::heightsCols;
+		int wc = Chunk::weightsCols;
+		std::vector<std::shared_ptr<Chunk>> changed;
+
+		for (auto& waterChunk : water->_chunks) {
+
+			std::shared_ptr<Chunk> chunk = getChunkByCoords(waterChunk->_coords.x, waterChunk->_coords.y);
+
+			if (!chunk)
+				continue;
+
+			for (int y = 0; y < hc; y++) {
+				for (int x = 0; x < hc; x++) {
+
+					// height point (x, y) = mask point (2x, 2y)
+					int point = (y * 2) * wc + x * 2;
+					int index = y * hc + x;
+					float h = chunk->_heights[index];
+
+					if (waterChunk->getMask(point) < 128 || h >= water->_level)
+						continue;
+
+					float distance = float(waterChunk->_shore[point]) * 2.f;
+
+					// faster at the beach, soft at the bottom
+					float t = std::clamp(distance / width, 0.f, 1.f);
+					float seabed = water->_level - depth * t * (2.f - t);
+
+					// further than "width": slowly back to the old terrain
+					float back = std::clamp((distance - width) / (width * 0.5f), 0.f, 1.f);
+					chunk->_heights[index] = seabed + (h - seabed) * back;
+				}
+			}
+
+			changed.push_back(chunk);
+		}
+
+		// the chunks around get the new shared edges
+		for (auto& chunk : changed) {
+			for (int dy = -1; dy <= 1; dy++) {
+				for (int dx = -1; dx <= 1; dx++) {
+					std::shared_ptr<Chunk> neighbour = getChunkByCoords(chunk->_coords.x + dx, chunk->_coords.y + dy);
+
+					if (neighbour && std::find(changed.begin(), changed.end(), neighbour) == changed.end())
+						stitchChunk(neighbour);
+				}
+			}
+		}
+	}
+
 	// Slope: heights go evenly from the start height to the end height. radius = half of the width of the slope.
 	void Map::makeSlope(std::vector<std::shared_ptr<Chunk>> chunks, sf::Vector3f start, sf::Vector3f end, float radius) {
 

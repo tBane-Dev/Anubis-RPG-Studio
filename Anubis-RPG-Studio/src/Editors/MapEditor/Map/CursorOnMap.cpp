@@ -636,7 +636,7 @@ namespace MapEditor {
 		if (!tools)
 			return false;
 
-		return tools->_toolType == ToolTerrainType::Raise || tools->_toolType == ToolTerrainType::Lower || tools->_toolType == ToolTerrainType::Smooth || tools->_toolType == ToolTerrainType::Flatten || tools->_toolType == ToolTerrainType::Slope;
+		return tools->_toolType == ToolTerrainType::Raise || tools->_toolType == ToolTerrainType::Lower || tools->_toolType == ToolTerrainType::Smooth || tools->_toolType == ToolTerrainType::Flatten || tools->_toolType == ToolTerrainType::Slope || tools->_toolType == ToolTerrainType::WaterSeabed;
 	}
 
 	// terrain and height tools: start and end of a brush stroke - painting itself is in update() (every frame while the button is held)
@@ -666,6 +666,12 @@ namespace MapEditor {
 				// Fill is one click, no stroke
 				if (tools->_toolType == ToolTerrainType::WaterFill) {
 					useWaterFill();
+					return;
+				}
+
+				// Seabed is one click on a water
+				if (tools->_toolType == ToolTerrainType::WaterSeabed) {
+					useWaterSeabed();
 					return;
 				}
 
@@ -843,6 +849,7 @@ namespace MapEditor {
 
 		if (tools->_toolType == ToolTerrainType::WaterBrush) color = sf::Color(47, 207, 255, 95);
 		if (tools->_toolType == ToolTerrainType::WaterEraser) color = sf::Color(255, 255, 255, 95);
+		if (tools->_toolType == ToolTerrainType::WaterSeabed) color = sf::Color(255, 207, 47, 95);
 
 		sf::Vector2f position(_worldPosition.x, _worldPosition.z);
 		sf::Vector2f start = position;
@@ -915,6 +922,44 @@ namespace MapEditor {
 
 		std::shared_ptr<EditWater> step = std::make_shared<EditWater>(water, oldState, existed, water->getState(), true);
 		history->addStep(step);
+	}
+
+	// Seabed: click on a water - the terrain under it goes down evenly from the beach.
+	// The size of the brush says how far from the beach the slope goes (width = 2 x radius, depth = width / 8).
+	void CursorOnMap::useWaterSeabed() {
+
+		std::shared_ptr<Map> mapa = MapEditor::editor->_map;
+		std::shared_ptr<Water> water = mapa->getWaterUnderCursor(_position);
+
+		if (!water)
+			return;
+
+		float width = getBrushRadius() * 2.f;
+		float depth = width / 8.f;
+
+		// the chunks of the water and the chunks around (shared edges)
+		std::vector<std::shared_ptr<Chunk>> chunks;
+
+		for (auto& waterChunk : water->_chunks) {
+			for (int dy = -1; dy <= 1; dy++) {
+				for (int dx = -1; dx <= 1; dx++) {
+					std::shared_ptr<Chunk> chunk = mapa->getChunkByCoords(waterChunk->_coords.x + dx, waterChunk->_coords.y + dy);
+
+					if (chunk && std::find(chunks.begin(), chunks.end(), chunk) == chunks.end())
+						chunks.push_back(chunk);
+				}
+			}
+		}
+
+		// old heights for undo - the history step is added by endTerrainStroke()
+		_strokeSnapshots.clear();
+
+		for (auto& chunk : chunks)
+			addToStroke(chunk);
+
+		mapa->shapeSeabed(water, width, depth);
+		mapa->refreshChunks(chunks, true);
+		endTerrainStroke();
 	}
 
 	// Brush / Eraser: start of a stroke

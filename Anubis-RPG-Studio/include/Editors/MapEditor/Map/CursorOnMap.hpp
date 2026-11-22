@@ -75,6 +75,7 @@ namespace MapEditor {
 		bool isWaterTool();
 		std::shared_ptr<Water> getWaterToEdit(int kind);
 		void useWaterFill();
+		void useWaterSeabed();
 		void startWaterStroke();
 		void endWaterStroke();
 		void startWaterDrag(std::shared_ptr<Water> clickedWater);
