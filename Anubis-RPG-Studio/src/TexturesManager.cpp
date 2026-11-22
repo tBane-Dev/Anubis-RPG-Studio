@@ -252,6 +252,7 @@ void TexturesManager::loadAllTextures() {
     texturePaths.push_back(L"assets\\tex\\palette\\tools\\fill.png");
     texturePaths.push_back(L"assets\\tex\\palette\\tools\\water_brush.png");
     texturePaths.push_back(L"assets\\tex\\palette\\tools\\eraser.png");
+    texturePaths.push_back(L"assets\\tex\\palette\\tools\\seabed.png");
     
     texturePaths.push_back(L"assets\\tex\\palette\\slots\\slot_80.png");
     texturePaths.push_back(L"assets\\tex\\palette\\slots\\slot_80_hover.png");

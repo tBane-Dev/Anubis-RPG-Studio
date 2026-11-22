@@ -232,6 +232,14 @@ namespace MapEditor {
 				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool.png"),
 				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_hover.png"),
 				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_press.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\seabed.png"),
+				[this, t]() { t->setTool(t->_tools[4], ToolTerrainType::WaterSeabed); }
+			);
+
+			t->addTool(
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_hover.png"),
+				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\tool_press.png"),
 				textures_manager->getTexture(L"assets\\tex\\palette\\tools\\decrease.png"),
 				[this, t]() { MapEditor::editor->_palette->_brushSize = std::clamp(MapEditor::editor->_palette->_brushSize - 1, MapEditor::editor->_palette->_minBrushSize, MapEditor::editor->_palette->_maxBrushSize); }
 			);
