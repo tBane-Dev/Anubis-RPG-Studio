@@ -71,6 +71,8 @@ namespace MapEditor {
 		WaterState getState();
 		void setState(WaterState state);
 
+		float getDistance(sf::Vector2f position, sf::Vector2f& nearest);
+
 		void draw();
 	};
 

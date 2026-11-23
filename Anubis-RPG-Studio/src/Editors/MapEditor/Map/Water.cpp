@@ -560,6 +560,55 @@ namespace MapEditor {
 		updateAllChunks();
 	}
 
+	float Water::getDistance(sf::Vector2f position, sf::Vector2f& nearest) {
+
+		std::shared_ptr<Map> mapa = MapEditor::editor->_map;
+		float size = float(Chunk::tilesCols * Tile::tileSize);
+		int wc = Chunk::weightsCols;
+		float step = size / float(wc - 1);
+		float best = 1e30f;	// squared - no sqrt in the loop
+
+		for (auto& waterChunk : _chunks) {
+
+			// the whole chunk is further than the best distance - skip it
+			sf::Vector2f chunkPosition(float(waterChunk->_coords.x) * size, float(waterChunk->_coords.y) * size);
+			float dx = std::max({ chunkPosition.x - position.x, 0.f, position.x - (chunkPosition.x + size) });
+			float dz = std::max({ chunkPosition.y - position.y, 0.f, position.y - (chunkPosition.y + size) });
+
+			if (dx * dx + dz * dz >= best)
+				continue;
+
+			std::shared_ptr<Chunk> chunk = mapa->getChunkByCoords(waterChunk->_coords.x, waterChunk->_coords.y);
+
+			if (!chunk)
+				continue;
+
+			for (int y = 0; y < wc; y++) {
+				for (int x = 0; x < wc; x++) {
+
+					if (waterChunk->getMask(y * wc + x) < 128)
+						continue;
+
+					float px = chunkPosition.x + float(x) * step;
+					float pz = chunkPosition.y + float(y) * step;
+					float d = (px - position.x) * (px - position.x) + (pz - position.y) * (pz - position.y);
+
+					if (d >= best)
+						continue;
+
+					// the shore point is in the mask, but above the level - not water
+					if (chunk->getHeight(px, pz) >= _level)
+						continue;
+
+					best = d;
+					nearest = sf::Vector2f(px, pz);
+				}
+			}
+		}
+
+		return std::sqrt(best);
+	}
+
 	// Map::drawWaters() binds the shader and sets the common uniforms.
 	void Water::draw() {
 

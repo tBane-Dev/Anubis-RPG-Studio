@@ -15,8 +15,9 @@
 #include "3D/OpenGLBuffers.hpp"
 #include "Loader.hpp"
 #include "TexturesManager.hpp"
-#include "ModelsManager.hpp"
 #include "ShadersManager.hpp"
+#include "ModelsManager.hpp"
+#include "SoundsManager.hpp"
 #include "PrefabsManager.hpp"
 #include "Cursor.hpp"
 #include "WindowsManager.hpp"
@@ -133,7 +134,7 @@ int main() {
     settings.minorVersion = 3;
     settings.attributeFlags = sf::ContextSettings::Debug;
 
-    Anubis::render_window = std::make_unique<sf::RenderWindow>(sf::VideoMode(sf::Vector2u(1920, 1080), 32u), "Anubis-RPG-Studio", sf::State::Windowed, settings);
+    Anubis::render_window = std::make_unique<sf::RenderWindow>(sf::VideoMode(sf::Vector2u(1920, 1080), 32u), "Anubis-RPG-Studio", sf::State::Fullscreen, settings);
     
     ShowWindow(Anubis::render_window->getNativeHandle(), SW_MAXIMIZE);
 
@@ -198,6 +199,7 @@ int main() {
     textures_manager = std::make_shared<TexturesManager>();
     Anubis::shaders_manager = std::make_shared<Anubis::ShadersManager>();
     Anubis::models_manager = std::make_shared<Anubis::ModelsManager>();
+    Anubis::sounds_manager = std::make_shared<Anubis::SoundsManager>();
     Anubis::prefabs_manager = std::make_shared<Anubis::PrefabsManager>();
 
     Cursors::cursor = std::make_shared<Cursors::Cursor>();
@@ -251,6 +253,7 @@ int main() {
                 std::shared_ptr<Anubis::Loader> loader = std::make_shared<Anubis::Loader>(file);
                 Anubis::models_manager->loadFromProject(file, loader);
                 Anubis::prefabs_manager->loadFromProject(file, loader);
+                Anubis::sounds_manager->clear();
                 MapEditor::editor->_map->loadFromProject(file, loader);
                 MapEditor::editor->_game_objects->loadFromProject(file, loader);
                 
@@ -333,6 +336,7 @@ int main() {
 
         // update
         Main::editor_manager->update();
+        Anubis::sounds_manager->update();
         Main::windows_manager->update();
 		Main::tooltip->update();
 

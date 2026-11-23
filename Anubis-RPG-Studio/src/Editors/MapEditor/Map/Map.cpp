@@ -14,15 +14,20 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include "SoundsManager.hpp"
 
 namespace MapEditor {
 	Map::Map() {
 		_ghostChunk = std::make_shared<GhostChunk>();
 		_texture = textures_manager->getTexture(L"assets\\tex\\tileset.png");
+
+		// sound
+		addSounds();
 	}
 
 	Map::~Map() {
-
+		if (_oceanAmbience != nullptr)
+			_oceanAmbience->stop();
 	}
 
 	void Map::addChunk(std::shared_ptr<Chunk> chunk, int terrain) {
@@ -46,6 +51,26 @@ namespace MapEditor {
 		}
 	}
 
+	void Map::addSounds() {
+		_waterSoundsTime = Anubis::currentTime;
+		_waveIndex = 0;
+		_waveCycle = 0;
+
+		// the old loop sound goes away - only one ocean sound
+		if (_oceanAmbience != nullptr)
+			_oceanAmbience->stop();
+
+		for (int i = 1; i <= 6; i++)
+			Anubis::sounds_manager->addBuffer(L"wave" + std::to_wstring(i), L"assets\\snd\\ocean\\wave" + std::to_wstring(i) + L".ogg");
+
+		Anubis::sounds_manager->addBuffer(L"ocean", L"assets\\snd\\ocean\\ambience.ogg");
+		_oceanAmbience = Anubis::sounds_manager->addSound(L"ocean", sf::Vector3f(0.f, 0.f, 0.f));
+		if (_oceanAmbience != nullptr) {
+			_oceanAmbience->setLooping(true);
+			_oceanAmbience->pause();
+		}
+	}
+
 	void Map::create(int width, int height) {
 
 		int terrain = 2;
@@ -56,6 +81,8 @@ namespace MapEditor {
 				addChunk(chunk, terrain);
 			}
 		}
+
+		addSounds();
 	}
 
 	void Map::drawCircle(sf::Vector2f center, float radius, int terrain) {
@@ -642,6 +669,27 @@ namespace MapEditor {
 		glDisable(GL_BLEND);
 	}
 
+	
+	float Map::getDistanceToWater(sf::Vector2f position, int kind, sf::Vector2f& nearest) {
+
+		float best = 1e30f;
+
+		for (auto& water : _waters) {
+			if (water->_kind != kind)
+				continue;
+
+			sf::Vector2f point;
+			float d = water->getDistance(position, point);
+
+			if (d < best) {
+				best = d;
+				nearest = point;
+			}
+		}
+
+		return best;
+	}
+
 	void Map::saveFromProject(std::ofstream& file) {
 		BinaryWriter writer(file);
 
@@ -752,6 +800,7 @@ namespace MapEditor {
 			_waters.push_back(water);
 		}
 
+		addSounds();
 		editor->setVisibleChunks();
 
 	}
@@ -962,6 +1011,62 @@ namespace MapEditor {
 
 		if (MapEditor::editor->_camera->_isMoving || MapEditor::editor->_scene->_cameraIsMoving)
 			editor->setVisibleChunks();
+
+		// the point on the map in the middle of the screen (where the 3D camera looks)
+		std::shared_ptr<Anubis::Scene> scene = MapEditor::editor->_scene;
+		sf::Vector2u windowSize = Anubis::render_window->getSize();
+		sf::Vector3f origin, dir;
+		sf::Vector2f listener(scene->_camera->_position.x, scene->_camera->_position.z);
+
+		if (scene->screenToRay(sf::Vector2i(windowSize.x / 2, windowSize.y / 2), origin, dir) && dir.y < -0.0001f) {
+			float t = -origin.y / dir.y;	// the ray hits the plane y = 0
+			listener = sf::Vector2f(origin.x + dir.x * t, origin.z + dir.z * t);
+		}
+
+		// ocean: the loop sound stands on the nearest point of the ocean - not every frame
+		if ((Anubis::currentTime - _waterSoundsTime).asSeconds() > 0.1f) {
+			_waterSoundsTime = Anubis::currentTime;
+
+			float distance = getDistanceToWater(listener, 0, _oceanPoint);
+
+			if (_oceanAmbience != nullptr) {
+				if (distance > 1e10f)
+					_oceanAmbience->pause();
+				else {
+					_oceanAmbience->setPosition(sf::Vector3f(_oceanPoint.x, 0.f, _oceanPoint.y));
+					if (_oceanAmbience->getStatus() != sf::Sound::Status::Playing)
+						_oceanAmbience->play();
+				}
+			}
+		}
+
+		// ocean: a new wave starts when the water starts to come in (the same wave as in the water shader)
+		if (_oceanAmbience != nullptr) {
+			float pi = 3.14159265f;
+			float phase = Anubis::currentTime.asSeconds() * 0.8f - (_oceanPoint.x + _oceanPoint.y) * 0.02f;
+			float soundEarlier = 0.45;	// seconds - the sound starts a bit before the water comes in
+			int cycle = (int)std::floor((phase - pi * 0.5f + soundEarlier * 0.8f) / (2.f * pi));
+
+			if (cycle != _waveCycle) {
+
+				// the camera moved back - the cycle goes back, no new wave (only remember it)
+				bool forward = cycle > _waveCycle;
+				_waveCycle = cycle;
+
+				if (forward && _oceanAmbience->getStatus() == sf::Sound::Status::Playing) {
+					std::shared_ptr<sf::Sound> wave = Anubis::sounds_manager->addSound(L"wave" + std::to_wstring(_waveIndex + 1), sf::Vector3f(_oceanPoint.x, 0.f, _oceanPoint.y));
+
+					// the sound lasts as long as one wave in the shader: 2 * pi / 0.8 (time * 0.8 in water3D)
+					if (wave != nullptr) {
+						float period = 2.f * pi / 0.8f;
+						float duration = wave->getBuffer().getDuration().asSeconds();
+						wave->setPitch(std::clamp(duration / period, 1.f, 2.f));
+					}
+				}
+
+				_waveIndex = (_waveIndex + 1) % 6;
+			}
+		}
 	}
 
 	void Map::draw() {

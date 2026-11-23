@@ -6,6 +6,7 @@
 #include "Editors/MapEditor/Map/Water.hpp"
 #include "Loader.hpp"
 #include <fstream>
+#include "SoundsManager.hpp"
 
 enum class ToolTerrainType;
 
@@ -19,10 +20,17 @@ namespace MapEditor {
 		std::shared_ptr<GhostChunk> _ghostChunk;
 		std::vector<std::shared_ptr<Water>> _waters;
 
+		std::shared_ptr<sf::Sound> _oceanAmbience;					// loop sound of the ocean, stands on the nearest point of the ocean
+		int _waveIndex;												// the next wave to play
+		int _waveCycle;												// the cycle of the wave in the shader when the last wave was played
+		sf::Time _waterSoundsTime;
+		sf::Vector2f _oceanPoint;									// the nearest point of the ocean - the wave sound uses its phase
+
 		Map();
 		~Map();
 
 		void addChunk(std::shared_ptr<Chunk> chunk, int terrain);
+		void addSounds();
 		void create(int width, int height);
 
 		void drawCircle(sf::Vector2f center, float radius, int terrain);
@@ -62,6 +70,8 @@ namespace MapEditor {
 		void removeWater(std::shared_ptr<Water> water);
 		std::shared_ptr<Water> getWaterUnderCursor(sf::Vector2i pixel);
 		void drawWaters(sf::Glsl::Mat4 view, sf::Glsl::Mat4 projection);
+		float getDistance(sf::Vector2f position);
+		float getDistanceToWater(sf::Vector2f position, int kind, sf::Vector2f& nearest);
 
 		void saveFromProject(std::ofstream& file);
 		void loadFromProject(std::ifstream& file, std::shared_ptr<Anubis::Loader>& loader);
