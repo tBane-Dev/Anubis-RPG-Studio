@@ -1,5 +1,6 @@
 ﻿#include "Editors/MapEditor/Palette.hpp"
 #include "Editors/MapEditor/Editor.hpp"
+#include "DebugLog.hpp"
 
 namespace MapEditor {
 
@@ -307,6 +308,7 @@ namespace MapEditor {
 		}
 		else {
 
+			// add functions for slots
 			_slots->setFunction(
 				[this](std::shared_ptr<Slot> slot, int selectedSlotId) {
 
@@ -314,6 +316,13 @@ namespace MapEditor {
 					_slots->selectSlot(selectedSlotId);
 				}
 			);
+
+			// add tooltips
+			for (auto& slot : _slots->_slots) {
+				if (std::dynamic_pointer_cast<GameObject>(slot->_object.lock())) {
+					slot->setTooltip(256.0f, std::dynamic_pointer_cast<GameObject>(slot->_object.lock())->getName(), L"");
+				}
+			}
 		}
 
 		setPosition(getPosition());

@@ -126,6 +126,13 @@ namespace PrefabsEditor {
 				editor->_mesh_panel->setButtonsActivity();
 			}
 		);
+
+		// add tooltips
+		for (auto& slot : _slots->_slots) {
+			if (std::dynamic_pointer_cast<GameObject>(slot->_object.lock())) {
+				slot->setTooltip(256.0f, std::dynamic_pointer_cast<GameObject>(slot->_object.lock())->getName(), L"");
+			}
+		}
 	}
 
 	void Palette::draw() {
