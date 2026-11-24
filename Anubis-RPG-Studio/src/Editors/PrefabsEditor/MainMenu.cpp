@@ -3,6 +3,8 @@
 #include "Controls/OptionWithIcon.hpp"
 #include "EditorsManager.hpp"
 #include "Editors/PrefabsEditor/Editor.hpp"
+#include "Editors//MapEditor/Editor.hpp"
+#include "Editors/MapEditor/Map/Map.hpp"
 
 namespace PrefabsEditor {
 
@@ -35,6 +37,7 @@ namespace PrefabsEditor {
 		_file_back_to_map_editor->_onclick_func = []() {
 			Main::editor_manager->pop_back();
 			PrefabsEditor::editor = nullptr;
+			MapEditor::editor->_map->addSounds();
 			};
 
 		_file_exit = std::make_shared<OptionWithIcon>(

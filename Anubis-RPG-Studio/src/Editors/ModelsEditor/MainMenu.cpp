@@ -36,8 +36,8 @@ namespace ModelsEditor {
 		_file_back_to_map_editor->_onclick_func = []() {
 			Main::editor_manager->pop_back();
 			ModelsEditor::editor = nullptr;
-			
 			MapEditor::editor->createPalette();
+			MapEditor::editor->_map->addSounds();
 			};
 
 		_file_exit = std::make_shared<OptionWithIcon>(

@@ -231,6 +231,7 @@ namespace MapEditor {
 		_tool_models_editor->_onclick_func = [this]() {
 			if (ModelsEditor::editor == nullptr) {
 				closeMenu();
+				Anubis::sounds_manager->clear();
 				ModelsEditor::editor = std::make_shared<ModelsEditor::Editor>();
 				ModelsEditor::editor->create();
 				Main::editor_manager->push_back(ModelsEditor::editor);
@@ -245,6 +246,7 @@ namespace MapEditor {
 		_tool_prefabs_editor->_onclick_func = [this]() {
 			if (PrefabsEditor::editor == nullptr) {
 				closeMenu();
+				Anubis::sounds_manager->clear();
 				PrefabsEditor::editor = std::make_shared<PrefabsEditor::Editor>();
 				PrefabsEditor::editor->create();
 				Main::editor_manager->push_back(PrefabsEditor::editor);
@@ -259,6 +261,7 @@ namespace MapEditor {
 		_tool_buildings_editor->_onclick_func = [this]() {
 			if (BuildingsEditor::editor == nullptr) {
 				closeMenu();
+				Anubis::sounds_manager->clear();
 				BuildingsEditor::editor = std::make_shared<BuildingsEditor::Editor>();
 				BuildingsEditor::editor->create();
 				Main::editor_manager->push_back(BuildingsEditor::editor);
