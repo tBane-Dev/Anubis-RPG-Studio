@@ -9,6 +9,7 @@
 #include "3D/Model3D.hpp"
 #include "3D/Mesh3D.hpp"
 #include "ShadersManager.hpp"
+#include "3D/OpenGLBuffers.hpp"
 
 namespace MapEditor {
 
@@ -220,18 +221,29 @@ namespace MapEditor {
 		_scene->renderShadowMap();
 		_map->draw();
 
-		// Przywracamy test g??boko?ci po rysowaniu SFML w Map::draw().
+		// SFML in Map::draw() changed the states - the depth of the terrain stays (hills hide the models)
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 		glDepthMask(GL_TRUE);
-		glClearDepth(1.0);
-		glClear(GL_DEPTH_BUFFER_BIT);
 
 		_scene->setViewport();
 		_scene->setProjection();
 		_scene->setCamera();
 
 		_scene->draw();
+
+		// waters at the end - transparent, they use the depth of the terrain and of the models
+		_scene->setViewport();
+		_scene->setProjection();
+		_scene->setCamera();
+
+		GLfloat viewMatrix[16];
+		GLfloat projectionMatrix[16];
+		glGetFloatv(GL_MODELVIEW_MATRIX, viewMatrix);
+		glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix);
+
+		_map->drawWaters(sf::Glsl::Mat4(viewMatrix), sf::Glsl::Mat4(projectionMatrix));
+		Anubis::GL::bindVertexArray(0);
 
 		Anubis::render_window->resetGLStates();
 
