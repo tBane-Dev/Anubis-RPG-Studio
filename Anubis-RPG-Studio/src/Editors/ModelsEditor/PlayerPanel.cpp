@@ -9,7 +9,7 @@
 
 namespace ModelsEditor {
 
-	PlayerPanel::PlayerPanel(sf::Vector2i margin) : Panel(sf::Vector2i(520, 192), sf::Vector2i(1332 + margin.x, ModelsEditor::editor->_main_menu->getSize().y + margin.y + 192)) {
+	PlayerPanel::PlayerPanel(sf::Vector2i margin) : Panel(sf::Vector2i(520, 160), sf::Vector2i(1332 + margin.x, ModelsEditor::editor->_main_menu->getSize().y + margin.y + 192)) {
 
 		_title = std::make_unique<sf::Text>(basicFont, L"Player", 20);
 		_title->setFillColor(basic_text_color);
@@ -64,7 +64,7 @@ namespace ModelsEditor {
 
 		sf::Vector2f startPosition;
 		startPosition.x = _rect.position.x + padding + (total_width - all_width) / 2;
-		startPosition.y = _rect.position.y + _title->getFont().getLineSpacing(20) + 24 + 16 + 16;
+		startPosition.y = _rect.position.y + _title->getFont().getLineSpacing(20) + 24 + 16;
 
 		_anim_prev->setPosition(sf::Vector2i(startPosition.x, startPosition.y));
 		_prev->setPosition(sf::Vector2i(_anim_prev->getPosition().x + 80 + margin_between_buttons, _anim_prev->getPosition().y));

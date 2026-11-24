@@ -9,6 +9,7 @@
 #include "Editors/ModelsEditor/ModelPanel.hpp"
 #include "Editors/ModelsEditor/PlayerPanel.hpp"
 #include "Editors/ModelsEditor/StatisticsPanel.hpp"
+#include "Editors/ModelsEditor/CollidersPanel.hpp"
 
 namespace ModelsEditor {
 	class Editor : public Main::Editor {
@@ -26,6 +27,7 @@ namespace ModelsEditor {
 		std::shared_ptr<ModelPanel> _model_panel;
 		std::shared_ptr<PlayerPanel> _player_panel;
 		std::shared_ptr<StatisticsPanel> _statistics_panel;
+		std::shared_ptr<CollidersPanel> _colliders_panel;
 
 		Editor();
 		~Editor();

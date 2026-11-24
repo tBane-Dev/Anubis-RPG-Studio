@@ -6,7 +6,7 @@
 
 namespace ModelsEditor {
 
-	StatisticsPanel::StatisticsPanel(sf::Vector2i margin) : Panel(sf::Vector2i(520, 900 - 192 - 192), sf::Vector2i(1332 + margin.x, ModelsEditor::editor->_main_menu->getSize().y + margin.y + 192 + 192)) {
+	StatisticsPanel::StatisticsPanel(sf::Vector2i margin) : Panel(sf::Vector2i(520, 900 - 192 - 160 - 192), sf::Vector2i(1332 + margin.x, ModelsEditor::editor->_main_menu->getSize().y + margin.y + 192 + 160)) {
 
 		_title = std::make_unique<sf::Text>(basicFont, L"Statistics", 20);
 		_title->setFillColor(basic_text_color);
@@ -15,7 +15,7 @@ namespace ModelsEditor {
 		// stats rect
 		int m = 8;
 		_statsRect.size = sf::Vector2i(384, 8 * (basicFont.getLineSpacing(basic_text_size) + m) + m);
-		_statsRect.position = getPosition() + sf::Vector2i((512 - _statsRect.size.x) / 2, 96);
+		_statsRect.position = getPosition() + sf::Vector2i((512 - _statsRect.size.x) / 2, 64);
 
 		_animations_label = std::make_unique<sf::Text>(basicFont, L"Animations", basic_text_size);
 		_triangles_label = std::make_unique<sf::Text>(basicFont, L"Triangles", basic_text_size);
